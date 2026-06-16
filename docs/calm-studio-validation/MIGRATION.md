@@ -102,14 +102,27 @@ Studio today only does basic JSON-schema validation.
 ---
 
 ## 8. OPEN ITEMS / TO VERIFY in next session
-- Exact method signatures of the `DocumentLoader` interface (`shared/src/document-loader/document-loader.ts`) — the loader stub must match.
-- Whether `@finos/calm-shared` is published to npm at a usable version, or must be consumed via workspace/file: link inside the monorepo. (calm-core already uses `file:` deps, e.g. `@finos/calm-models`.)
-- How `calm-core` builds (`tsup.config.ts`) — ensure `@finos/calm-shared` is bundled/externalized correctly for the Tauri renderer.
-- Bundle-size impact of spectral on the (later) Vercel web build.
-- Confirm Studio dev run command (check `calm-suite/calm-studio/apps/studio/package.json` scripts + Tauri).
+
+### ✅ RESOLVED in session 2 (2026-06-16) — verified against source
+- **`DocumentLoader` interface — CONFIRMED.** 3 async/sync methods (`shared/src/document-loader/document-loader.ts:14`):
+  - `initialise(schemaDirectory: SchemaDirectory): Promise<void>`
+  - `loadMissingDocument(documentId: string, type: CalmDocumentType): Promise<object>`
+  - `resolvePath(reference: string): string | undefined`
+  - `CalmDocumentType = 'architecture' | 'pattern' | 'schema' | 'timeline'`. Helper `assertJsonObject()` + `DocumentLoadError {name, message, cause?, recoverable}` exported from same file. `buildDocumentLoader(opts)` composes a `MultiStrategyDocumentLoader`. Our `BundledDocumentLoader` must implement these 3 methods; `resolvePath` may return `undefined` (we have no real fs in renderer).
+- **`validate` IS exported from `shared/src/index.ts`** (line 2, inside a multi-line `export { … } from './commands/validate/validate.js'` block — easy to miss with a one-line grep). Signature: `export async function validate(...)` at `validate.ts:119` → `Promise<ValidationOutcome>`. Also exported: `ValidationOutput` (output.js:31), `ValidationOutcome` (output:53), `SchemaDirectory` (:33), `buildDocumentLoader`/`DocumentLoader`/`DocumentLoaderOptions` (:56), `FileSystemDocumentLoader` (:57), `OutputFormat`/`ValidateOutputFormat` (:8). **No API changes needed in shared.**
+- **calm-core build = tsup** (`calm-suite/calm-studio/packages/calm-core/tsup.config.ts`): entry `src/index.ts`, formats `['esm','cjs']`, `dts:true`, `external:['ajv','ajv-formats']` ONLY. → if we add `@finos/calm-shared` as a (non-external) dep, **tsup will bundle it (and spectral) into the renderer build** — which is what we want client-side. `onSuccess` copies meta-schemas from `calm/release/1.2/meta` into `dist/schemas/` (calm.json, core.json, control.json, control-requirement.json, interface.json, flow.json, evidence.json, units.json) — same vendored set the BundledDocumentLoader will serve.
+- **Studio run command:** `npm run tauri dev` (scripts: `dev=vite dev`, `tauri=tauri`, `test=vitest run`, `test:e2e=playwright test`). `@calmstudio/calm-core` is a `file:../../packages/calm-core` dep of the studio app.
+- **Workspace:** root `package.json` declares `workspaces` (npm@11.12.1); `calm-suite/calm-studio/package.json` ALSO declares its own workspaces. calm-core already consumes `@finos/calm-models` via `file:../../../../calm-models`. → link `@finos/calm-shared` the same way (`file:../../../../shared` — VERIFY the exact relative depth from calm-core).
+
+### ⚠️ STILL OPEN — handle at start of Phase 2
+- **`@finos/calm-shared` is NOT pre-built — there is no `shared/dist/`.** Its build is `tsc -p ./tsconfig.build.json` + a template-copy script. So before calm-core can resolve a `file:` link to shared's `main: dist/index.js`, **`shared` must be built first** (`cd shared && npm run build`), OR configure tsup/tsconfig paths to bundle shared from `src`. Decide in Phase 1 spike.
+- **`@stoplight/spectral-cli` (Node-only) IS a direct dep of shared** (`package.json`), alongside the browser-safe `-core` and `-functions`. `validate()` does NOT import `-cli` (confirmed in doc §4), but verify tree-shaking actually drops it from the renderer bundle — if not, mark it `external` or alias it out. This is the #1 client-side risk for the Phase 1 GO/NO-GO.
+- Bundle-size impact of spectral on the (later) Vercel web build — defer.
 
 ---
 
 ## 9. ENV NOTES
 - Repo moved out of the e-magazine project to avoid polluting that git repo. New home: `/Users/gowri/spaceclub/Architecture/`.
-- This is the user's general dev machine (macOS, zsh). The e-magazine CLAUDE.md/memory in the old project is UNRELATED to this CALM work — ignore it for this task.
+- **Private working fork (session 2):** This clone's `origin` now points at **`https://github.com/gowrishankar005/arch-as-code`** (private). `upstream` = `finos/architecture-as-code` (for fetching/diffing finos). History was re-rooted to a single snapshot commit (orphan) of finos @ `f2a3d2d` because the original `--depth 1` shallow clone could not be pushed. Working branch: **`calm-studio-validation`**. This doc lives at `docs/calm-studio-validation/MIGRATION.md`.
+- **To resume cleanly:** `cd /Users/gowri/spaceclub/Architecture/architecture-as-code && claude` — so the session's primary cwd, git status, and PR tooling all point at this repo (otherwise the status bar shows the unrelated `van-valaroli`/e-magazine repo).
+- This is the user's general dev machine (macOS, zsh). The e-magazine CLAUDE.md/memory in the old project is UNRELATED to this CALM work — ignore it for this task. `gh` CLI installed via brew this session (v2.94); the stored github.com token has `repo, workflow, write:packages` scopes but lacks `read:org`, so `gh auth login` fails — use the GitHub REST API with the token (from `git credential fill`) for repo-level operations.
