@@ -17,6 +17,9 @@ import {
 	openPanel,
 	getScrollToElementId,
 	setScrollToElementId,
+	setPattern,
+	clearPattern,
+	getSelectedPattern,
 } from '$lib/stores/validation.svelte';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -72,6 +75,7 @@ const archWithUnnamedNode: CalmArchitecture = {
 beforeEach(() => {
 	resetModel();
 	clearValidation();
+	clearPattern();
 });
 
 // ─── runValidation ────────────────────────────────────────────────────────────
@@ -110,6 +114,51 @@ describe('runValidation', () => {
 				expect(prev).toBeLessThanOrEqual(curr);
 			}
 		}
+	});
+});
+
+// ─── pattern selection + validate-against-pattern ─────────────────────────────
+
+describe('pattern selection', () => {
+	it('setPattern / getSelectedPattern / clearPattern round-trip', () => {
+		expect(getSelectedPattern()).toBeNull();
+		setPattern({ type: 'object' }, 'my-standard.json');
+		expect(getSelectedPattern()?.name).toBe('my-standard.json');
+		clearPattern();
+		expect(getSelectedPattern()).toBeNull();
+	});
+
+	it('routes through the CLI-grade engine when a pattern is selected', async () => {
+		// Pattern requiring the first node's unique-id to be a fixed value the
+		// model does not use → a json-schema error sourced from the engine.
+		const CORE = 'https://calm.finos.org/release/1.2/meta/core.json';
+		const pattern = {
+			$schema: 'https://json-schema.org/draft/2020-12/schema',
+			$id: 'https://calm.finos.org/test/standard.json',
+			type: 'object',
+			properties: {
+				nodes: {
+					type: 'array',
+					minItems: 1,
+					prefixItems: [
+						{ $ref: `${CORE}#/defs/node`, properties: { 'unique-id': { const: 'must-be-this' } } },
+					],
+				},
+				relationships: { type: 'array' },
+			},
+			required: ['nodes'],
+		};
+
+		applyFromJson(validArch);
+		setPattern(pattern, 'standard.json');
+		await runValidation();
+
+		const issues = getIssues();
+		// The engine tags issues with a source; at least one json-schema issue
+		// should target the first node's unique-id.
+		const fromEngine = issues.find((i) => i.source === 'json-schema' && i.path === '/nodes/0/unique-id');
+		expect(fromEngine).toBeDefined();
+		expect(fromEngine!.nodeId).toBe('svc-1');
 	});
 });
 

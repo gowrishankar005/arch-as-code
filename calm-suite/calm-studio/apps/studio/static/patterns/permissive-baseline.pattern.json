@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://calm.finos.org/studio/patterns/permissive-baseline.pattern.json",
+  "title": "Permissive Baseline",
+  "description": "Only requires top-level nodes and relationships arrays. Any well-formed CALM 1.2 architecture passes — use it to confirm the 'no pattern violations' state.",
+  "type": "object",
+  "properties": {
+    "nodes": { "type": "array" },
+    "relationships": { "type": "array" }
+  },
+  "required": ["nodes", "relationships"]
+}

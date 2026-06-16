@@ -40,6 +40,12 @@ export interface ValidationIssue {
 	relationshipId?: string;
 	/** JSON path or schema path context */
 	path?: string;
+	/**
+	 * Which engine produced the issue. Set by the pattern-validation engine
+	 * (`validateAgainstPattern`) so the UI can filter by source. Omitted by the
+	 * legacy `validateCalmArchitecture` fast path.
+	 */
+	source?: 'json-schema' | 'spectral';
 }
 
 // ─── Ajv setup (vendored CALM 1.2 meta-schemas) ──────────────────────────────

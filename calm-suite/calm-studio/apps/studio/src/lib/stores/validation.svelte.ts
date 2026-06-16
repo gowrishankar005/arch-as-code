@@ -22,26 +22,73 @@ import { runAIGFRules } from '$lib/validation/aigf-rules';
 // Re-export ValidationIssue for consumers that cannot resolve @calmstudio/calm-core via tsconfig
 export type { ValidationIssue };
 
+/** A pattern/standard selected for CLI-grade validation, with a display label. */
+export interface SelectedPattern {
+	/** The pattern (curated CALM schema) as a plain object. */
+	pattern: object;
+	/** Human-readable name for the toolbar chip (e.g. the file name). */
+	name: string;
+}
+
 // ─── Module-level state ───────────────────────────────────────────────────────
 
 let issues = $state<ValidationIssue[]>([]);
 let panelOpen = $state(false);
 let scrollToId = $state<string | null>(null);
+let selectedPattern = $state<SelectedPattern | null>(null);
+
+// ─── Pattern selection ───────────────────────────────────────────────────────
+
+/**
+ * Select a pattern/standard to validate against. Once set, runValidation()
+ * routes through the CLI-grade engine (validateAgainstPattern) instead of the
+ * basic schema fast path. Does NOT trigger validation on its own.
+ */
+export function setPattern(pattern: object, name: string): void {
+	selectedPattern = { pattern, name };
+}
+
+/** Returns the currently selected pattern, or null if none. */
+export function getSelectedPattern(): SelectedPattern | null {
+	return selectedPattern;
+}
+
+/** Clear the selected pattern, reverting to the basic schema fast path. */
+export function clearPattern(): void {
+	selectedPattern = null;
+}
 
 // ─── On-demand validation ────────────────────────────────────────────────────
 
 /**
  * Run validation on the current model and open the panel with results.
  * Called explicitly by the user (e.g., clicking a "Validate" button).
+ *
+ * When a pattern is selected, delegates to the CLI-grade engine in
+ * `@calmstudio/calm-core` (lazily imported so Spectral/AJV stay out of the
+ * initial bundle); otherwise runs the basic schema fast path. AIGF governance
+ * rules run in both cases.
  */
-export function runValidation(): void {
+export async function runValidation(): Promise<void> {
 	const model = getModel();
-	const structural = validateCalmArchitecture(model);
 	const aigf = runAIGFRules(model);
-	issues = [...structural, ...aigf];
+
+	let primary: ValidationIssue[];
+	if (selectedPattern) {
+		// Lazy import from the dedicated entry point keeps the shared validation
+		// engine (Spectral + AJV) in its own code-split chunk, out of the initial
+		// bundle until the user actually validates against a pattern.
+		const { validateAgainstPattern } = await import('@calmstudio/calm-core/pattern-validation');
+		primary = await validateAgainstPattern(model, selectedPattern.pattern);
+	} else {
+		primary = validateCalmArchitecture(model);
+	}
+
+	const next = [...primary, ...aigf];
 	// Sort by severity: errors first, then warnings, then info
 	const severityOrder: Record<string, number> = { error: 0, warning: 1, info: 2 };
-	issues.sort((a, b) => (severityOrder[a.severity] ?? 2) - (severityOrder[b.severity] ?? 2));
+	next.sort((a, b) => (severityOrder[a.severity] ?? 2) - (severityOrder[b.severity] ?? 2));
+	issues = next;
 	panelOpen = true;
 }
 
