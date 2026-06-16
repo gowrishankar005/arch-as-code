@@ -1,0 +1,196 @@
+import { AuthPlugin } from '../auth/auth-plugin';
+import { CALM_META_SCHEMA_DIRECTORY } from '../consts';
+import { assertJsonObject, buildDocumentLoader, DocumentLoaderOptions, DocumentLoadError } from './document-loader';
+
+const mocks = vi.hoisted(() => {
+    return {
+        fsDocLoader: vi.fn(function () { return {
+            initialise: vi.fn(),
+            loadMissingDocument: vi.fn()
+        }; }),
+        calmHubDocLoader: vi.fn(function () { return {
+            initialise: vi.fn(),
+            loadMissingDocument: vi.fn()
+        }; }),
+        mappedDocLoader: vi.fn(function () { return {
+            initialise: vi.fn(),
+            loadMissingDocument: vi.fn()
+        }; }),
+        directDocLoader: vi.fn(function () { return {
+            initialise: vi.fn(),
+            loadMissingDocument: vi.fn()
+        }; })
+    };
+});
+
+
+vi.mock('./file-system-document-loader', () => {
+    return {
+        FileSystemDocumentLoader: mocks.fsDocLoader
+    };
+});
+
+vi.mock('./calmhub-document-loader', () => {
+    return {
+        CalmHubDocumentLoader: mocks.calmHubDocLoader
+    };
+});
+
+vi.mock('./mapped-document-loader', () => {
+    return {
+        MappedDocumentLoader: mocks.mappedDocLoader
+    };
+});
+
+vi.mock('./direct-url-document-loader', () => {
+    return {
+        DirectUrlDocumentLoader: mocks.directDocLoader
+    };
+});
+
+describe('DocumentLoader', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.resetModules();
+    });
+
+    it('should create a FileSystemDocumentLoader', () => {
+
+        const docLoaderOpts: DocumentLoaderOptions = {
+            schemaDirectoryPath: 'schemas'
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.fsDocLoader).toHaveBeenCalledWith([CALM_META_SCHEMA_DIRECTORY, 'schemas'], false, process.cwd());
+    });
+
+    it('should create a CalmHubDocumentLoader when calmHubUrl is defined in loader options', () => {
+
+        const docLoaderOpts: DocumentLoaderOptions = {
+            calmHubUrl: 'https://example.com'
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.calmHubDocLoader).toHaveBeenCalledWith('https://example.com', false, undefined);
+    });
+    
+    it('should pass authplugin to CalmHubDocumentLoader', () => {
+
+        const mockAuthPlugin: AuthPlugin = {
+            getAuthHeaders: vi.fn()
+        };
+
+        const docLoaderOpts: DocumentLoaderOptions = {
+            calmHubUrl: 'https://example.com',
+            authPlugin: mockAuthPlugin
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.calmHubDocLoader).toHaveBeenCalledWith('https://example.com', false, mockAuthPlugin);
+    });
+
+    it('should pass allowedRemoteHosts to DirectUrlDocumentLoader when provided', () => {
+        const docLoaderOpts: DocumentLoaderOptions = {
+            allowedRemoteHosts: ['schemas.example.com']
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.directDocLoader).toHaveBeenCalledWith(false, undefined, ['schemas.example.com']);
+    });
+
+    it('should create a MappedDocumentLoader when urlToLocalMap is provided', () => {
+        const urlMap = new Map([
+            ['https://example.com/schema.json', 'local/schema.json']
+        ]);
+
+        const docLoaderOpts: DocumentLoaderOptions = {
+            urlToLocalMap: urlMap
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.mappedDocLoader).toHaveBeenCalledWith(urlMap, process.cwd(), false);
+    });
+
+    it('should create a MappedDocumentLoader when basePath is provided', () => {
+        const docLoaderOpts: DocumentLoaderOptions = {
+            basePath: '/project/patterns'
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.mappedDocLoader).toHaveBeenCalledWith(new Map(), '/project/patterns', false);
+    });
+
+    it('should create a MappedDocumentLoader with both urlToLocalMap and basePath', () => {
+        const urlMap = new Map([
+            ['https://example.com/schema.json', 'local/schema.json']
+        ]);
+
+        const docLoaderOpts: DocumentLoaderOptions = {
+            urlToLocalMap: urlMap,
+            basePath: '/custom/base'
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.mappedDocLoader).toHaveBeenCalledWith(urlMap, '/custom/base', false);
+    });
+
+    it('should not create a MappedDocumentLoader when neither urlToLocalMap nor basePath provided', () => {
+        const docLoaderOpts: DocumentLoaderOptions = {};
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.mappedDocLoader).not.toHaveBeenCalled();
+    });
+
+    it('should not create a MappedDocumentLoader when urlToLocalMap is empty and no basePath', () => {
+        const docLoaderOpts: DocumentLoaderOptions = {
+            urlToLocalMap: new Map()
+        };
+
+        buildDocumentLoader(docLoaderOpts);
+
+        expect(mocks.mappedDocLoader).not.toHaveBeenCalled();
+    });
+});
+
+describe('DocumentLoadError', () => {
+    it('defaults to recoverable so unmarked errors fall through to the next loader', () => {
+        const error = new DocumentLoadError({ name: 'OPERATION_NOT_IMPLEMENTED', message: 'not mine' });
+        expect(error.recoverable).toBe(true);
+    });
+
+    it('honours an explicit non-recoverable flag', () => {
+        const error = new DocumentLoadError({ name: 'UNKNOWN', message: 'fatal', recoverable: false });
+        expect(error.recoverable).toBe(false);
+    });
+});
+
+describe('assertJsonObject', () => {
+    it('passes for a plain object', () => {
+        expect(() => assertJsonObject({ foo: 'bar' }, 'calm:/foo')).not.toThrow();
+    });
+
+    it.each([
+        ['a string', 'just a string', 'string'],
+        ['null', null, 'null'],
+        ['an array', [{ foo: 'bar' }], 'array'],
+        ['a number', 42, 'number'],
+    ])('throws a fatal DocumentLoadError when given %s', (_label, value, kind) => {
+        let thrown: unknown;
+        try {
+            assertJsonObject(value, 'calm:/foo');
+        } catch (err) {
+            thrown = err;
+        }
+        expect(thrown).toBeInstanceOf(DocumentLoadError);
+        expect((thrown as DocumentLoadError).recoverable).toBe(false);
+        expect((thrown as DocumentLoadError).message).toBe(`Expected a JSON object from calm:/foo but received: ${kind}`);
+    });
+});

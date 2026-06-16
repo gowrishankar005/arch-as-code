@@ -1,0 +1,136 @@
+import { CalmDocumentType, DocumentLoader, DocumentLoadError } from './document-loader';
+import { initLogger, Logger } from '../logger';
+import { readdir, readFile } from 'fs/promises';
+import { join, isAbsolute } from 'path';
+import { SchemaDirectory } from '../schema-directory';
+import { existsSync } from 'fs';
+import { getErrorMessage } from '../error-utils';
+
+export class FileSystemDocumentLoader implements DocumentLoader {
+    private readonly logger: Logger;
+    private readonly directoryPaths: string[];
+    private readonly basePath?: string;
+
+    constructor(directoryPaths: string[], debug: boolean, basePath?: string) {
+        this.logger = initLogger(debug, 'file-system-document-loader');
+        this.directoryPaths = directoryPaths;
+        this.basePath = basePath;
+    }
+
+    async initialise(schemaDirectory: SchemaDirectory): Promise<void> {
+        this.logger.debug('Initialising FileSystemDocumentLoader with directories: ' + this.directoryPaths.join(', '));
+        for (const directoryPath of this.directoryPaths) {
+            await this.loadDocumentsFromDirectory(schemaDirectory, directoryPath);
+        }
+    }
+
+    async loadDocumentsFromDirectory(schemaDirectory: SchemaDirectory, directoryPath: string): Promise<void> {
+        try {
+            this.logger.debug('Loading schemas from ' + directoryPath);
+            const files = await readdir(directoryPath, { recursive: true });
+
+            const schemaPaths = files.filter(str => str.match(/^.*(json|yaml|yml)$/))
+                .map(schemaPath => join(directoryPath, schemaPath));
+
+            for (const schemaPath of schemaPaths) {
+                const schemaDef = await this.loadDocument(schemaPath, 'schema');
+                if (!schemaDef) {
+                    // loaded schema can't be used due to having no identifier
+                    continue;
+                }
+                const schemaId = (schemaDef as { $id: string })['$id'];
+                schemaDirectory.storeDocument(schemaId, 'schema', schemaDef);
+                this.logger.debug(`Loaded schema with ID ${schemaId} from ${schemaPath}.`);
+            }
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
+                this.logger.error('Specified directory not found while loading documents: ' + directoryPath + ', error: ' + getErrorMessage(err));
+            } else {
+                this.logger.error(getErrorMessage(err));
+            }
+            throw err;
+        }
+    }
+
+    async loadMissingDocument(documentId: string, type: CalmDocumentType): Promise<object> {
+        // 1. Try to resolve as relative path first
+        const resolvedPath = this.resolvePath(documentId);
+        if (resolvedPath && existsSync(resolvedPath)) {
+            this.logger.debug(`Resolved relative path: ${documentId} -> ${resolvedPath}`);
+            const doc = await this.loadDocument(resolvedPath, type);
+            if (doc) {
+                return doc;
+            }
+        }
+
+        // 2. Fallback to checking exact path (existing behavior)
+        try {
+            if (existsSync(documentId)) {
+                this.logger.info(`${documentId} exists, loading as file...`);
+                const doc = await this.loadDocument(documentId, type);
+                if (doc) {
+                    return doc;
+                }
+            }
+        } catch (err) {
+            this.logger.error(`Error checking existence of document ID ${documentId}: ${getErrorMessage(err)}. This could be because it isn't a file path.`);
+        }
+
+        this.logger.debug(`Document ID ${documentId} does not exist in file system, cannot load.`);
+        const errorMessage = `Document with id [${documentId}] and type [${type}] was requested but not loaded at initialisation. 
+            File system document loader can only load at startup. Please ensure the schemas are present on your directory path or use CALMHub.`;
+        this.logger.debug(errorMessage);
+        throw new DocumentLoadError({
+            name: 'OPERATION_NOT_IMPLEMENTED',
+            message: errorMessage
+        });
+    }
+
+    private async loadDocument(schemaPath: string, type: CalmDocumentType): Promise<object | undefined> {
+        this.logger.debug('Loading ' + schemaPath);
+        const str = await readFile(schemaPath, 'utf-8');
+        const parsed = JSON.parse(str);
+
+        if (type != 'schema') {
+            return parsed;
+        }
+
+        if (!parsed || !parsed['$id']) {
+            this.logger.warn('Warning: bad schema found, no $id property was defined. Path: ' + schemaPath);
+            return undefined;
+        }
+
+        const schemaId = parsed['$id'];
+
+        if (!parsed['$schema']) {
+            this.logger.warn('Warning, loaded schema does not have $schema set and therefore may be invalid. Path: ' + schemaPath);
+        }
+
+        this.logger.debug('Loaded schema with $id: ' + schemaId);
+
+        return parsed;
+    }
+
+    resolvePath(reference: string): string | undefined {
+        if (this.basePath && this.isRelativePath(reference)) {
+            // Resolve against base path
+            // Note: join handles relative segments like .. correctly
+            return join(this.basePath, reference);
+        }
+        return undefined;
+    }
+
+    /**
+     * Check if a path is relative (not absolute and not a URL)
+     */
+    private isRelativePath(ref: string): boolean {
+        if (isAbsolute(ref)) {
+            return false;
+        }
+        if (ref.startsWith('http://') || ref.startsWith('https://') ||
+            ref.startsWith('file://') || ref.startsWith('calm:')) {
+            return false;
+        }
+        return true;
+    }
+}

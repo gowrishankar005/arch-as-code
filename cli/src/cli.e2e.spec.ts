@@ -1,0 +1,935 @@
+import { execSync } from 'child_process';
+import path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
+import { execa } from 'execa';
+import { parseStringPromise } from 'xml2js';
+import { expectDirectoryMatch, expectFilesMatch } from '@finos/calm-shared';
+import { STATIC_GETTING_STARTED_MAPPING_PATH } from './test_helpers/getting-started-url-mapping';
+
+const millisPerSecond = 1000;
+const integrationTestPrefix = 'calm-consumer-test';
+let tempDir: string;
+const repoRoot = path.resolve(__dirname);
+const GETTING_STARTED_DIR = path.resolve(
+    __dirname,
+    '../../calm/getting-started'
+);
+const GETTING_STARTED_TEST_FIXTURES_DIR = path.resolve(
+    __dirname,
+    '../test_fixtures/getting-started'
+);
+
+function run(file: string, args: string[]) {
+    const cp = execa(file, args, { cwd: tempDir });
+    cp.stdout?.pipe(process.stdout);
+    cp.stderr?.pipe(process.stderr);
+    return cp;
+}
+
+function calm(): string {
+    return path.join(tempDir, 'node_modules/.bin/calm');
+}
+
+describe('CLI Integration Tests', () => {
+    vi.setConfig({ testTimeout: 30 * millisPerSecond });
+
+    beforeAll(() => {
+        tempDir = fs.mkdtempSync(path.join(os.tmpdir(), integrationTestPrefix));
+
+        const tgzName = execSync('npm pack', { cwd: repoRoot })
+            .toString()
+            .trim();
+
+        const sourceTarball = path.join(repoRoot, tgzName);
+        const targetTarball = path.join(tempDir, tgzName);
+        fs.copyFileSync(sourceTarball, targetTarball);
+        fs.unlinkSync(sourceTarball);
+
+        execSync('npm init -y', { cwd: tempDir, stdio: 'inherit' });
+        execSync(`npm install ${targetTarball}`, {
+            cwd: tempDir,
+            stdio: 'inherit',
+        });
+    }, millisPerSecond * 30);
+
+    afterAll(() => {
+        if (tempDir) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+    });
+
+    test('calm --version works', async () => {
+        const { stdout } = await run(calm(), ['--version']);
+        expect(stdout.trim()).toMatch(/^\d+\.\d+\.\d+$/);
+    });
+
+    test('shows help if no arguments provided', async () => {
+        await expect(run(calm(), [])).rejects.toHaveProperty(
+            'stderr',
+            expect.stringContaining('Usage:')
+        );
+    });
+
+    test('calm -h shows help', async () => {
+        const { stdout } = await run(calm(), ['-h']);
+        expect(stdout).toContain(
+            'A set of tools for interacting with the Common Architecture Language Model'
+        );
+        expect(stdout).toContain('Usage:');
+    });
+
+    test('calm --help shows help', async () => {
+        const { stdout } = await run(calm(), ['--help']);
+        expect(stdout).toContain(
+            'A set of tools for interacting with the Common Architecture Language Model'
+        );
+        expect(stdout).toContain('Usage:');
+    });
+
+    test('calm init-ai --help shows help', async () => {
+        const { stdout } = await run(calm(), ['init-ai', '--help']);
+        expect(stdout).toContain('Augment a git repository with AI assistance for CALM');
+        expect(stdout).toContain('Options:');
+    });
+
+    describe.each(['copilot', 'kiro', 'claude', 'codex'])('calm init-ai -p %s', (provider) => {
+        test('creates correct directory structure and files', async () => {
+            const testDir = path.join(tempDir, `init-ai-${provider}-test`);
+            fs.mkdirSync(testDir, { recursive: true });
+
+            // Initialize a git repository to avoid warning
+            execSync('git init', { cwd: testDir, stdio: 'inherit' });
+
+            // Run calm init-ai with the specified provider
+            await run(calm(), ['init-ai', '-p', provider, '--directory', testDir]);
+
+            // Define expected paths based on provider
+            const expectedPaths: Record<string, { topLevelDir: string; mainPromptFile: string; skillPromptsDir: string; frontmatterContains: string[]; frontmatterNotContains?: string[] }> = {
+                copilot: {
+                    topLevelDir: '.github/agents',
+                    mainPromptFile: '.github/agents/CALM.agent.md',
+                    skillPromptsDir: '.github/agents/calm-prompts',
+                    frontmatterContains: ['description:', 'tools:'],
+                    frontmatterNotContains: ['model:'],
+                },
+                kiro: {
+                    topLevelDir: '.kiro',
+                    mainPromptFile: '.kiro/steering/CALM.chatmode.md',
+                    skillPromptsDir: '.kiro/calm-prompts',
+                    frontmatterContains: ['inclusion: manual'],
+                },
+                claude: {
+                    topLevelDir: '.claude/skills/calm',
+                    mainPromptFile: '.claude/skills/calm/SKILL.md',
+                    skillPromptsDir: '.claude/skills/calm/calm-prompts',
+                    frontmatterContains: ['name: calm', 'description:', 'user-invocable: true'],
+                },
+                codex: {
+                    topLevelDir: '.agents/skills/calm',
+                    mainPromptFile: '.agents/skills/calm/SKILL.md',
+                    skillPromptsDir: '.agents/skills/calm/calm-prompts',
+                    frontmatterContains: ['name: calm', 'description:'],
+                },
+            };
+
+            const paths = expectedPaths[provider];
+
+            // Verify top-level directory exists
+            expect(fs.existsSync(path.join(testDir, paths.topLevelDir))).toBe(true);
+
+            // Verify main prompt file exists and contains expected content
+            const mainPromptPath = path.join(testDir, paths.mainPromptFile);
+            expect(fs.existsSync(mainPromptPath)).toBe(true);
+            const mainPromptContent = fs.readFileSync(mainPromptPath, 'utf8');
+            expect(mainPromptContent).toContain('FINOS CALM');
+            expect(mainPromptContent).toContain('Common Architecture Language Model');
+
+            // Verify frontmatter content
+            const frontmatterMatch = mainPromptContent.match(/^---\n([\s\S]*?)\n---/);
+            expect(frontmatterMatch).not.toBeNull();
+            const frontmatter = frontmatterMatch![1];
+            paths.frontmatterContains.forEach((key) => expect(frontmatter).toContain(key));
+            paths.frontmatterNotContains?.forEach((key) => expect(frontmatter).not.toContain(key));
+
+            // Verify calm-prompts directory exists
+            const skillPromptsPath = path.join(testDir, paths.skillPromptsDir);
+            expect(fs.existsSync(skillPromptsPath)).toBe(true);
+
+            // Verify all 11 skill prompt files exist
+            const expectedSkillFiles = [
+                'architecture-creation.md',
+                'calm-cli-instructions.md',
+                'node-creation.md',
+                'relationship-creation.md',
+                'interface-creation.md',
+                'metadata-creation.md',
+                'control-creation.md',
+                'flow-creation.md',
+                'pattern-creation.md',
+                'documentation-creation.md',
+                'standards-creation.md',
+                'decorator-creation.md',
+            ];
+
+            expectedSkillFiles.forEach((skillFile) => {
+                const skillFilePath = path.join(skillPromptsPath, skillFile);
+                expect(fs.existsSync(skillFilePath)).toBe(true);
+                // Verify file has content
+                const content = fs.readFileSync(skillFilePath, 'utf8');
+                expect(content.length).toBeGreaterThan(0);
+            });
+
+            // Clean up test directory
+            fs.rmSync(testDir, { recursive: true, force: true });
+        });
+    });
+
+    test('calm init-ai -p invalidprovider reports error', async () => {
+        const testDir = path.join(tempDir, 'init-ai-invalid-provider-test');
+        fs.mkdirSync(testDir, { recursive: true });
+
+        // Initialize a git repository to avoid warning
+        execSync('git init', { cwd: testDir, stdio: 'inherit' });
+
+        // Attempt to run calm init-ai with an invalid provider
+        await expect(
+            run(calm(), ['init-ai', '-p', 'invalidprovider', '--directory', testDir])
+        ).rejects.toMatchObject({
+            stderr: expect.stringContaining('error: option \'-p, --provider <provider>\' argument \'invalidprovider\' is invalid. Allowed choices are copilot, kiro, claude, codex.')
+        });
+
+        // Clean up test directory
+        fs.rmSync(testDir, { recursive: true, force: true });
+    });
+
+    test('validate command outputs JSON to stdout', async () => {
+        const apiGatewayPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway.json'
+        );
+        const apiGatewayArchPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway-architecture.json'
+        );
+        const { stdout } = await run(
+            calm(), ['validate', '-p', apiGatewayPath, '-a', apiGatewayArchPath]
+        );
+        const expected = JSON.parse(
+            fs.readFileSync(
+                path.join(__dirname, '../test_fixtures/validate_output.json'),
+                'utf8'
+            )
+        );
+        const parsedOutput = JSON.parse(stdout);
+        removeLineNumbers(parsedOutput);
+        removeLineNumbers(expected);
+        expect(parsedOutput).toEqual(expected);
+    });
+
+    test('validate command outputs JSON to file', async () => {
+        const apiGatewayPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway.json'
+        );
+        const apiGatewayArchPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway-architecture.json'
+        );
+        const targetOutputFile = path.join(tempDir, 'validate-output.json');
+        await run(
+            calm(), ['validate', '-p', apiGatewayPath, '-a', apiGatewayArchPath, '-o', targetOutputFile]
+        );
+        expect(fs.existsSync(targetOutputFile)).toBe(true);
+        const expectedJson = JSON.parse(
+            fs.readFileSync(targetOutputFile, 'utf8')
+        );
+        const parsedOutput = JSON.parse(
+            fs.readFileSync(
+                path.join(__dirname, '../test_fixtures/validate_output.json'),
+                'utf8'
+            )
+        );
+        removeLineNumbers(parsedOutput);
+        removeLineNumbers(expectedJson);
+        expect(parsedOutput).toEqual(expectedJson);
+    });
+
+    test('validate command outputs JUNIT to stdout', async () => {
+        const apiGatewayPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway.json'
+        );
+        const apiGatewayArchPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway-architecture.json'
+        );
+        const { stdout } = await run(
+            calm(), ['validate', '-p', apiGatewayPath, '-a', apiGatewayArchPath, '-f', 'junit']
+        );
+        const actual = await parseStringPromise(stdout);
+        const expected = await parseStringPromise(
+            fs.readFileSync(
+                path.join(
+                    __dirname,
+                    '../test_fixtures/validate_output_junit.xml'
+                ),
+                'utf8'
+            )
+        );
+        expect(actual).toEqual(expected);
+    });
+
+    test('validate command outputs JUNIT to file', async () => {
+        const apiGatewayPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway.json'
+        );
+        const apiGatewayArchPath = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway-architecture.json'
+        );
+        const targetOutputFile = path.join(tempDir, 'validate-output.xml');
+        await run(
+            calm(), ['validate', '-p', apiGatewayPath, '-a', apiGatewayArchPath, '-f', 'junit', '-o', targetOutputFile]
+        );
+        expect(fs.existsSync(targetOutputFile)).toBe(true);
+        const actual = await parseStringPromise(
+            fs.readFileSync(targetOutputFile, 'utf8')
+        );
+        const expected = await parseStringPromise(
+            fs.readFileSync(
+                path.join(
+                    __dirname,
+                    '../test_fixtures/validate_output_junit.xml'
+                ),
+                'utf8'
+            )
+        );
+        expect(actual).toEqual(expected);
+    });
+
+    test('validate command outputs PRETTY to stdout', async () => {
+        const p = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway.json'
+        );
+        const a = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway-architecture.json'
+        );
+        const { stdout } = await run(
+            calm(), ['validate', '-p', p, '-a', a, '-f', 'pretty']
+        );
+        expect(stdout).toContain('WARN');
+        expect(stdout).toContain('architecture-has-no-placeholder-properties-numerical');
+        expect(stdout).toContain('/nodes/api-producer/interfaces/producer-ingress/port');
+        expect(stdout).toContain('Numerical placeholder (-1) detected in architecture.');
+    });
+
+    test('validate command fails when neither architecture nor pattern is provided', async () => {
+        await expect(run(calm(), ['validate'])).rejects.toMatchObject({
+            stderr: expect.stringContaining(
+                'error: one of the required options \'-p, --pattern <file>\', \'-a, --architecture <file>\' or \'--timeline <file>\' was not specified'
+            )
+        });
+    });
+
+    test('validate command validates an architecture only', async () => {
+        const apiGatewayArchPath = path.join(__dirname, '../test_fixtures/api-gateway/api-gateway-architecture.json');
+        const targetOutputFile = path.join(tempDir, 'validate-output.json');
+
+        await run(calm(), ['validate', '-a', apiGatewayArchPath, '-o', targetOutputFile]);
+        const outputFile = fs.readFileSync(targetOutputFile, 'utf-8');
+
+        const parsedOutput = JSON.parse(outputFile);
+        const expectedFilePath = path.join(__dirname, '../test_fixtures/validate_architecture_only_output.json');
+        const expectedOutput = JSON.parse(fs.readFileSync(expectedFilePath, 'utf-8'));
+
+        removeLineNumbers(parsedOutput);
+        removeLineNumbers(expectedOutput);
+
+        expect(parsedOutput).toEqual(expectedOutput);
+    });
+
+    test('validate command validates a timeline only', async () => {
+        const apiGatewayTimelinePath = path.join(__dirname, '../test_fixtures/api-gateway/api-gateway-timeline.json');
+        const targetOutputFile = path.join(tempDir, 'validate-timeline-output2.json');
+
+        await expect(run(calm(), ['validate', '--timeline', apiGatewayTimelinePath, '-o', targetOutputFile]))
+            .rejects.toHaveProperty('exitCode', 1);
+        const outputFile = fs.readFileSync(targetOutputFile, 'utf-8');
+
+        const parsedOutput = JSON.parse(outputFile);
+        const expectedFilePath = path.join(__dirname, '../test_fixtures/validate_timeline_output.json');
+        const expectedOutput = JSON.parse(fs.readFileSync(expectedFilePath, 'utf-8'));
+
+        removeLineNumbers(parsedOutput);
+        removeLineNumbers(expectedOutput);
+
+        expect(parsedOutput).toEqual(expectedOutput);
+    });
+
+    test('validate command rejects a timeline with no schema', async () => {
+        const apiGatewayTimelinePath = path.join(__dirname, '../test_fixtures/timeline/timeline-no-schema.json');
+        const targetOutputFile = path.join(tempDir, 'validate-timeline-output3.json');
+
+        await expect(run(calm(), ['validate', '--timeline', apiGatewayTimelinePath, '-o', targetOutputFile]))
+            .rejects.toHaveProperty('exitCode', 1);
+    });
+
+    describe('validate command with URL mapping', () => {
+        const urlMappingFixtures = path.join(__dirname, '../test_fixtures/url-mapping');
+
+        test('validates with URL mapping file when pattern has $id', async () => {
+            const patternPath = path.join(urlMappingFixtures, 'patterns/pattern-with-id.json');
+            const archPath = path.join(urlMappingFixtures, 'architectures/compliant.json');
+            const mappingPath = path.join(urlMappingFixtures, 'url-mapping.json');
+
+            const { stdout } = await run(
+                calm(), ['validate', '-p', patternPath, '-a', archPath, '-u', mappingPath]
+            );
+            const result = JSON.parse(stdout);
+            expect(result.hasErrors).toBe(false);
+        });
+
+        test('validates with relative refs when pattern has no $id', async () => {
+            const patternPath = path.join(urlMappingFixtures, 'patterns/pattern-without-id.json');
+            const archPath = path.join(urlMappingFixtures, 'architectures/compliant.json');
+
+            const { stdout } = await run(
+                calm(), ['validate', '-p', patternPath, '-a', archPath]
+            );
+            const result = JSON.parse(stdout);
+            expect(result.hasErrors).toBe(false);
+        });
+
+        test('fails validation for non-compliant architecture with relative refs', async () => {
+            const patternPath = path.join(urlMappingFixtures, 'patterns/pattern-without-id.json');
+            const archPath = path.join(urlMappingFixtures, 'architectures/non-compliant.json');
+
+            try {
+                await run(calm(), ['validate', '-p', patternPath, '-a', archPath]);
+                expect.fail('Expected validation to fail');
+            } catch (error: unknown) {
+                const result = JSON.parse((error as { stdout: string }).stdout);
+                expect(result.hasErrors).toBe(true);
+                expect(JSON.stringify(result)).toContain('owner');
+            }
+        });
+
+        test('fails validation for non-compliant architecture with URL mapping', async () => {
+            const patternPath = path.join(urlMappingFixtures, 'patterns/pattern-with-id.json');
+            const archPath = path.join(urlMappingFixtures, 'architectures/non-compliant.json');
+            const mappingPath = path.join(urlMappingFixtures, 'url-mapping.json');
+
+            try {
+                await run(calm(), ['validate', '-p', patternPath, '-a', archPath, '-u', mappingPath]);
+                expect.fail('Expected validation to fail');
+            } catch (error: unknown) {
+                const result = JSON.parse((error as { stdout: string }).stdout);
+                expect(result.hasErrors).toBe(true);
+                expect(JSON.stringify(result)).toContain('owner');
+            }
+        });
+    });
+
+    test('generate command produces the expected output', async () => {
+        const p = path.join(
+            __dirname,
+            '../test_fixtures/api-gateway/api-gateway.json'
+        );
+        const s = path.join(__dirname, '../../calm/release');
+        const out = path.join(tempDir, 'generate-output.json');
+        await run(calm(), ['generate', '-p', p, '-o', out, '-s', s]);
+        const actual = JSON.parse(fs.readFileSync(out, 'utf8'));
+        const expected = JSON.parse(
+            fs.readFileSync(
+                path.join(__dirname, '../test_fixtures/generate_output.json'),
+                'utf8'
+            )
+        );
+        expect(actual).toEqual(expected);
+    });
+
+    test('template command generates expected output', async () => {
+        const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+        const testModelPath = path.join(
+            fixtureDir,
+            'model/document-system.json'
+        );
+        const localDirectory = path.join(
+            fixtureDir,
+            'model/url-to-file-directory.json'
+        );
+        const templateBundlePath = path.join(
+            fixtureDir,
+            'template-bundles/doc-system'
+        );
+        const expectedOutput = path.join(
+            fixtureDir,
+            'expected-output/cli-e2e-output.html'
+        );
+        const outputDir = path.join(tempDir, 'output');
+        const outputFile = path.join(outputDir, 'cli-e2e-output.html');
+
+        await run(
+            calm(),
+            [
+                'template',
+                '--architecture', testModelPath,
+                '--bundle', templateBundlePath,
+                '--output', outputDir,
+                '--url-to-local-file-mapping', localDirectory
+            ]
+        );
+
+        expect(fs.existsSync(outputFile)).toBe(true);
+        const actualContent = fs.readFileSync(outputFile, 'utf8').trim();
+        const expectedContent = fs.readFileSync(expectedOutput, 'utf8').trim();
+        expect(actualContent).toEqual(expectedContent);
+    });
+
+
+    test('template command works with --template mode', async () => {
+        const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+        const testModelPath = path.join(fixtureDir, 'model/document-system.json');
+        const templatePath = path.join(fixtureDir, 'self-provided/single-template.hbs');
+        const expectedOutputPath = path.join(fixtureDir, 'expected-output/single-template-output.md');
+        const outputDir = path.join(fixtureDir, 'actual-output/single-template');
+        const outputFile = path.join(outputDir, 'simple-template-output.md');
+
+        if (fs.existsSync(outputDir)) {
+            fs.rmSync(outputDir, { recursive: true });
+        }
+
+        await run(
+            calm(), ['template', '--architecture', testModelPath, '--template', templatePath, '--output', outputFile]
+        );
+
+        expect(fs.existsSync(outputFile)).toBe(true);
+        const actual = fs.readFileSync(outputFile, 'utf8').trim();
+        const expected = fs.readFileSync(expectedOutputPath, 'utf8').trim();
+        expect(actual).toEqual(expected);
+
+        fs.rmSync(outputDir, { recursive: true });
+    });
+
+    test('template command works with --template-dir mode', async () => {
+        const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+        const testModelPath = path.join(fixtureDir, 'model/document-system.json');
+        const templateDirPath = path.join(fixtureDir, 'self-provided/template-dir');
+        const expectedOutputDir = path.join(fixtureDir, 'expected-output/template-dir');
+        const actualOutputDir = path.join(fixtureDir, 'actual-output/template-dir');
+
+        if (fs.existsSync(actualOutputDir)) {
+            fs.rmSync(actualOutputDir, { recursive: true });
+        }
+
+        await run(
+            calm(), ['template', '--architecture', testModelPath, '--template-dir', templateDirPath, '--output', actualOutputDir]
+        );
+
+        await expectDirectoryMatch(expectedOutputDir, actualOutputDir);
+
+        fs.rmSync(actualOutputDir, { recursive: true });
+    });
+
+
+
+    test('docify command generates expected files', async () => {
+        const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+        const testModelPath = path.join(
+            fixtureDir,
+            'model/document-system.json'
+        );
+        const localDirectory = path.join(
+            fixtureDir,
+            'model/url-to-file-directory.json'
+        );
+        const outputDir = path.join(tempDir, 'output/documentation');
+        await run(
+            calm(), ['docify', '--architecture', testModelPath, '--output', outputDir, '--url-to-local-file-mapping', localDirectory]
+        );
+        [
+            'docs/index.md',
+            'docs/flows/flow-document-upload.md',
+            'docs/nodes/document-system.md',
+            'docs/nodes/db-docs.md',
+            'docs/nodes/svc-storage.md',
+            'docs/nodes/svc-upload.md',
+        ].forEach((f) =>
+            expect(fs.existsSync(path.join(outputDir, f))).toBeTruthy()
+        );
+    });
+
+
+    test('docify command works with --template mode', async () => {
+        const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+        const testModelPath = path.join(fixtureDir, 'model/document-system.json');
+        const localDirectory = path.join(fixtureDir, 'model/url-to-file-directory.json');
+        const templatePath = path.join(fixtureDir, 'self-provided/single-template.hbs');
+        const expectedOutputPath = path.join(fixtureDir, 'expected-output/docify/single-template-output.md');
+        const outputDir = path.join(fixtureDir, 'actual-output/single-template-docify');
+        const outputFile = path.join(outputDir, 'simple-template-output.md');
+
+        if (fs.existsSync(outputDir)) {
+            fs.rmSync(outputDir, { recursive: true });
+        }
+
+        await run(
+            calm(), ['docify', '--architecture', testModelPath, '--template', templatePath, '--output', outputFile, '--url-to-local-file-mapping', localDirectory]
+        );
+
+        expect(fs.existsSync(outputFile)).toBe(true);
+        const actual = fs.readFileSync(outputFile, 'utf8').trim();
+        const expected = fs.readFileSync(expectedOutputPath, 'utf8').trim();
+        expect(actual).toEqual(expected);
+
+        fs.rmSync(outputDir, { recursive: true });
+    });
+
+    test('docify command works with --template-dir mode', async () => {
+        const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+        const testModelPath = path.join(fixtureDir, 'model/document-system.json');
+        const localDirectory = path.join(fixtureDir, 'model/url-to-file-directory.json');
+        const templateDirPath = path.join(fixtureDir, 'self-provided/template-dir');
+        const expectedOutputDir = path.join(fixtureDir, 'expected-output/docify/template-dir');
+        const actualOutputDir = path.join(fixtureDir, 'actual-output/template-dir-docify');
+
+        if (fs.existsSync(actualOutputDir)) {
+            fs.rmSync(actualOutputDir, { recursive: true });
+        }
+
+        await run(
+            calm(), ['docify', '--architecture', testModelPath, '--template-dir', templateDirPath, '--output', actualOutputDir, '--url-to-local-file-mapping', localDirectory]
+        );
+
+        await expectDirectoryMatch(expectedOutputDir, actualOutputDir);
+
+        fs.rmSync(actualOutputDir, { recursive: true });
+    });
+
+    test('docify --ants generates a Vite + Three.js project', async () => {
+        const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+        const testModelPath = path.join(fixtureDir, 'model/document-system.json');
+        const localDirectory = path.join(fixtureDir, 'model/url-to-file-directory.json');
+        const outputDir = path.join(tempDir, 'output/ant-farm');
+
+        await run(
+            calm(), ['docify', '--ants', '--architecture', testModelPath, '--output', outputDir, '--url-to-local-file-mapping', localDirectory]
+        );
+
+        // Should generate the three expected files
+        expect(fs.existsSync(path.join(outputDir, 'package.json'))).toBeTruthy();
+        expect(fs.existsSync(path.join(outputDir, 'index.html'))).toBeTruthy();
+        expect(fs.existsSync(path.join(outputDir, 'main.js'))).toBeTruthy();
+
+        // package.json should have three as a dependency
+        const pkg = JSON.parse(fs.readFileSync(path.join(outputDir, 'package.json'), 'utf8'));
+        expect(pkg.dependencies.three).toBeDefined();
+
+        // main.js should contain embedded CALM data (node names from the fixture)
+        const mainJs = fs.readFileSync(path.join(outputDir, 'main.js'), 'utf8');
+        expect(mainJs).toContain('THREE');
+        expect(mainJs).toContain('nodes');
+
+        // index.html should have the ant farm title
+        const indexHtml = fs.readFileSync(path.join(outputDir, 'index.html'), 'utf8');
+        expect(indexHtml).toContain('CALM Ant Farm');
+    });
+
+    // Docify widget rendering verifies every template keeps working with the
+    // getting-started assets bundled in the repo, so we use the static mapping
+    // to avoid hitting the public site during CI.
+    describe('calm docify command - widget rendering', () => {
+        const normalizeLineEndings = (str: string) => str.replaceAll('\r\n', '\n');
+        const expectToBeSameIgnoringLineEndings = (actual: string, expected: string) => {
+            expect(normalizeLineEndings(actual.trim())).toBe(normalizeLineEndings(expected));
+        };
+
+        function runTemplateWidgetTest(templateName: string, outputName: string) {
+            return async () => {
+
+                const testModelPath = path.resolve(
+                    GETTING_STARTED_TEST_FIXTURES_DIR,
+                    'STEP-3/conference-signup-with-flow.arch.json'
+                );
+                const fixtureDir = path.resolve(__dirname, '../test_fixtures/template');
+                const templatePath = path.join(fixtureDir, `widget-tests/${templateName}`);
+                const expectedOutputPath = path.join(fixtureDir, `expected-output/widget-tests/${outputName}`);
+                const outputDir = path.join(fixtureDir, 'actual-output/widget-tests');
+                const outputFile = path.join(outputDir, outputName);
+
+                if (fs.existsSync(outputFile)) {
+                    fs.rmSync(outputFile);
+                }
+
+                await run(
+                    calm(),
+                    [
+                        'docify',
+                        '--architecture',
+                        testModelPath,
+                        '--template',
+                        templatePath,
+                        '--output',
+                        outputFile,
+                        '--url-to-local-file-mapping',
+                        STATIC_GETTING_STARTED_MAPPING_PATH,
+                    ]
+                );
+
+                expect(fs.existsSync(outputFile)).toBe(true);
+                const actual = fs.readFileSync(outputFile, 'utf8').trim();
+                const expected = fs.readFileSync(expectedOutputPath, 'utf8').trim();
+                expectToBeSameIgnoringLineEndings(actual, expected);
+
+                fs.rmSync(outputFile);
+            };
+        }
+
+        test('A user can render a table widget', runTemplateWidgetTest('table-test.hbs', 'table-test.md'));
+
+        test('A user can render a list widget', runTemplateWidgetTest('list-test.hbs', 'list-test.md'));
+
+        test('A user can render a flow sequence widget', runTemplateWidgetTest('flow-sequence-test.hbs', 'flow-sequence-test.md'));
+
+        test('A user can render a related nodes widget', runTemplateWidgetTest('related-nodes-test.hbs', 'related-nodes-test.md'));
+
+        test('A user can render a blocked architecture widget', runTemplateWidgetTest('block-architecture-test.hbs', 'block-architecture-test.md'));
+
+        test('A user can render a json view their document or parts of their document', runTemplateWidgetTest('json-viewer-test.hbs', 'json-viewer-test.md'));
+
+        test('A user can render a SAD document', runTemplateWidgetTest('sad-test.hbs', 'sad-test.md'));
+    });
+
+
+    test('Getting Started Verification - CLI Steps', async () => {
+        // This flow mirrors the public Getting Started guide to ensure the
+        // documentation actually works when the CLI resolves URLs locally.
+        const actualOutputDir = path.resolve(GETTING_STARTED_TEST_FIXTURES_DIR, 'actual-output');
+
+        if (fs.existsSync(actualOutputDir)) {
+            fs.rmSync(actualOutputDir, { recursive: true });
+        }
+        fs.mkdirSync(actualOutputDir, { recursive: true });
+
+        //STEP 1: Generate Architecture From Pattern
+        const inputPattern = path.resolve(
+            GETTING_STARTED_DIR,
+            'conference-signup.pattern.json'
+        );
+        const outputArchitecture = path.resolve(
+            actualOutputDir,
+            'conference-signup.arch.json'
+        );
+        await run(calm(), ['generate', '-p', inputPattern, '-o', outputArchitecture]);
+
+        const expectedOutputArchitecture = path.resolve(
+            GETTING_STARTED_TEST_FIXTURES_DIR,
+            'STEP-1/conference-signup.arch.json'
+        );
+        await expectFilesMatch(expectedOutputArchitecture, outputArchitecture);
+
+        //STEP 2: Generate Docify Website From Architecture
+        const outputWebsite = path.resolve(actualOutputDir, 'website');
+        await run(
+            calm(),
+            [
+                'docify',
+                '--architecture',
+                outputArchitecture,
+                '--output',
+                outputWebsite,
+                '--url-to-local-file-mapping',
+                STATIC_GETTING_STARTED_MAPPING_PATH,
+            ]
+        );
+
+        const expectedOutputDocifyWebsite = path.resolve(
+            GETTING_STARTED_TEST_FIXTURES_DIR,
+            'STEP-2/website'
+        );
+        await expectDirectoryMatch(expectedOutputDocifyWebsite, outputWebsite);
+
+        //STEP 3: Add flow to architecture-document
+        const flowUrl = 'https://calm.finos.org/getting-started/flows/conference-signup.flow.json';
+
+
+        patchJson(outputArchitecture, (arch) => {
+            arch['flows'] = [
+                {
+                    $schema: 'https://calm.finos.org/release/1.0-rc2/meta/flow.json',
+                    $id: flowUrl,
+                    'unique-id': 'flow-conference-signup',
+                    name: 'Conference Signup Flow',
+                    description: 'Flow for registering a user through the conference website and storing their details in the attendee database.',
+                    transitions: [
+                        {
+                            'relationship-unique-id': 'conference-website-load-balancer',
+                            'sequence-number': 1,
+                            description: 'User submits sign-up form via Conference Website to Load Balancer',
+                        },
+                        {
+                            'relationship-unique-id': 'load-balancer-attendees',
+                            'sequence-number': 2,
+                            description: 'Load Balancer forwards request to Attendees Service',
+                        },
+                        {
+                            'relationship-unique-id': 'attendees-attendees-store',
+                            'sequence-number': 3,
+                            description: 'Attendees Service stores attendee info in the Attendees Store',
+                        },
+                    ],
+                },
+            ];
+        });
+
+        await expectFilesMatch(
+            path.resolve(GETTING_STARTED_TEST_FIXTURES_DIR, 'STEP-3/conference-signup-with-flow.arch.json'),
+            outputArchitecture
+        );
+
+
+        const outputWebsiteWithFlow = path.resolve(
+            actualOutputDir,
+            'website-with-flow'
+        );
+        await run(
+            calm(),
+            [
+                'docify',
+                '--architecture',
+                outputArchitecture,
+                '--output',
+                outputWebsiteWithFlow,
+                '--url-to-local-file-mapping',
+                STATIC_GETTING_STARTED_MAPPING_PATH,
+            ]
+        );
+
+        const expectedOutputDocifyWebsiteWithFLow = path.resolve(
+            GETTING_STARTED_TEST_FIXTURES_DIR,
+            'STEP-3/website'
+        );
+        await expectDirectoryMatch(
+            expectedOutputDocifyWebsiteWithFLow,
+            outputWebsiteWithFlow
+        );
+
+        fs.rmSync(actualOutputDir, { recursive: true });
+    });
+
+    test('diff --timeline reports adjacent moment changes in summary format', async () => {
+        const timelinePath = path.join(__dirname, '../test_fixtures/timeline-diff/timeline.json');
+        const { stdout } = await run(calm(), ['diff', '--timeline', timelinePath, '-f', 'summary']);
+        expect(stdout).toContain('moment-v1 -> moment-v2');
+        expect(stdout).toContain('service-c');
+    });
+
+    test('diff --timeline with --from/--to diffs a specific moment pair as JSON', async () => {
+        const timelinePath = path.join(__dirname, '../test_fixtures/timeline-diff/timeline.json');
+        const { stdout } = await run(
+            calm(),
+            ['diff', '--timeline', timelinePath, '--from', 'moment-v1', '--to', 'moment-v2', '-f', 'json']
+        );
+        const parsed = JSON.parse(stdout);
+        expect(parsed).toHaveLength(1);
+        expect(parsed[0]).toMatchObject({ from: 'moment-v1', to: 'moment-v2' });
+        expect(parsed[0].diff.nodesAdded.map((n: { 'unique-id': string }) => n['unique-id'])).toContain('service-c');
+    });
+
+    test('diff --timeline --exit-code exits non-zero when moments differ', async () => {
+        const timelinePath = path.join(__dirname, '../test_fixtures/timeline-diff/timeline.json');
+        await expect(
+            run(calm(), ['diff', '--timeline', timelinePath, '--exit-code'])
+        ).rejects.toHaveProperty('exitCode', 1);
+    });
+
+    test('diff rejects --timeline combined with -a/-b', async () => {
+        const timelinePath = path.join(__dirname, '../test_fixtures/timeline-diff/timeline.json');
+        await expect(
+            run(calm(), ['diff', '--timeline', timelinePath, '-a', 'a.json'])
+        ).rejects.toMatchObject({
+            stderr: expect.stringContaining('--timeline cannot be combined with')
+        });
+    });
+
+    test('diff rejects --from without --to', async () => {
+        const timelinePath = path.join(__dirname, '../test_fixtures/timeline-diff/timeline.json');
+        await expect(
+            run(calm(), ['diff', '--timeline', timelinePath, '--from', 'moment-v1'])
+        ).rejects.toMatchObject({
+            stderr: expect.stringContaining('--from and --to must be supplied together')
+        });
+    });
+
+    test('timeline command generates a timeline that calm validate --timeline can load', async () => {
+        const archV1 = path.join(__dirname, '../test_fixtures/timeline-diff/arch-v1.json');
+        const archV2 = path.join(__dirname, '../test_fixtures/timeline-diff/arch-v2.json');
+        const outputFile = path.join(tempDir, 'generated-timeline.json');
+
+        await run(calm(), ['timeline', '-a', archV1, '-a', archV2, '-o', outputFile]);
+
+        expect(fs.existsSync(outputFile)).toBe(true);
+        const generated = JSON.parse(fs.readFileSync(outputFile, 'utf8'));
+        expect(generated.$schema).toBe('https://calm.finos.org/release/1.2/meta/calm-timeline.json');
+        expect(generated.moments.map((m: { 'unique-id': string }) => m['unique-id'])).toEqual(['arch-v1', 'arch-v2']);
+        expect(generated['current-moment']).toBe('arch-v2');
+
+        // The generated timeline must be reloadable: validate should parse it and
+        // resolve its (relative) detailed-architecture references without crashing.
+        const validateOutput = path.join(tempDir, 'generated-timeline-validation.json');
+        await run(calm(), ['validate', '--timeline', outputFile, '-o', validateOutput]).catch(() => undefined);
+        expect(fs.existsSync(validateOutput)).toBe(true);
+        const validation = JSON.parse(fs.readFileSync(validateOutput, 'utf8'));
+        // A loadable timeline yields a structured validation outcome (not a loader crash).
+        expect(validation).toHaveProperty('hasErrors');
+    });
+
+    test('timeline command prints to stdout when no output file is given', async () => {
+        const archV1 = path.join(__dirname, '../test_fixtures/timeline-diff/arch-v1.json');
+        const { stdout } = await run(calm(), ['timeline', '-a', archV1]);
+        const generated = JSON.parse(stdout);
+        expect(generated.moments).toHaveLength(1);
+        expect(generated.moments[0]['node-type']).toBe('moment');
+    });
+
+    function writeJson(filePath: string, obj: object) {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, JSON.stringify(obj, null, 2));
+    }
+
+    function readJson(filePath: string): Record<string, unknown> {
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    }
+
+    function patchJson(filePath: string, patchFn: (o: Record<string, unknown>) => void) {
+        const obj = readJson(filePath);
+        patchFn(obj);
+        writeJson(filePath, obj);
+    }
+
+    // Utility to recursively remove specific line/character fields from JSON
+    function removeLineNumbers(obj: unknown): void {
+        const fieldsToRemove = [
+            'line_start',
+            'line_end',
+            'character_start',
+            'character_end',
+        ];
+        if (Array.isArray(obj)) {
+            obj.forEach(removeLineNumbers);
+        } else if (obj !== null && typeof obj === 'object') {
+            const record = obj as Record<string, unknown>;
+            for (const key of Object.keys(record)) {
+                if (fieldsToRemove.includes(key)) {
+                    delete record[key];
+                } else {
+                    removeLineNumbers(record[key]);
+                }
+            }
+        }
+    }
+});

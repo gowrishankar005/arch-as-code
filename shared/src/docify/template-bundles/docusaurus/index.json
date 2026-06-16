@@ -1,0 +1,78 @@
+{
+  "name": "docusaurus-v2-docs",
+  "templates": [
+    {
+      "template": "node.mdx.hbs",
+      "from": "document.nodes",
+      "output": "docs/nodes/{{unique-id}}.md",
+      "output-type": "repeated",
+      "front-matter": {
+        "variables": {
+          "node-id": "{{id}}"
+        }
+      }
+    },
+    {
+      "template": "relationship.mdx.hbs",
+      "from": "document.relationships",
+      "output": "docs/relationships/{{unique-id}}.md",
+      "output-type": "repeated",
+      "front-matter": {
+        "variables": {
+          "relationship-id": "{{id}}"
+        }
+      }
+    },
+    {
+      "template": "flow.mdx.hbs",
+      "from": "document.flows",
+      "output": "docs/flows/{{unique-id}}.md",
+      "output-type": "repeated",
+      "front-matter": {
+        "variables": {
+          "flow-id": "{{id}}"
+        }
+      }
+    },
+    {
+      "template": "index.md.hbs",
+      "from": "document",
+      "output": "docs/index.md",
+      "output-type": "single"
+    },
+    {
+      "template": "sidebar.js.hbs",
+      "from": "document",
+      "output": "sidebars.js",
+      "output-type": "single",
+      "front-matter": {
+        "inject": false
+      }
+    },
+    {
+      "template": "docusaurus.config.js",
+      "from": "document",
+      "output": "docusaurus.config.js",
+      "output-type": "copy"
+    },
+    {
+      "template": "package.json",
+      "from": "document",
+      "output": "package.json",
+      "output-type": "copy"
+    },
+    {
+      "template": "2025_CALM_Icon.svg",
+      "from": "document",
+      "output": "static/img/2025_CALM_Icon.svg",
+      "output-type": "copy"
+    },
+    {
+      "template": "custom.css",
+      "from": "document",
+      "output": "static/css/custom.css",
+      "output-type": "copy"
+    }
+  ]
+}
+

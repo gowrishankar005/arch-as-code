@@ -1,0 +1,27 @@
+---
+id: "{{flow-id}}"
+title: "{{_architecture.flows['{{flow-id}}'].name}}"
+---
+
+# {{_architecture.flows["{{flow-id}}"].name}}
+
+## Details
+{{table _architecture.flows["{{flow-id}}"] orientation="vertical" columns="unique-id,name,description"}}
+
+## Sequence Diagram
+{{flow-sequence _architecture flow-id="{{flow-id}}"}}
+
+## Controls
+{{#each _architecture.flows["{{flow-id}}"].controls}}
+### {{kebabToTitleCase @key}}
+
+{{this.description}}
+
+{{table this.requirements key="control-id" empty-message="No requirements defined."}}
+
+{{else}}
+_No controls defined._
+{{/each}}
+
+## Metadata
+{{table _architecture.flows["{{flow-id}}"].metadata orientation="vertical" empty-message="No metadata defined."}}

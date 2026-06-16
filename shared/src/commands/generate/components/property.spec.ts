@@ -1,0 +1,141 @@
+
+
+import { getConstValue, getDefaultValue, getEnumPlaceholder, getPropertyValue } from './property';
+
+vi.mock('../../../logger', () => {
+    return {
+        initLogger: () => {
+            return {
+                info: () => { },
+                debug: () => { }
+            };
+        }
+    };
+});
+
+describe('getConstValue', () => {
+    it('generates const value if const is provided', () => {
+        expect(getConstValue({
+            'const': 'Example value'
+        }))
+            .toBe('Example value');
+    });
+
+    it('generates const value with entire subtree if const is provided', () => {
+        expect(getConstValue({
+            'const': {
+                'connects': {
+                    'source': 'source',
+                    'destination': 'destination'
+                }
+            }
+        }))
+            .toEqual({
+                'connects': {
+                    'source': 'source',
+                    'destination': 'destination'
+                }
+            });
+    });
+});
+
+describe('getDefaultValue', () => {
+    it('generates default value if default is provided', () => {
+        expect(getDefaultValue({
+            'default': 'Example value'
+        }))
+            .toBe('Example value');
+    });
+
+    it('generates default value with entire subtree if default is provided', () => {
+        expect(getDefaultValue({
+            'default': {
+                'connects': {
+                    'source': 'source',
+                    'destination': 'destination'
+                }
+            }
+        }))
+            .toEqual({
+                'connects': {
+                    'source': 'source',
+                    'destination': 'destination'
+                }
+            });
+    });
+});
+
+describe('getPropertyValue', () => {
+    it('generates string placeholder name from variable', () => {
+        expect(getPropertyValue('key-name', {
+            'type': 'string'
+        }))
+            .toBe('[[ KEY_NAME ]]');
+    });
+
+    it('generates integer placeholder from variable', () => {
+        expect(getPropertyValue('key-name', {
+            'type': 'integer'
+        }))
+            .toBe(-1);
+    });
+
+
+    it('generates array with single string placeholder', () => {
+        expect(getPropertyValue('key-name', {
+            'type': 'array'
+        }))
+            .toEqual([
+                '[[ KEY_NAME ]]'
+            ]);
+    });
+
+    it('generates a ref value placeholder', () => {
+        expect(getPropertyValue('key-name', {
+            '$ref': '#/ref'
+        }))
+            .toBe('[[ REF_KEY_NAME ]]');
+    });
+
+    it('generates boolean placeholder from variable', () => {
+        expect(getPropertyValue('key-name', {
+            'type': 'boolean'
+        }))
+            .toBe('[[ BOOLEAN_KEY_NAME ]]');
+    });
+
+    it('prefers const over type when both are present', () => {
+        expect(getPropertyValue('key-name', {
+            'const': 'fixed',
+            'type': 'string'
+        }))
+            .toBe('fixed');
+    });
+
+    it('prefers default over type when const is absent', () => {
+        expect(getPropertyValue('key-name', {
+            'default': 'fallback',
+            'type': 'string'
+        }))
+            .toBe('fallback');
+    });
+
+    it('returns an empty array for the interfaces property', () => {
+        expect(getPropertyValue('interfaces', {
+            'type': 'array'
+        }))
+            .toEqual([]);
+    });
+
+    it('returns undefined when no const, default, type or $ref is defined', () => {
+        expect(getPropertyValue('key-name', {}))
+            .toBeUndefined();
+    });
+});
+
+describe('getEnumPlaceholder', () => {
+    it('extracts ref name', () => {
+        expect(getEnumPlaceholder('https://calm.com/core.json#def-name'))
+            .toBe('[[ ENUM_DEF_NAME ]]');
+    });
+});

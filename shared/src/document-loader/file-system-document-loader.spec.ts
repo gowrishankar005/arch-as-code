@@ -1,0 +1,77 @@
+import { SchemaDirectory } from '../schema-directory';
+import { fs, vol } from 'memfs';
+import { FileSystemDocumentLoader } from './file-system-document-loader';
+import { DocumentLoadError } from './document-loader';
+
+vi.mock('fs/promises', async () => {
+    const memfs: { fs: typeof fs } = await vi.importActual('memfs');
+
+    return memfs.fs.promises;
+});
+
+vi.mock('fs', async () => {
+    const memfs: { fs: typeof fs } = await vi.importActual('memfs');
+    return memfs.fs;
+});
+
+const mocks = vi.hoisted(() => {
+    return {
+        schemaDirectory: {
+            storeDocument: vi.fn()
+        },
+    };
+});
+
+const exampleSchema = {
+    '$id': 'https://example.com/test_schema.json',
+    'type': 'object',
+    'properties': {
+        'name': { 'type': 'string' }
+    }
+};
+
+describe('file-system-document-loader', () => {
+    let fileSystemDocumentLoader: FileSystemDocumentLoader;
+    beforeEach(() => {
+        process.chdir('/');
+        vol.fromJSON({
+            'test_fixtures/test_schema.json': JSON.stringify(exampleSchema)
+        });
+        fileSystemDocumentLoader = new FileSystemDocumentLoader(['test_fixtures'], false);
+    });
+
+    afterEach(() => {
+        vol.reset();
+    });
+
+
+    it('loads a single schema into schema directory', async () => {
+        await fileSystemDocumentLoader.initialise(mocks.schemaDirectory as unknown as SchemaDirectory);
+        expect(mocks.schemaDirectory.storeDocument).toHaveBeenCalledWith(exampleSchema['$id'], 'schema', exampleSchema);
+    });
+
+    it('throws an error when trying to load a missing schema', async () => {
+        await expect(fileSystemDocumentLoader.loadMissingDocument('https://example.com/missing_schema.json', 'schema'))
+            .rejects
+            .toThrow(DocumentLoadError);
+    });
+    it('resolves relative paths when basePath is provided', async () => {
+        const loader = new FileSystemDocumentLoader(['test_fixtures'], false, '/project');
+        vol.fromJSON({
+            '/project/subdir/relative.json': JSON.stringify(exampleSchema)
+        });
+
+        const result = await loader.loadMissingDocument('subdir/relative.json', 'schema');
+        expect(result).toEqual(exampleSchema);
+    });
+
+    it('returns undefined for resolvePath when no basePath provided', () => {
+        const loader = new FileSystemDocumentLoader(['test_fixtures'], false);
+        expect(loader.resolvePath('some/path.json')).toBeUndefined();
+    });
+
+    it('resolves absolute path when resolvePath is called with relative path and basePath', () => {
+        const loader = new FileSystemDocumentLoader(['test_fixtures'], false, '/project');
+        expect(loader.resolvePath('subdir/file.json')).toBe('/project/subdir/file.json');
+    });
+});

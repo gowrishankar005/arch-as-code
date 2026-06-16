@@ -1,0 +1,48 @@
+## Nodes
+
+| ID            | Name           | Type     | Description                          |
+|---------------|----------------|----------|--------------------------------------|
+{{#each nodes}}
+| {{unique-id}} | {{name}}       | {{node-type}} | {{description}} |
+{{/each}}
+
+## Relationships
+
+| ID               | Type         | Source       | Destination / Parts | Description |
+|------------------|--------------|---------------|----------------------|-------------|
+{{#each relationships}}
+  {{#if relationship-type.connects}}
+| {{unique-id}} | connects      | {{relationship-type.connects.source.node}} | {{relationship-type.connects.destination.node}} | {{description}} |
+  {{/if}}
+  {{#if relationship-type.interacts}}
+| {{unique-id}} | interacts     | {{relationship-type.interacts.actor}} | {{join relationship-type.interacts.nodes ", "}} | {{description}} |
+  {{/if}}
+  {{#if (lookup relationship-type "composed-of")}}
+    {{#with (lookup relationship-type "composed-of") as |composed|}}
+| {{../unique-id}} | composed-of   | {{container}} | {{join nodes ", "}} | {{../description}} |
+    {{/with}}
+  {{/if}}
+  {{#if (lookup relationship-type "deployed-in")}}
+    {{#with (lookup relationship-type "deployed-in") as |deploy|}}
+| {{../unique-id}} | deployed-in   | {{container}} | {{join nodes ", "}} | {{../description}} |
+    {{/with}}
+  {{/if}}
+{{/each}}
+
+
+## Ownership Controls
+
+{{#if controls.ownership.requirements}}
+| Owner Type      | Name        | Email               | Description                        |
+|-----------------|-------------|---------------------|------------------------------------|
+  {{#each controls.ownership.requirements}}
+| {{owner-type}} | {{owner.name}} | {{owner.email}} | {{description}} |
+  {{/each}}
+{{else}}
+_No ownership requirements defined._
+{{/if}}
+
+## Metadata
+```
+{{{ json metadata}}}
+```

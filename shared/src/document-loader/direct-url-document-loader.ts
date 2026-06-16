@@ -1,0 +1,165 @@
+import axios, { Axios } from 'axios';
+import { isIP } from 'net';
+import { SchemaDirectory } from '../schema-directory';
+import { CalmDocumentType, DocumentLoader, DocumentLoadError, assertJsonObject } from './document-loader';
+import { Logger, initLogger } from '../logger';
+
+const DEFAULT_ALLOWED_REMOTE_HOSTS = ['calm.finos.org'];
+
+const PRIVATE_IPV4_PATTERNS = [
+    /^127\./,
+    /^10\./,
+    /^172\.(1[6-9]|2\d|3[01])\./,
+    /^192\.168\./,
+    /^0\./,
+    /^169\.254\./,
+];
+
+const PRIVATE_IPV6_PATTERNS = [
+    /^::1$/,
+    /^fc/i,
+    /^fd/i,
+    /^fe80:/i,
+];
+
+function isPrivateHost(hostname: string): boolean {
+    if (/^localhost$/i.test(hostname)) return true;
+    // URL.hostname wraps IPv6 in brackets; strip them for isIP/pattern checks
+    const bare = hostname.startsWith('[') && hostname.endsWith(']')
+        ? hostname.slice(1, -1)
+        : hostname;
+    const ipVersion = isIP(bare);
+    if (ipVersion === 4) return PRIVATE_IPV4_PATTERNS.some(p => p.test(bare));
+    if (ipVersion === 6) return PRIVATE_IPV6_PATTERNS.some(p => p.test(bare));
+    return false;
+}
+
+function normalizeHost(hostname: string): string {
+    const bare = hostname.startsWith('[') && hostname.endsWith(']')
+        ? hostname.slice(1, -1)
+        : hostname;
+    return bare.toLowerCase();
+}
+
+function toRequestPath(parsedUrl: URL): string {
+    const normalizedPath = parsedUrl.pathname.replace(/^\/+/, '');
+    return `/${normalizedPath}${parsedUrl.search}`;
+}
+
+export class DirectUrlDocumentLoader implements DocumentLoader {
+    private readonly ax: Axios;
+    private logger: Logger;
+    private readonly allowedRemoteHosts: Set<string>;
+
+    constructor(debug: boolean, axiosInstance?: Axios, allowedRemoteHosts: readonly string[] = DEFAULT_ALLOWED_REMOTE_HOSTS) {
+        if (axiosInstance) {
+            this.ax = axiosInstance;
+        } else {
+            this.ax = axios.create({
+                timeout: 10000,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        this.logger = initLogger(debug, 'direct-url-document-loader');
+        this.allowedRemoteHosts = new Set(allowedRemoteHosts.map(host => normalizeHost(host)));
+        if (debug) {
+            this.addAxiosDebug();
+        }
+    }
+
+    addAxiosDebug() {
+        this.ax.interceptors.request.use(request => {
+            console.log('Starting Request', JSON.stringify(request, null, 2));
+            return request;
+        });
+
+        this.ax.interceptors.response.use(response => {
+            console.log('Response:', response);
+            return response;
+        });
+    }
+
+    async initialise(_: SchemaDirectory): Promise<void> {
+        // No-op, similar to CalmHubDocumentLoader
+        return;
+    }
+
+    async loadMissingDocument(documentId: string, _type: CalmDocumentType): Promise<object> {
+        let parsedUrl: URL;
+        try {
+            parsedUrl = new URL(documentId);
+        } catch {
+            // Not a parseable absolute URL — recoverable, let other loaders try.
+            throw new DocumentLoadError({
+                name: 'UNKNOWN',
+                message: `Not a valid absolute URL: ${documentId}`,
+            });
+        }
+
+        const allowedProtocols = ['http:', 'https:'];
+        if (!allowedProtocols.includes(parsedUrl.protocol)) {
+            // Not an HTTP(S) reference — recoverable, let other loaders try.
+            throw new DocumentLoadError({
+                name: 'UNKNOWN',
+                message: `Unsupported URL protocol '${parsedUrl.protocol}' in document URL. Only HTTP and HTTPS are allowed.`,
+            });
+        }
+
+        // From here the reference is ours (an HTTP(S) URL): any failure is fatal and must not fall
+        // through to another loader (which would mask the real reason with an unrelated error).
+        try {
+            if (isPrivateHost(parsedUrl.hostname)) {
+                throw new DocumentLoadError({
+                    name: 'UNKNOWN',
+                    message: `Requests to private or internal network addresses are not allowed: ${parsedUrl.hostname}`,
+                    recoverable: false
+                });
+            }
+            const normalizedHost = normalizeHost(parsedUrl.hostname);
+            if (!this.allowedRemoteHosts.has(normalizedHost)) {
+                throw new DocumentLoadError({
+                    name: 'UNKNOWN',
+                    message: `Direct URL loading is restricted to approved hosts. Host '${parsedUrl.hostname}' is not allowlisted.\n\n`
+                        + 'To allow this host, run:\n\n'
+                        + `  calm init-config --allowed-remote-hosts ${parsedUrl.hostname}\n\n`
+                        + 'Only add hosts you trust.',
+                    recoverable: false
+                });
+            }
+            if (parsedUrl.username || parsedUrl.password) {
+                throw new DocumentLoadError({
+                    name: 'UNKNOWN',
+                    message: 'Credentials in URL are not allowed.',
+                    recoverable: false
+                });
+            }
+            const requestPath = toRequestPath(parsedUrl);
+            const baseURL = `${parsedUrl.protocol}//${normalizedHost}${parsedUrl.port ? `:${parsedUrl.port}` : ''}`;
+            const response = await this.ax.get(requestPath, {
+                baseURL,
+                maxRedirects: 0,
+                allowAbsoluteUrls: false
+            });
+            assertJsonObject(response.data, documentId);
+            return response.data;
+        } catch (error) {
+            if (error instanceof DocumentLoadError) {
+                throw error;
+            }
+            throw new DocumentLoadError({
+                name: 'UNKNOWN',
+                message: `Failed to load document from URL: ${documentId}`,
+                cause: error instanceof Error ? error : undefined,
+                recoverable: false
+            });
+        }
+    }
+
+    /**
+     * Only local files via a mapping file are currently supported.
+     */
+    resolvePath(_reference: string): string | undefined {
+        return undefined;
+    }
+}

@@ -1,0 +1,20 @@
+{
+  "nodes": [
+    {
+      "unique-id": "service-a",
+      "name": "Service A",
+      "description": "An API service that sends requests to Service B.",
+      "node-type": "service"
+    },
+    {
+      "unique-id": "service-b",
+      "name": "Service B",
+      "description": "A backend service that processes requests from Service A.",
+      "node-type": "service"
+    }
+  ],
+  "metadata": {
+    "title": "Simple Two Node Example",
+    "description": "A minimal CALM document with two nodes and one relationship."
+  }
+}

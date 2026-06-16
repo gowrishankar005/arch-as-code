@@ -1,0 +1,21 @@
+# Ignore everything
+*
+
+# Allow the Maven Wrapper and build files
+!pom.xml
+!.mvn/
+!mvnw
+!src
+
+# Allow the target directory for the final build
+!target/*-runner
+!target/*-runner.jar
+!target/lib/*
+!target/quarkus-app/*
+
+# Allow nitrite seed scripts (used by Dockerfile.readonly-static)
+!nitrite/
+!nitrite/**
+
+# Allow staged calm/ schemas and controls for the read-only static image build
+!target/readonly-seed/**

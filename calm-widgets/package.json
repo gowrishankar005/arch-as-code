@@ -1,0 +1,44 @@
+{
+  "name": "@finos/calm-widgets",
+  "version": "1.0.0",
+  "description": "Reusable Handlebars widgets for generating human-readable CALM architecture documentation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup && tsc",
+    "watch": "tsup --watch",
+    "test": "vitest run",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src",
+    "lint-fix": "eslint src --fix"
+  },
+  "keywords": [
+    "calm",
+    "architecture",
+    "documentation",
+    "templates",
+    "handlebars",
+    "widgets"
+  ],
+  "author": "FINOS",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@finos/calm-models": "file:../calm-models",
+    "handlebars": "^4.7.9",
+    "lodash": "^4.18.1"
+  },
+  "devDependencies": {
+  },
+  "files": [
+    "dist/**/*",
+    "widgets/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./widgets": "./widgets"
+  }
+}

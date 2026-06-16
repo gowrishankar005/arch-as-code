@@ -1,0 +1,24 @@
+cli:
+  - changed-files:
+    - any-glob-to-any-file: "cli/**"
+shared:
+  - changed-files:
+    - any-glob-to-any-file: "shared/**"
+docs:
+  - changed-files:
+    - any-glob-to-any-file: "docs/**"
+calm-hub:
+  - changed-files:
+    - any-glob-to-any-file: "calm-hub/**"
+calm:
+  - changed-files:
+    - any-glob-to-any-file: "calm/**"
+calm-hub-ui:
+  - changed-files:
+    - any-glob-to-any-file: "calm-hub-ui/**"
+config:
+  - changed-files:
+    - any-glob-to-any-file: 
+      - "pom.xml"
+      - "**/package.json"
+      - "**/package-lock.json"

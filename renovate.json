@@ -1,0 +1,171 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separateMajorReleases",
+    ":combinePatchMinorReleases",
+    ":ignoreUnstable",
+    ":prImmediately",
+    ":updateNotScheduled"
+  ],
+  "timezone": "UTC",
+  "schedule": ["before 7am on monday"],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 2,
+  "postUpdateOptions": ["npmDedupe"],
+  "ignorePaths": [
+    "advent-of-calm/website/package-lock.json",
+    "calm-ai/package-lock.json",
+    "calm-models/package-lock.json",
+    "calm-plugins/vscode/package-lock.json",
+    "calm-widgets/package-lock.json",
+    "calm-hub-ui/package-lock.json",
+    "cli/package-lock.json",
+    "docs/package-lock.json",
+    "shared/package-lock.json"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "packageRules": [
+    {
+      "description": "Lockfile maintenance",
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "automerge": true,
+      "automergeType": "pr",
+      "groupName": "lockfile maintenance"
+    },
+        {
+            "description": "Group Java dependencies",
+            "matchManagers": ["maven"],
+            "groupName": "Java dependencies",
+            "separateMultipleMajor": true,
+            "separateMinorPatch": false
+        },
+        {
+            "description": "Keep Quarkus BOM and JaCoCo plugin in sync",
+            "matchManagers": ["maven"],
+            "matchPackageNames": [
+                "io.quarkus.platform:quarkus-bom",
+                "org.jacoco:jacoco-maven-plugin"
+            ],
+            "groupName": "quarkus+jacoco"
+        },
+        {
+            "description": "Pin Netty to 4.1.x until Quarkus 4.x lands; Quarkus 3.x is incompatible with Netty 4.2 on Java 21",
+            "matchManagers": ["maven"],
+            "matchPackageNames": ["io.netty:netty-bom"],
+            "allowedVersions": "<4.2.0"
+        },
+    {
+      "description": "Group JavaScript/TypeScript dependencies by ecosystem",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["dependencies", "devDependencies", "peerDependencies"],
+      "separateMultipleMajor": true,
+      "separateMinorPatch": false,
+      "groupName": "npm dependencies"
+    },
+    {
+      "description": "Separate framework updates",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom",
+        "vue",
+        "@vue/cli-*",
+        "angular",
+        "@angular/*",
+        "next",
+        "nuxt",
+        "svelte",
+        "@sveltejs/*"
+      ],
+      "groupName": "framework updates",
+      "separateMultipleMajor": true
+    },
+    {
+      "description": "Separate build tool updates",
+      "matchPackageNames": [
+        "webpack",
+        "vite",
+        "rollup",
+        "esbuild",
+        "@vitejs/*",
+        "@rollup/*",
+        "typescript",
+        "@typescript-eslint/*"
+      ],
+      "groupName": "build tools",
+      "separateMultipleMajor": true
+    },
+    {
+      "description": "Separate testing framework updates",
+      "matchPackageNames": [
+        "jest",
+        "vitest",
+        "@vitest/*",
+        "playwright",
+        "@playwright/*",
+        "cypress",
+        "mocha",
+        "chai",
+        "@testing-library/*"
+      ],
+      "groupName": "testing frameworks",
+      "separateMultipleMajor": true
+    },
+    {
+      "description": "Group patch updates with limit",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "patch updates",
+      "automerge": true,
+      "automergeType": "pr",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Limit minor updates group size",
+      "matchUpdateTypes": ["minor"],
+      "groupName": "minor updates",
+      "automerge": false,
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Major updates get individual PRs",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "groupName": null,
+      "minimumReleaseAge": "14 days"
+    },
+    {
+      "description": "Security updates",
+      "matchDepTypes": ["dependencies"],
+      "matchCurrentVersion": "!/^0\\./",
+      "vulnerabilityAlerts": {
+        "enabled": true
+      },
+      "automerge": true,
+      "automergeType": "pr",
+      "groupName": "security updates"
+    },
+    {
+      "description": "Pin GitHub Actions by digest",
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
+    },
+    {
+      "description": "Ignore pre-release versions",
+      "matchCurrentVersion": "/^0\\./",
+      "automerge": false
+    },
+    {
+      "description": "Pin @types/node to v22 to match CI Node version",
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<23.0.0",
+      "rangeStrategy": "bump"
+    }
+  ]
+}
