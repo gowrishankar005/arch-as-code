@@ -52,6 +52,8 @@ Architecture diagrams are everywhere — but they rot. They're images no tool ca
 #### Shared pattern catalog
 Patterns are curated in `apps/studio/static/patterns/`: drop a pattern `.json` into that folder and add an entry to `index.json` (id, name, description, category, tags, file). The Pattern picker reads that manifest — no app rebuild needed for a deployed instance, and it works offline in the desktop build because static assets ship with the app. Architects can also **Upload a pattern file…** from the picker for ad-hoc validation.
 
+See **[docs/VALIDATE_AGAINST_PATTERN.md](docs/VALIDATE_AGAINST_PATTERN.md)** for a quick start: build & run, adding patterns to the catalog, and validating.
+
 ### Import & Export
 - Import existing CALM JSON files with automatic ELK layout
 - Export as CALM JSON, SVG, or PNG
