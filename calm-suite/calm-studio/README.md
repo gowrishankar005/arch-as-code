@@ -42,6 +42,18 @@ Architecture diagrams are everywhere — but they rot. They're images no tool ca
 - Direction mutex prevents infinite loops
 - Properties panel for editing node metadata, interfaces, and controls
 
+### Validation
+- **Validate** runs schema + semantic checks on the current architecture and lists issues in the Problems panel, with node badges and edge highlighting.
+- **Validate against a pattern / standard** — click **Pattern** to open a picker that showcases the shared pattern catalog (like Templates); choose a pattern, standard, or control set and the architecture is validated immediately. An active-pattern chip shows what's active (click it to switch, × to clear).
+- Validation uses the same CLI-grade engine the `calm validate` CLI uses (JSON-Schema composition + Spectral rules), entirely client-side and offline.
+- Filter the Problems panel by severity (errors/warnings/info) and by source (Schema vs Spectral); click an issue to reveal the element on the canvas.
+- The pattern-validation engine is lazy-loaded, so it only adds weight when you actually validate against a pattern.
+
+#### Shared pattern catalog
+Patterns are curated in `apps/studio/static/patterns/`: drop a pattern `.json` into that folder and add an entry to `index.json` (id, name, description, category, tags, file). The Pattern picker reads that manifest — no app rebuild needed for a deployed instance, and it works offline in the desktop build because static assets ship with the app. Architects can also **Upload a pattern file…** from the picker for ad-hoc validation.
+
+See **[docs/VALIDATE_AGAINST_PATTERN.md](docs/VALIDATE_AGAINST_PATTERN.md)** for a quick start: build & run, adding patterns to the catalog, and validating.
+
 ### Import & Export
 - Import existing CALM JSON files with automatic ELK layout
 - Export as CALM JSON, SVG, or PNG

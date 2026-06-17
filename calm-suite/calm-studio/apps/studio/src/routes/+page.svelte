@@ -13,6 +13,8 @@
 	initAllPacks();
 	import { initAllTemplates, loadTemplate } from '$lib/templates/registry';
 	import TemplatePicker from '$lib/templates/TemplatePicker.svelte';
+	import PatternPicker from '$lib/patterns/PatternPicker.svelte';
+	import { fetchPattern, type PatternCatalogEntry } from '$lib/patterns/catalog';
 
 	// Register all templates at module load time alongside packs.
 	initAllTemplates();
@@ -82,6 +84,9 @@
 		setScrollToElementId,
 		clearValidation,
 		runValidation,
+		setPattern,
+		clearPattern,
+		getSelectedPattern,
 	} from '$lib/stores/validation.svelte';
 	import {
 		refreshGovernance,
@@ -191,14 +196,105 @@
 	 * Run validation on demand and enrich nodes/edges with results.
 	 * Called by the Validate toolbar button.
 	 */
-	function handleValidate() {
+	async function handleValidate() {
 		if (isPanelOpen()) {
 			closePanel();
 			clearNodeEdgeValidation();
 			return;
 		}
-		runValidation();
+		await runValidation();
 		enrichNodesEdgesWithValidation();
+	}
+
+	/** Open the pattern catalog picker (shared patterns + upload). */
+	function handleOpenPatternPicker() {
+		showPatternPicker = true;
+	}
+
+	/**
+	 * Apply a pattern chosen from the catalog: fetch its document, set it active,
+	 * close the picker, and validate so the user immediately sees the result.
+	 */
+	async function handlePatternCatalogSelect(entry: PatternCatalogEntry) {
+		try {
+			const pattern = await fetchPattern(entry);
+			setPattern(pattern, entry.name);
+			showPatternPicker = false;
+			await applyPatternValidation();
+		} catch (err) {
+			importError = `Could not load pattern: ${err instanceof Error ? err.message : String(err)}`;
+		}
+	}
+
+	/**
+	 * Let the user pick a pattern/standard file to validate against. In desktop
+	 * (Tauri) mode a native dialog is used; on web, a hidden file input. The
+	 * parsed pattern is stored so the next Validate run routes through the
+	 * CLI-grade engine.
+	 */
+	async function handleSelectPattern() {
+		try {
+			let content: string;
+			let name: string;
+			if (isTauri()) {
+				const { open } = await import('@tauri-apps/plugin-dialog');
+				const { readTextFile } = await import('@tauri-apps/plugin-fs');
+				const path = await open({
+					multiple: false,
+					filters: [{ name: 'CALM Pattern', extensions: ['json'] }],
+				});
+				if (!path || typeof path !== 'string') return;
+				content = await readTextFile(path);
+				name = path.split(/[\\/]/).pop() ?? path;
+			} else {
+				const picked = await pickPatternFileWeb();
+				if (!picked) return;
+				content = picked.content;
+				name = picked.name;
+			}
+			const pattern = JSON.parse(content) as object;
+			setPattern(pattern, name);
+			showPatternPicker = false;
+			await applyPatternValidation();
+		} catch (err) {
+			importError = `Could not load pattern: ${err instanceof Error ? err.message : String(err)}`;
+		}
+	}
+
+	/** Run validation for the freshly-selected pattern and reveal the results. */
+	async function applyPatternValidation() {
+		await runValidation();
+		enrichNodesEdgesWithValidation();
+	}
+
+	/** Browser fallback for picking a pattern file via a hidden <input type=file>. */
+	function pickPatternFileWeb(): Promise<{ content: string; name: string } | null> {
+		return new Promise((resolve) => {
+			const input = document.createElement('input');
+			input.type = 'file';
+			input.accept = '.json,application/json';
+			input.onchange = () => {
+				const file = input.files?.[0];
+				if (!file) {
+					resolve(null);
+					return;
+				}
+				const reader = new FileReader();
+				reader.onload = () => resolve({ content: String(reader.result), name: file.name });
+				reader.onerror = () => resolve(null);
+				reader.readAsText(file);
+			};
+			input.click();
+		});
+	}
+
+	/** Clear the active pattern and re-run validation if the panel is open. */
+	async function handleClearPattern() {
+		clearPattern();
+		if (isPanelOpen()) {
+			await runValidation();
+			enrichNodesEdgesWithValidation();
+		}
 	}
 
 	/** Strip validation data from nodes/edges so badges and edge colors disappear. */
@@ -367,6 +463,9 @@
 
 	/** When true, the full-screen TemplatePicker modal is shown. */
 	let showTemplatePicker = $state(false);
+
+	/** When true, the full-screen PatternPicker modal is shown. */
+	let showPatternPicker = $state(false);
 
 	/**
 	 * Load a template onto the canvas.
@@ -1077,6 +1176,10 @@
 			onsaveas={handleSaveAs}
 			onnew={handleNew}
 			onvalidate={handleValidate}
+			onselectpattern={handleOpenPatternPicker}
+			onpatternchipclick={handleOpenPatternPicker}
+			onclearpattern={handleClearPattern}
+			patternName={getSelectedPattern()?.name ?? null}
 			onexportcalm={handleExportCalm}
 			onexportsvg={handleExportSvg}
 			onexportpng={handleExportPng}
@@ -1319,6 +1422,15 @@
 			<TemplatePicker
 				onselect={handleTemplateLoad}
 				oncancel={() => (showTemplatePicker = false)}
+			/>
+		{/if}
+
+		<!-- Pattern picker modal — shared catalog of patterns/standards to validate against -->
+		{#if showPatternPicker}
+			<PatternPicker
+				onselect={handlePatternCatalogSelect}
+				onupload={handleSelectPattern}
+				oncancel={() => (showPatternPicker = false)}
 			/>
 		{/if}
 

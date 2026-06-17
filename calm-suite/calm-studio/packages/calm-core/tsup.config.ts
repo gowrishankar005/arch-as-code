@@ -23,7 +23,7 @@ const SCHEMA_FILES = [
 ];
 
 export default defineConfig({
-	entry: ['src/index.ts'],
+	entry: ['src/index.ts', 'src/pattern-validation.ts'],
 	format: ['esm', 'cjs'],
 	dts: true,
 	clean: true,

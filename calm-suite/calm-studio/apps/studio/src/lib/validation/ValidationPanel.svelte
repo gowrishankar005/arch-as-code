@@ -61,6 +61,29 @@
 		return parts.join(', ') || 'No issues';
 	});
 
+	// ─── Filters (severity + source) ──────────────────────────────────────────
+
+	let hiddenSeverities = $state<Set<'error' | 'warning' | 'info'>>(new Set());
+	let sourceFilter = $state<'all' | 'json-schema' | 'spectral'>('all');
+
+	/** Source filter is only meaningful when issues carry a source (pattern validation). */
+	const hasSources = $derived(issues.some((i) => i.source));
+
+	const visibleIssues = $derived(
+		sortedIssues.filter(
+			(i) =>
+				!hiddenSeverities.has(i.severity) &&
+				(sourceFilter === 'all' || i.source === sourceFilter)
+		)
+	);
+
+	function toggleSeverity(sev: 'error' | 'warning' | 'info') {
+		const next = new Set(hiddenSeverities);
+		if (next.has(sev)) next.delete(sev);
+		else next.add(sev);
+		hiddenSeverities = next;
+	}
+
 	// ─── Scroll-to support ────────────────────────────────────────────────────
 
 	let listEl = $state<HTMLDivElement | null>(null);
@@ -102,18 +125,68 @@
 		</button>
 	</div>
 
+	<!-- Filter bar: severity toggles + source filter -->
+	{#if issues.length > 0}
+		<div class="vp-filters">
+			<button
+				type="button"
+				class="vp-filter vp-filter--error"
+				class:off={hiddenSeverities.has('error')}
+				onclick={() => toggleSeverity('error')}
+				aria-pressed={!hiddenSeverities.has('error')}
+				title="Toggle errors"
+			>
+				Errors {errorCount}
+			</button>
+			<button
+				type="button"
+				class="vp-filter vp-filter--warning"
+				class:off={hiddenSeverities.has('warning')}
+				onclick={() => toggleSeverity('warning')}
+				aria-pressed={!hiddenSeverities.has('warning')}
+				title="Toggle warnings"
+			>
+				Warnings {warningCount}
+			</button>
+			<button
+				type="button"
+				class="vp-filter vp-filter--info"
+				class:off={hiddenSeverities.has('info')}
+				onclick={() => toggleSeverity('info')}
+				aria-pressed={!hiddenSeverities.has('info')}
+				title="Toggle info"
+			>
+				Info {infoCount}
+			</button>
+
+			{#if hasSources}
+				<span class="vp-filter-sep"></span>
+				<select
+					class="vp-source-select"
+					bind:value={sourceFilter}
+					aria-label="Filter by validation source"
+					title="Filter by source"
+				>
+					<option value="all">All sources</option>
+					<option value="json-schema">Schema</option>
+					<option value="spectral">Spectral</option>
+				</select>
+			{/if}
+		</div>
+	{/if}
+
 	<!-- Issue list -->
 	<div class="vp-list" bind:this={listEl}>
-		{#if sortedIssues.length === 0}
+		{#if visibleIssues.length === 0}
 			<!-- Empty state -->
 			<div class="vp-empty">
 				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
 					<polyline points="20 6 9 17 4 12" />
 				</svg>
-				<span>No validation issues</span>
+				<span>{issues.length === 0 ? 'No validation issues' : 'No issues match the current filters'}</span>
 			</div>
 		{:else}
-			{#each sortedIssues as issue (issue.severity + ':' + (issue.nodeId ?? issue.relationshipId ?? '') + ':' + issue.message)}
+			{#each visibleIssues as issue (issue.severity + ':' + (issue.nodeId ?? issue.relationshipId ?? '') + ':' + issue.message)}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
@@ -247,6 +320,91 @@
 
 	:global(.dark) .vp-close:hover {
 		background: rgba(255, 255, 255, 0.06);
+	}
+
+	/* ─── Filter bar ──────────────────────────────────────────────── */
+
+	.vp-filters {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 10px;
+		border-bottom: 1px solid var(--color-border, #e2e8f0);
+		background: var(--color-surface, #f8fafc);
+		flex-shrink: 0;
+	}
+
+	:global(.dark) .vp-filters {
+		background: #0f172a;
+		border-bottom-color: #1e293b;
+	}
+
+	.vp-filter {
+		font-size: 11px;
+		font-family: var(--font-sans, system-ui, sans-serif);
+		font-weight: 500;
+		padding: 2px 8px;
+		height: 20px;
+		border-radius: 10px;
+		border: 1px solid var(--color-border, #e2e8f0);
+		background: var(--color-surface-secondary, #f1f5f9);
+		color: var(--color-text-secondary, #64748b);
+		cursor: pointer;
+		white-space: nowrap;
+		transition: opacity 0.1s, background 0.1s;
+	}
+
+	.vp-filter--error:not(.off) {
+		border-color: #dc2626;
+		color: #dc2626;
+		background: rgba(220, 38, 38, 0.08);
+	}
+
+	.vp-filter--warning:not(.off) {
+		border-color: #d97706;
+		color: #d97706;
+		background: rgba(217, 119, 6, 0.08);
+	}
+
+	.vp-filter--info:not(.off) {
+		border-color: #3b82f6;
+		color: #3b82f6;
+		background: rgba(59, 130, 246, 0.08);
+	}
+
+	.vp-filter.off {
+		opacity: 0.5;
+		text-decoration: line-through;
+	}
+
+	.vp-filter-sep {
+		width: 1px;
+		height: 14px;
+		background: var(--color-border, #e2e8f0);
+		margin: 0 2px;
+	}
+
+	:global(.dark) .vp-filter-sep {
+		background: #1e293b;
+	}
+
+	.vp-source-select {
+		height: 20px;
+		font-size: 11px;
+		font-family: var(--font-sans, system-ui, sans-serif);
+		color: var(--color-text-secondary, #64748b);
+		background: var(--color-surface-secondary, #f1f5f9);
+		border: 1px solid var(--color-border, #e2e8f0);
+		border-radius: 6px;
+		padding: 0 4px;
+		cursor: pointer;
+		outline: none;
+	}
+
+	:global(.dark) .vp-source-select {
+		background: #111827;
+		border-color: #1e293b;
+		color: #94a3b8;
 	}
 
 	/* ─── Issue list ──────────────────────────────────────────────── */

@@ -5,6 +5,9 @@
 export * from './types.js';
 export * from './helpers.js';
 export * from './validation.js';
+// NOTE: the validate-against-pattern engine (which pulls in @finos/calm-shared →
+// Spectral + AJV) is intentionally NOT re-exported here. Import it from the
+// dedicated './pattern-validation' entry so it code-splits into its own chunk.
 export * from './aigf/types.js';
 export * from './aigf/catalogue.js';
 export * from './aigf/mappings.js';

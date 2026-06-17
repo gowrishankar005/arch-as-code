@@ -1,0 +1,29 @@
+{
+  "$comment": "Shared CALM Studio pattern catalog. Architects: drop a pattern .json into this folder and add an entry below. `id` is stable; `name`/`description` drive the picker card; `category` groups patterns into tabs; `tags` are display pills. `file` is the filename in this folder. No app rebuild required for a deployed instance — these are static assets.",
+  "patterns": [
+    {
+      "id": "permissive-baseline",
+      "name": "Permissive Baseline",
+      "description": "Only requires top-level nodes and relationships arrays. Any well-formed CALM 1.2 architecture passes.",
+      "category": "general",
+      "tags": ["baseline", "smoke-test"],
+      "file": "permissive-baseline.pattern.json"
+    },
+    {
+      "id": "must-have-database",
+      "name": "Must Have a Database",
+      "description": "Requires at least one node of node-type 'database'. A non-positional structural rule via JSON Schema 'contains'.",
+      "category": "general",
+      "tags": ["structure", "data"],
+      "file": "must-have-database.pattern.json"
+    },
+    {
+      "id": "strict-public-web",
+      "name": "Strict Public Web Entry",
+      "description": "The first node must be a webclient with unique-id 'public-web'. Showcases violations, node badges, and the source filter.",
+      "category": "security",
+      "tags": ["edge", "strict"],
+      "file": "strict-public-web.pattern.json"
+    }
+  ]
+}

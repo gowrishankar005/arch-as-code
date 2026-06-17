@@ -17,6 +17,16 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./pattern-validation": {
+      "import": {
+        "types": "./dist/pattern-validation.d.ts",
+        "default": "./dist/pattern-validation.js"
+      },
+      "require": {
+        "types": "./dist/pattern-validation.d.cts",
+        "default": "./dist/pattern-validation.cjs"
+      }
+    },
     "./test-fixtures": {
       "types": "./test-fixtures/index.ts",
       "import": "./test-fixtures/index.ts"
@@ -42,6 +52,7 @@
   },
   "dependencies": {
     "@finos/calm-models": "file:../../../../calm-models",
+    "@finos/calm-shared": "file:../../../../shared",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1"
   }

@@ -20,6 +20,10 @@
 		onsaveas,
 		onnew,
 		onvalidate,
+		onselectpattern,
+		onpatternchipclick,
+		onclearpattern,
+		patternName = null,
 		onexportcalm,
 		onexportsvg,
 		onexportpng,
@@ -43,6 +47,14 @@
 		onsaveas: () => void;
 		onnew: () => void;
 		onvalidate: () => void;
+		/** Called when the user clicks "Pattern" to open the pattern picker. */
+		onselectpattern?: () => void;
+		/** Called when the user clicks the active-pattern chip label to switch pattern. */
+		onpatternchipclick?: () => void;
+		/** Called when the user dismisses the active-pattern chip. */
+		onclearpattern?: () => void;
+		/** Name of the active pattern/standard, or null when validating against the base schema. */
+		patternName?: string | null;
 		onexportcalm: () => void;
 		onexportsvg: () => void;
 		onexportpng: () => void;
@@ -300,6 +312,51 @@
 			</svg>
 			<span class="btn-label">Save</span>
 		</button>
+
+		<!-- Pattern selector + active-pattern chip -->
+		{#if onselectpattern}
+			{#if patternName}
+				<div class="pattern-chip">
+					<button
+						type="button"
+						class="pattern-chip-main"
+						onclick={onpatternchipclick}
+						aria-label="Switch pattern (validating against {patternName})"
+						title="Switch pattern"
+					>
+						<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+							<path d="M12 2l9 4.9V17L12 22l-9-4.9V6.9z" />
+						</svg>
+						<span class="pattern-chip-label">{patternName}</span>
+					</button>
+					<button
+						type="button"
+						class="pattern-chip-close"
+						onclick={onclearpattern}
+						aria-label="Remove pattern; validate against base schema"
+						title="Remove pattern"
+					>
+						<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+							<line x1="18" y1="6" x2="6" y2="18" />
+							<line x1="6" y1="6" x2="18" y2="18" />
+						</svg>
+					</button>
+				</div>
+			{:else}
+				<button
+					type="button"
+					class="toolbar-btn"
+					onclick={onselectpattern}
+					aria-label="Validate against a pattern or standard"
+					title="Validate against a pattern / standard"
+				>
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+						<path d="M12 2l9 4.9V17L12 22l-9-4.9V6.9z" />
+					</svg>
+					<span class="btn-label">Pattern</span>
+				</button>
+			{/if}
+		{/if}
 
 		<!-- Validate -->
 		<button
@@ -654,6 +711,73 @@
 
 	:global(.dark) .export-menu-item:hover {
 		background: #1e293b;
+	}
+
+	/* ─── Active-pattern chip ────────────────────────────────── */
+
+	.pattern-chip {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		padding: 2px 4px 2px 6px;
+		height: 26px;
+		border-radius: 6px;
+		border: 1px solid var(--color-accent, #3b82f6);
+		background: rgba(59, 130, 246, 0.1);
+		color: var(--color-accent, #3b82f6);
+		font-size: 11px;
+		font-family: var(--font-sans);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.pattern-chip-main {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		border: none;
+		background: none;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+		padding: 2px;
+		border-radius: 4px;
+	}
+
+	.pattern-chip-main:hover {
+		background: rgba(59, 130, 246, 0.15);
+	}
+
+	.pattern-chip-label {
+		max-width: 140px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.pattern-chip-close {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2px;
+		border: none;
+		background: none;
+		color: inherit;
+		cursor: pointer;
+		border-radius: 4px;
+		opacity: 0.7;
+		transition: opacity 0.1s, background 0.1s;
+	}
+
+	.pattern-chip-close:hover {
+		opacity: 1;
+		background: rgba(59, 130, 246, 0.2);
+	}
+
+	:global(.dark) .pattern-chip {
+		border-color: #60a5fa;
+		background: rgba(96, 165, 250, 0.12);
+		color: #60a5fa;
 	}
 
 	/* ─── Governance score badge ─────────────────────────────── */
