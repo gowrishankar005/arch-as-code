@@ -33,6 +33,9 @@ import type {
 	CalmRelationshipType,
 	CalmRelationshipVariant
 } from '@calmstudio/calm-core';
+
+/** CALM 1.2 `details` — { detailed-architecture?, required-pattern? }. */
+type CalmNodeDetails = NonNullable<CalmNode['details']>;
 import { resolveNodeType } from '$lib/canvas/nodeTypes';
 
 /** The set of CALM variant keys that imply containment. */
@@ -180,7 +183,8 @@ export function calmToFlow(
 				customMetadata: cn.customMetadata ?? {},
 				controls: cn.controls,
 				'data-classification': cn['data-classification'],
-				metadata: cn.metadata
+				metadata: cn.metadata,
+				details: cn.details
 			}
 		};
 
@@ -252,6 +256,7 @@ export function flowToCalm(nodes: Node[], edges: Edge[]): CalmArchitecture {
 			controls?: CalmControls;
 			'data-classification'?: string;
 			metadata?: Record<string, unknown>;
+			details?: CalmNodeDetails;
 		};
 
 		const node: CalmNode = {
@@ -268,6 +273,7 @@ export function flowToCalm(nodes: Node[], edges: Edge[]): CalmArchitecture {
 		if (d.controls && Object.keys(d.controls).length > 0) node.controls = d.controls;
 		if (d['data-classification']) node['data-classification'] = d['data-classification'];
 		if (d.metadata && Object.keys(d.metadata).length > 0) node.metadata = d.metadata;
+		if (d.details && Object.keys(d.details).length > 0) node.details = d.details;
 
 		return node;
 	});

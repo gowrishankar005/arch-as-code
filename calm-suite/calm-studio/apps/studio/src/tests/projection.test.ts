@@ -145,6 +145,34 @@ describe('flowToCalm', () => {
 		const result = flowToCalm(nodes, edges);
 		expect(result.nodes[0].customMetadata).toEqual({ team: 'platform', env: 'prod' });
 	});
+
+	test('preserves details (detailed-architecture, required-pattern) through round-trip', () => {
+		const archWithDetails: CalmArchitecture = {
+			nodes: [
+				{
+					'unique-id': 'svc-x',
+					'node-type': 'service',
+					name: 'MyService',
+					details: {
+						'detailed-architecture': 'https://example.com/detailed.json',
+						'required-pattern': 'https://example.com/pattern.json',
+					},
+				},
+			],
+			relationships: [],
+		};
+		const { nodes, edges } = calmToFlow(archWithDetails);
+		expect(nodes[0].data.details).toEqual({
+			'detailed-architecture': 'https://example.com/detailed.json',
+			'required-pattern': 'https://example.com/pattern.json',
+		});
+
+		const result = flowToCalm(nodes, edges);
+		expect(result.nodes[0].details).toEqual({
+			'detailed-architecture': 'https://example.com/detailed.json',
+			'required-pattern': 'https://example.com/pattern.json',
+		});
+	});
 });
 
 // ─── Extension pack projection tests ──────────────────────────────────────────
