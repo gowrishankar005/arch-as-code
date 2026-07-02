@@ -26,8 +26,20 @@
 		style
 	}: EdgeProps = $props();
 
-	const [edgePath, labelX, labelY] = $derived(
+	// Prefer ELK's computed orthogonal route (with obstacle-aware bend points)
+	// when available; fall back to Svelte Flow's naive smooth-step path for
+	// edges that haven't been through an ELK layout pass yet (e.g. just
+	// manually connected, or touching a pinned node).
+	const elkPath = $derived((data as Record<string, unknown>)?.elkPath as string | undefined);
+	const [fallbackPath, fallbackLabelX, fallbackLabelY] = $derived(
 		getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition })
+	);
+	const edgePath = $derived(elkPath ?? fallbackPath);
+	const labelX = $derived(
+		elkPath ? ((data as Record<string, unknown>)?.elkLabelX as number) : fallbackLabelX
+	);
+	const labelY = $derived(
+		elkPath ? ((data as Record<string, unknown>)?.elkLabelY as number) : fallbackLabelY
 	);
 
 	const protocolLabel = $derived((data as Record<string, unknown>)?.protocol ?? label);

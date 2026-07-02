@@ -747,10 +747,10 @@
 		applyFromJson(parsed);
 
 		// Auto-layout with no pinned nodes on fresh import
-		const { positions: positionMap } = await layoutCalm(parsed, new Set(), 'DOWN');
+		const { positions: positionMap, edgeRoutes } = await layoutCalm(parsed, new Set(), 'DOWN');
 
 		// Project to Svelte Flow
-		const projected = calmToFlow(parsed, positionMap);
+		const projected = calmToFlow(parsed, positionMap, edgeRoutes);
 		nodes = projected.nodes;
 		edges = projected.edges;
 
@@ -1045,7 +1045,7 @@
 		);
 
 		// Run ELK for free (unpinned) nodes
-		const { positions: elkPositions } = await layoutCalm(model, pinnedIds, direction);
+		const { positions: elkPositions, edgeRoutes } = await layoutCalm(model, pinnedIds, direction);
 
 		// Build final position map: ELK results + pinned node current positions
 		const finalPositions = new Map<string, { x: number; y: number }>();
@@ -1062,8 +1062,10 @@
 			finalPositions.set(id, pos);
 		}
 
-		// Project via calmToFlow with combined position map
-		const projected = calmToFlow(model, finalPositions);
+		// Project via calmToFlow with combined position map. Edges touching a
+		// pinned node have no ELK route (pinned nodes are excluded from the ELK
+		// graph) and fall back to getSmoothStepPath in the edge component.
+		const projected = calmToFlow(model, finalPositions, edgeRoutes);
 
 		// Preserve pinned flag on projected nodes
 		const pinnedMap = new Map(nodes.map((n) => [n.id, n.data?.pinned ?? false]));

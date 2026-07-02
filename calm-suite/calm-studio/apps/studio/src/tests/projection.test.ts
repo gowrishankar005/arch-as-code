@@ -86,6 +86,22 @@ describe('calmToFlow', () => {
 		// db-1 is index 1 in the arch, not in posMap → staggered: x = 100 + 1*160 = 260
 		expect(db.position).toEqual({ x: 260, y: 100 });
 	});
+
+	test('sets edge.data.elkPath and label position when an edgeRoute is provided', () => {
+		const edgeRoutes = new Map([
+			['rel-1', { points: [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 20 }] }],
+		]);
+		const { edges } = calmToFlow(connectsArch, undefined, edgeRoutes);
+		const edge = edges[0];
+		expect(edge.data?.elkPath).toBe('M 0,0 L 10,0 L 10,20');
+		expect(edge.data?.elkLabelX).toBe(10);
+		expect(edge.data?.elkLabelY).toBe(0);
+	});
+
+	test('leaves edge.data.elkPath undefined when no matching edgeRoute exists', () => {
+		const { edges } = calmToFlow(connectsArch, undefined, new Map());
+		expect(edges[0].data?.elkPath).toBeUndefined();
+	});
 });
 
 // ─── flowToCalm tests ─────────────────────────────────────────────────────────
