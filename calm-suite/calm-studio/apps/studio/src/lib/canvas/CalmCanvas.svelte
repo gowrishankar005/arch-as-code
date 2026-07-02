@@ -28,6 +28,7 @@
 		SvelteFlow,
 		Background,
 		BackgroundVariant,
+		MiniMap,
 		useSvelteFlow,
 		type Node,
 		type Edge,
@@ -572,6 +573,7 @@
 		}}
 	>
 		<Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+		<MiniMap pannable zoomable />
 		<EdgeMarkers />
 	</SvelteFlow>
 
