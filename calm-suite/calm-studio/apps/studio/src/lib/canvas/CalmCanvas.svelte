@@ -554,6 +554,8 @@
 		nodesConnectable={!readonly}
 		selectionKey="Shift"
 		multiSelectionKey="Meta"
+		snapToGrid={!readonly}
+		snapGrid={[16, 16]}
 		fitView
 		fitViewOptions={{ maxZoom: 1.2, padding: 0.2 }}
 		zoomOnScroll={true}
