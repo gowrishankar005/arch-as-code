@@ -107,6 +107,9 @@
 
 	let canvas: CalmCanvas;
 
+	/** Current canvas zoom level as a whole percentage, kept in sync by CalmCanvas via bind:zoomPercent. */
+	let canvasZoomPercent = $state(100);
+
 	// ─── Desktop: native title bar sync ───────────────────────────────────────
 
 	// Reactively update the native OS window title when filename or dirty state changes.
@@ -906,8 +909,8 @@
 					edges = snapshot.edges;
 				}
 			},
-			zoomIn: () => { /* TODO: wire to canvas zoom via useSvelteFlow */ },
-			zoomOut: () => { /* TODO: wire to canvas zoom via useSvelteFlow */ },
+			zoomIn: () => { canvas?.zoomInViewport(); },
+			zoomOut: () => { canvas?.zoomOutViewport(); },
 			zoomFit: () => { canvas?.fitViewport(); },
 			togglePalette: () => { /* TODO: expose palette visibility state */ },
 			toggleCode: () => { /* TODO: expose code panel visibility state */ },
@@ -1362,6 +1365,7 @@
 										readonly={true}
 										ondblclicknode={handleC4DrillDown}
 										onselectionchange={handleSelectionChange}
+										bind:zoomPercent={canvasZoomPercent}
 									/>
 								{:else}
 									<!-- Normal mode: bind nodes/edges for two-way sync -->
@@ -1374,8 +1378,45 @@
 										onfileimport={importCalmFile}
 										oncanvaschange={markDirty}
 										onrenamenode={handleRenameNode}
+										bind:zoomPercent={canvasZoomPercent}
 									/>
 								{/if}
+
+								<!-- Zoom widget (draw.io-style: -, live %, +, fit-to-screen) -->
+								<div class="zoom-widget" role="group" aria-label="Zoom controls">
+									<button
+										type="button"
+										class="zoom-widget-btn"
+										onclick={() => canvas?.zoomOutViewport()}
+										aria-label="Zoom out"
+										title="Zoom out"
+									>
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+											<line x1="5" y1="12" x2="19" y2="12" />
+										</svg>
+									</button>
+									<button
+										type="button"
+										class="zoom-widget-percent"
+										onclick={() => canvas?.fitViewport()}
+										aria-label="Reset zoom to fit diagram"
+										title="Fit to screen"
+									>
+										{canvasZoomPercent}%
+									</button>
+									<button
+										type="button"
+										class="zoom-widget-btn"
+										onclick={() => canvas?.zoomInViewport()}
+										aria-label="Zoom in"
+										title="Zoom in"
+									>
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+											<line x1="12" y1="5" x2="12" y2="19" />
+											<line x1="5" y1="12" x2="19" y2="12" />
+										</svg>
+									</button>
+								</div>
 
 								<!-- Empty canvas start-from-template prompt -->
 								{#if !isC4Mode() && nodes.length === 0}
@@ -1721,6 +1762,66 @@
 	.pack-banner-dismiss:hover {
 		opacity: 1;
 		background: rgba(29, 78, 216, 0.08);
+	}
+
+	/* ─── Zoom widget (draw.io-style bottom-left zoom control) ──── */
+
+	.zoom-widget {
+		position: absolute;
+		left: 12px;
+		bottom: 12px;
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 9px;
+		padding: 2px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	}
+
+	.zoom-widget-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border: none;
+		border-radius: 6px;
+		background: transparent;
+		color: var(--color-text-secondary);
+		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.zoom-widget-btn:hover {
+		background: var(--color-surface-tertiary);
+		color: var(--color-text-primary);
+	}
+
+	.zoom-widget-percent {
+		min-width: 44px;
+		height: 28px;
+		border: none;
+		border-radius: 6px;
+		background: transparent;
+		color: var(--color-text-secondary);
+		font-size: 11px;
+		font-weight: 600;
+		font-family: var(--font-sans);
+		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.zoom-widget-percent:hover {
+		background: var(--color-surface-tertiary);
+		color: var(--color-text-primary);
+	}
+
+	:global(.dark) .zoom-widget-btn:hover,
+	:global(.dark) .zoom-widget-percent:hover {
+		background: #1e293b;
 	}
 
 	/* ─── Floating canvas toolbar (layout + dark mode) ──────────── */

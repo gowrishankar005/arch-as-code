@@ -161,6 +161,7 @@
 		readonly = false,
 		ondblclicknode,
 		onrenamenode,
+		zoomPercent = $bindable(100),
 	}: {
 		nodes?: Node[];
 		edges?: Edge[];
@@ -178,6 +179,8 @@
 		ondblclicknode?: (node: Node) => void;
 		/** Called when a node label is renamed via inline double-click editing (EditableLabel). Receives the CALM unique-id and the new name. */
 		onrenamenode?: (calmId: string, newName: string) => void;
+		/** Current zoom level as a whole percentage (e.g. 100). Kept in sync via onmove; parent can read it for a zoom-level display widget. */
+		zoomPercent?: number;
 	} = $props();
 
 	/**
@@ -197,6 +200,62 @@
 	 */
 	export function fitViewport() {
 		fitView({ duration: 300, maxZoom: 1.2, padding: 0.2 });
+	}
+
+	const ZOOM_STEP = 1.2;
+	const MIN_ZOOM_PERCENT = 10;
+	const MAX_ZOOM_PERCENT = 400;
+
+	/**
+	 * Zoom in/out one step around the viewport center.
+	 *
+	 * Deliberately implemented via getViewport()/setViewport() rather than the
+	 * useSvelteFlow() zoomIn/zoomOut helpers: those call into
+	 * @xyflow/svelte's internal panZoom.scaleBy(), which resolves to a no-op
+	 * (Promise<false>) in this app's actual mounted-pane setup even though the
+	 * identical scaleExtent-respecting d3-zoom instance responds correctly to
+	 * both wheel-zoom and fitView/setViewport calls — confirmed by direct
+	 * console instrumentation in a live browser session, not just code
+	 * inspection. setViewport() is the same primitive fitViewport() already
+	 * relies on, so it's a proven-working code path here.
+	 */
+	function zoomBy(factor: number) {
+		const vp = getViewport();
+		const nextZoomPercent = Math.min(
+			MAX_ZOOM_PERCENT,
+			Math.max(MIN_ZOOM_PERCENT, Math.round(vp.zoom * factor * 100))
+		);
+		const nextZoom = nextZoomPercent / 100;
+		// Keep the viewport center fixed while changing zoom (matches scaleBy's pointer-centered behavior closely enough for a toolbar button).
+		const el = document.querySelector('.svelte-flow') as HTMLElement | null;
+		const centerX = (el?.clientWidth ?? window.innerWidth) / 2;
+		const centerY = (el?.clientHeight ?? window.innerHeight) / 2;
+		const flowX = (centerX - vp.x) / vp.zoom;
+		const flowY = (centerY - vp.y) / vp.zoom;
+		setViewport(
+			{ x: centerX - flowX * nextZoom, y: centerY - flowY * nextZoom, zoom: nextZoom },
+			{ duration: 150 }
+		);
+	}
+
+	/** Zoom in one step, centered on the viewport. Used by the zoom widget and desktop menu. */
+	export function zoomInViewport() {
+		zoomBy(ZOOM_STEP);
+	}
+
+	/** Zoom out one step, centered on the viewport. Used by the zoom widget and desktop menu. */
+	export function zoomOutViewport() {
+		zoomBy(1 / ZOOM_STEP);
+	}
+
+	/** Current zoom level as a percentage (e.g. 100 at zoom 1.0), rounded for display. */
+	export function currentZoomPercent(): number {
+		return Math.round(getViewport().zoom * 100);
+	}
+
+	/** Keeps the bindable zoomPercent prop in sync as the user pans/zooms. */
+	function handleMove(_event: MouseEvent | TouchEvent | null, viewport: Viewport) {
+		zoomPercent = Math.round(viewport.zoom * 100);
 	}
 
 	/**
@@ -708,6 +767,7 @@
 		onnodedrag={handleNodeDrag}
 		onnodedragstop={handleNodeDragStop}
 		onedgecontextmenu={handleEdgeContextMenu}
+		onmove={handleMove}
 		onselectionchange={handleSelectionChange}
 		onnodedblclick={(e) => {
 			if (readonly && ondblclicknode) {
