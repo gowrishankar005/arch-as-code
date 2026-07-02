@@ -236,6 +236,24 @@
 															</button>
 														{/if}
 													</div>
+													<!-- config-url / config — read-only visibility (Finding F3); exactly one is present per CALM 1.2's control-detail schema -->
+													{#if 'config-url' in req && req['config-url']}
+														<div class="req-config-row">
+															<span class="control-field-label config-label">Config URL</span>
+															<a
+																href={req['config-url']}
+																target="_blank"
+																rel="noopener noreferrer"
+																class="req-link"
+																title={req['config-url']}
+															>{req['config-url']}</a>
+														</div>
+													{:else if 'config' in req && req.config}
+														<div class="req-config-row">
+															<span class="control-field-label config-label">Config</span>
+															<pre class="config-json">{JSON.stringify(req.config, null, 2)}</pre>
+														</div>
+													{/if}
 												{/each}
 											</div>
 										{:else}
@@ -535,6 +553,40 @@
 		font-size: 10px;
 		color: var(--color-text-tertiary, #94a3b8);
 		font-style: italic;
+	}
+
+	.req-config-row {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 2px 0 2px 4px;
+		border-left: 2px solid var(--color-border, #e2e8f0);
+	}
+
+	:global(.dark) .req-config-row {
+		border-color: #334155;
+	}
+
+	.config-label {
+		font-size: 9px;
+	}
+
+	.config-json {
+		margin: 0;
+		font-size: 10px;
+		font-family: var(--font-mono, monospace);
+		color: var(--color-text-secondary, #64748b);
+		background: var(--color-surface-secondary, #f8fafc);
+		border-radius: 4px;
+		padding: 4px 6px;
+		overflow-x: auto;
+		max-height: 120px;
+		overflow-y: auto;
+	}
+
+	:global(.dark) .config-json {
+		background: #0f172a;
+		color: #94a3b8;
 	}
 
 	.req-link-icon {

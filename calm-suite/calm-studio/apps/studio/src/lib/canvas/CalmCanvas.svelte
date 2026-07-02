@@ -28,11 +28,12 @@
 		SvelteFlow,
 		Background,
 		BackgroundVariant,
+		MiniMap,
+		ViewportPortal,
 		useSvelteFlow,
 		type Node,
 		type Edge,
 		type Connection,
-		type NodeDragEvent,
 		type Viewport,
 	} from '@xyflow/svelte';
 	import { shortcut } from '@svelte-put/shortcut';
@@ -40,24 +41,42 @@
 
 	import { nodeTypes, resolveNodeType } from './nodeTypes';
 	import { edgeTypes, DEFAULT_EDGE_TYPE } from './edgeTypes';
-	import { makeContainment, isContainmentType } from './containment';
+	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType } from './containment';
+	import { computeAlignmentGuides, type AlignmentGuide } from './alignmentGuides';
+	import AlignmentGuides from './AlignmentGuides.svelte';
+	import { layoutSubtree } from '$lib/layout/elkLayout';
+	import type { CalmArchitecture } from '@calmstudio/calm-core';
 	import { resolvePackNode } from '@calmstudio/extensions';
 	import EdgeMarkers from './edges/EdgeMarkers.svelte';
 	import NodeSearch from '$lib/search/NodeSearch.svelte';
+	import LayersPanel from './LayersPanel.svelte';
 	import { pushSnapshot, undo, redo } from '$lib/stores/history.svelte';
 	import { copy, paste } from '$lib/stores/clipboard.svelte';
 	import { applyFromCanvas } from '$lib/stores/calmModel.svelte';
 
 	import '@xyflow/svelte/dist/style.css';
 
+	/**
+	 * Real payload shape for onnodedrag/onnodedragstart/onnodedragstop per
+	 * NodeWrapper.svelte's actual dispatch: `{ event, targetNode, nodes }`.
+	 * There is no `NodeDragEvent` export in this @xyflow/svelte version (1.6.0)
+	 * — a stale import previously typed these handlers as `NodeDragEvent` and
+	 * read `event.node`, which is always undefined on the real payload
+	 * (`targetNode`, not `node`), silently no-op'ing drag-stop entirely
+	 * (no position sync, no drag-into-container detection).
+	 */
+	type NodeDragPayload = { event: MouseEvent | TouchEvent; targetNode: Node | null; nodes: Node[] };
+
 	// ─── Container scaffold helper ──────────────────────────────────────────
 	// When a container with defaultChildren is placed, auto-create child nodes
-	// inside it with composed-of edges in a 2-column grid layout.
+	// inside it with composed-of edges. Positions start from a fixed 2-column
+	// grid, then get replaced by an ELK-computed layoutSubtree pass scoped to
+	// just this new container — the grid is only a fallback if that fails.
 
-	function scaffoldChildren(
+	async function scaffoldChildren(
 		parentNode: Node,
 		childTypes: string[],
-	): { childNodes: Node[]; childEdges: Edge[] } {
+	): Promise<{ childNodes: Node[]; childEdges: Edge[] }> {
 		const cols = 2;
 		const padX = 30;
 		const padY = 50;
@@ -101,6 +120,33 @@
 			});
 		}
 
+		try {
+			const subArch: CalmArchitecture = {
+				nodes: [
+					{ 'unique-id': parentNode.id, 'node-type': 'container', name: 'New Container', description: '' },
+					...childNodes.map((n) => ({
+						'unique-id': n.id,
+						'node-type': (n.data as Record<string, unknown>).calmType as string,
+						name: n.data.label as string,
+						description: '',
+					})),
+				],
+				relationships: childNodes.map((n) => ({
+					'unique-id': `${parentNode.id}-${n.id}`,
+					'relationship-type': {
+						'composed-of': { container: parentNode.id, nodes: [n.id] },
+					},
+				})),
+			};
+			const { positions } = await layoutSubtree(subArch, parentNode.id);
+			for (const child of childNodes) {
+				const pos = positions.get(child.id);
+				if (pos) child.position = { x: pos.x, y: pos.y };
+			}
+		} catch {
+			// ELK failed for some reason — keep the fixed grid fallback positions.
+		}
+
 		return { childNodes, childEdges };
 	}
 
@@ -115,6 +161,8 @@
 		oncanvaschange,
 		readonly = false,
 		ondblclicknode,
+		onrenamenode,
+		zoomPercent = $bindable(100),
 	}: {
 		nodes?: Node[];
 		edges?: Edge[];
@@ -130,6 +178,10 @@
 		readonly?: boolean;
 		/** Called when a node is double-clicked in readonly mode. Used for C4 drill-down navigation. */
 		ondblclicknode?: (node: Node) => void;
+		/** Called when a node label is renamed via inline double-click editing (EditableLabel). Receives the CALM unique-id and the new name. */
+		onrenamenode?: (calmId: string, newName: string) => void;
+		/** Current zoom level as a whole percentage (e.g. 100). Kept in sync via onmove; parent can read it for a zoom-level display widget. */
+		zoomPercent?: number;
 	} = $props();
 
 	/**
@@ -149,6 +201,62 @@
 	 */
 	export function fitViewport() {
 		fitView({ duration: 300, maxZoom: 1.2, padding: 0.2 });
+	}
+
+	const ZOOM_STEP = 1.2;
+	const MIN_ZOOM_PERCENT = 10;
+	const MAX_ZOOM_PERCENT = 400;
+
+	/**
+	 * Zoom in/out one step around the viewport center.
+	 *
+	 * Deliberately implemented via getViewport()/setViewport() rather than the
+	 * useSvelteFlow() zoomIn/zoomOut helpers: those call into
+	 * @xyflow/svelte's internal panZoom.scaleBy(), which resolves to a no-op
+	 * (Promise<false>) in this app's actual mounted-pane setup even though the
+	 * identical scaleExtent-respecting d3-zoom instance responds correctly to
+	 * both wheel-zoom and fitView/setViewport calls — confirmed by direct
+	 * console instrumentation in a live browser session, not just code
+	 * inspection. setViewport() is the same primitive fitViewport() already
+	 * relies on, so it's a proven-working code path here.
+	 */
+	function zoomBy(factor: number) {
+		const vp = getViewport();
+		const nextZoomPercent = Math.min(
+			MAX_ZOOM_PERCENT,
+			Math.max(MIN_ZOOM_PERCENT, Math.round(vp.zoom * factor * 100))
+		);
+		const nextZoom = nextZoomPercent / 100;
+		// Keep the viewport center fixed while changing zoom (matches scaleBy's pointer-centered behavior closely enough for a toolbar button).
+		const el = document.querySelector('.svelte-flow') as HTMLElement | null;
+		const centerX = (el?.clientWidth ?? window.innerWidth) / 2;
+		const centerY = (el?.clientHeight ?? window.innerHeight) / 2;
+		const flowX = (centerX - vp.x) / vp.zoom;
+		const flowY = (centerY - vp.y) / vp.zoom;
+		setViewport(
+			{ x: centerX - flowX * nextZoom, y: centerY - flowY * nextZoom, zoom: nextZoom },
+			{ duration: 150 }
+		);
+	}
+
+	/** Zoom in one step, centered on the viewport. Used by the zoom widget and desktop menu. */
+	export function zoomInViewport() {
+		zoomBy(ZOOM_STEP);
+	}
+
+	/** Zoom out one step, centered on the viewport. Used by the zoom widget and desktop menu. */
+	export function zoomOutViewport() {
+		zoomBy(1 / ZOOM_STEP);
+	}
+
+	/** Current zoom level as a percentage (e.g. 100 at zoom 1.0), rounded for display. */
+	export function currentZoomPercent(): number {
+		return Math.round(getViewport().zoom * 100);
+	}
+
+	/** Keeps the bindable zoomPercent prop in sync as the user pans/zooms. */
+	function handleMove(_event: MouseEvent | TouchEvent | null, viewport: Viewport) {
+		zoomPercent = Math.round(viewport.zoom * 100);
 	}
 
 	/**
@@ -199,6 +307,16 @@
 		searchOpen = false;
 		// Deselect all nodes when search closes
 		nodes = nodes.map((n) => ({ ...n, selected: false }));
+	}
+
+	// ─── Layers panel (draw.io-style outline of the containment tree) ───────
+
+	let layersOpen = $state(false);
+	let layersSelectedId = $state<string | null>(null);
+
+	function handleLayerSelect(calmId: string) {
+		layersSelectedId = calmId;
+		navigateToNode(calmId);
 	}
 
 	// ─── DnD drop handler ────────────────────────────────────────────────────
@@ -252,7 +370,7 @@
 		}
 
 		if (hasScaffold) {
-			const { childNodes, childEdges } = scaffoldChildren(newNode, packMeta.defaultChildren!);
+			const { childNodes, childEdges } = await scaffoldChildren(newNode, packMeta.defaultChildren!);
 			nodes = [...nodes, newNode, ...childNodes];
 			edges = [...edges, ...childEdges];
 		} else {
@@ -268,7 +386,7 @@
 	 * Place a node at the viewport center.
 	 * Called by parent (+page.svelte) in response to NodePalette's placenode event.
 	 */
-	export function placeNodeAtCenter(calmType: string) {
+	export async function placeNodeAtCenter(calmType: string) {
 		const position = screenToFlowPosition({
 			x: window.innerWidth / 2,
 			y: window.innerHeight / 2,
@@ -297,7 +415,7 @@
 		}
 
 		if (hasScaffold) {
-			const { childNodes, childEdges } = scaffoldChildren(newNode, packMeta.defaultChildren!);
+			const { childNodes, childEdges } = await scaffoldChildren(newNode, packMeta.defaultChildren!);
 			nodes = [...nodes, newNode, ...childNodes];
 			edges = [...edges, ...childEdges];
 		} else {
@@ -372,7 +490,48 @@
 		// If changing TO a containment type, establish containment
 		if (isContainmentType(newType)) {
 			nodes = makeContainment(edge.source, edge.target, nodes);
+			nodes = autoResizeAncestors(edge.target, nodes);
 		}
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
+	// ─── Edge reconnection (drag an endpoint to a different node) ───────────
+
+	/**
+	 * Gates edge reconnection behind readonly mode. EdgeReconnectAnchor calls
+	 * this before committing the endpoint change to Svelte Flow's internal
+	 * edges store — returning a falsy value aborts the reconnect entirely, so
+	 * this is the correct hook point for readonly (there's no per-edge
+	 * `reconnectable` flag in this @xyflow/svelte version).
+	 */
+	function handleBeforeReconnect(newEdge: Edge): Edge | false {
+		return readonly ? false : newEdge;
+	}
+
+	/**
+	 * Fired after EdgeReconnectAnchor has already updated the edge's
+	 * source/target in Svelte Flow's internal store (which `bind:edges`
+	 * mirrors back into our `edges` prop). Syncs the change to the CALM model
+	 * and re-establishes containment when a deployed-in/composed-of edge's
+	 * child endpoint moved to a different node.
+	 */
+	function handleReconnect(oldEdge: Edge, newConnection: Connection) {
+		if (readonly) return;
+
+		pushSnapshot(nodes, edges);
+
+		if (isContainmentType(oldEdge.type ?? '')) {
+			// Container (source) is unchanged in the common case; child (target)
+			// moving to a different node means the old child must be un-nested
+			// before the new pairing is established.
+			if (oldEdge.target !== newConnection.target) {
+				nodes = removeContainment(oldEdge.target, nodes);
+			}
+			nodes = makeContainment(newConnection.source, newConnection.target, nodes);
+			nodes = autoResizeAncestors(newConnection.target, nodes);
+		}
+
 		applyFromCanvas(nodes, edges);
 		notifyChange();
 	}
@@ -410,6 +569,59 @@
 		edgeMenu = null;
 	}
 
+	// ─── Node context menu (right-click for duplicate/delete) ───────────────
+
+	let nodeMenu = $state<{ x: number; y: number; nodeId: string } | null>(null);
+
+	function handleNodeContextMenu(event: { event: MouseEvent; node: Node }) {
+		if (readonly) return;
+		event.event.preventDefault();
+		nodeMenu = {
+			x: event.event.clientX,
+			y: event.event.clientY,
+			nodeId: event.node.id,
+		};
+	}
+
+	function duplicateNodeFromMenu() {
+		if (!nodeMenu) return;
+		const target = nodes.find((n) => n.id === nodeMenu!.nodeId);
+		nodeMenu = null;
+		if (!target) return;
+		copy([{ ...target, selected: true }]);
+		const newNodes = paste(nodes);
+		if (newNodes.length > 0) {
+			pushSnapshot(nodes, edges);
+			nodes = [...nodes, ...newNodes];
+			applyFromCanvas(nodes, edges);
+			notifyChange();
+		}
+	}
+
+	function deleteNodeFromMenu() {
+		if (!nodeMenu) return;
+		const nodeId = nodeMenu.nodeId;
+		nodeMenu = null;
+		pushSnapshot(nodes, edges);
+		nodes = nodes.filter((n) => n.id !== nodeId && n.parentId !== nodeId);
+		edges = edges.filter((e) => e.source !== nodeId && e.target !== nodeId);
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
+	function closeNodeMenu() {
+		nodeMenu = null;
+	}
+
+	// ─── Alignment guides (draw.io-style snap-line hints) ────────────────────
+
+	let alignmentGuides = $state<AlignmentGuide[]>([]);
+
+	function handleNodeDrag(event: NodeDragPayload) {
+		if (readonly || !event.targetNode) return;
+		alignmentGuides = computeAlignmentGuides(event.targetNode, nodes);
+	}
+
 	// ─── Node drag-into-container ────────────────────────────────────────────
 
 	/**
@@ -429,10 +641,12 @@
 		);
 	}
 
-	function handleNodeDragStop(event: NodeDragEvent) {
+	function handleNodeDragStop(event: NodeDragPayload) {
 		if (readonly) return;
 
-		const draggedNode = event.node;
+		alignmentGuides = [];
+
+		const draggedNode = event.targetNode;
 		if (!draggedNode) return;
 		// Don't reparent nodes that are already parented or are containers
 		if (draggedNode.type === 'container' || draggedNode.parentId) return;
@@ -451,6 +665,7 @@
 				if (isInsideBounds(draggedNode.position, bounds)) {
 					pushSnapshot(nodes, edges);
 					nodes = makeContainment(candidate.id, draggedNode.id, nodes);
+					nodes = autoResizeAncestors(draggedNode.id, nodes);
 					applyFromCanvas(nodes, edges);
 					notifyChange();
 					return;
@@ -503,6 +718,31 @@
 		nodes = nodes.map((n) => ({ ...n, selected: true }));
 	}
 
+	/**
+	 * Nudge every selected node by (dx, dy) — bound to arrow keys (1px) and
+	 * Shift+arrow (10px) for pixel-precise positioning, matching draw.io.
+	 * Skips entirely if nothing is selected so plain arrow-key presses don't
+	 * interfere with typing inside inputs (shortcut action only fires when
+	 * the canvas wrapper has focus-within, not while editing text elsewhere).
+	 */
+	function nudgeSelected(dx: number, dy: number) {
+		if (readonly) return;
+		// Skip while typing (inline label rename input, search box) so arrow
+		// keys move the text cursor instead of the node — the shortcut action
+		// is scoped to this canvas wrapper, so events from any focused
+		// descendant (including EditableLabel's edit input) reach it.
+		const tag = document.activeElement?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.closest('[contenteditable]')) return;
+		const hasSelection = nodes.some((n) => n.selected);
+		if (!hasSelection) return;
+		pushSnapshot(nodes, edges);
+		nodes = nodes.map((n) =>
+			n.selected ? { ...n, position: { x: n.position.x + dx, y: n.position.y + dy } } : n
+		);
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
 	function handleToggleSearch() {
 		searchOpen = !searchOpen;
 		if (!searchOpen) {
@@ -518,6 +758,46 @@
 		const edgeId = selectedEdges.length > 0 ? selectedEdges[0].id : null;
 		onselectionchange?.(nodeId, edgeId);
 	}
+
+	// ─── Container collapse/expand (S3) ──────────────────────────────────────
+
+	/**
+	 * ContainerNode.svelte dispatches this on `document` when its collapse
+	 * toggle is clicked. Collapse state lives only in Svelte Flow node data
+	 * (never written to the CALM model) — it's a canvas display concern, not
+	 * architectural data, so it resets on fresh file load but survives
+	 * re-projection within a session (see handleCodeChange/handlePropertyMutation
+	 * in +page.svelte, which now carry it forward like selection state).
+	 */
+	function handleToggleCollapse(event: Event) {
+		const { nodeId, collapsed } = (event as CustomEvent<{ nodeId: string; collapsed: boolean }>).detail;
+		nodes = nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, collapsed } } : n));
+	}
+
+	$effect(() => {
+		document.addEventListener('node:toggle-collapse', handleToggleCollapse);
+		return () => document.removeEventListener('node:toggle-collapse', handleToggleCollapse);
+	});
+
+	// ─── Inline label rename (draw.io-parity double-click editing) ──────────
+
+	/**
+	 * EditableLabel.svelte dispatches this on `document` when a node label
+	 * edit is committed. Unlike collapse state, a rename mutates the CALM
+	 * model, so it's gated on readonly here — this is the single place that
+	 * decides whether a rename is allowed, instead of threading a readonly
+	 * flag into all 12 node type components.
+	 */
+	function handleRenameNode(event: Event) {
+		if (readonly) return;
+		const { nodeId, name } = (event as CustomEvent<{ nodeId: string; name: string }>).detail;
+		onrenamenode?.(nodeId, name);
+	}
+
+	$effect(() => {
+		document.addEventListener('node:rename', handleRenameNode);
+		return () => document.removeEventListener('node:rename', handleRenameNode);
+	});
 </script>
 
 <!--
@@ -541,6 +821,14 @@
 			{ key: 'v', modifier: ['meta'], callback: handlePaste },
 			{ key: 'a', modifier: ['meta'], callback: handleSelectAll },
 			{ key: 'f', modifier: ['meta'], callback: handleToggleSearch },
+			{ key: 'ArrowUp', callback: () => nudgeSelected(0, -1) },
+			{ key: 'ArrowDown', callback: () => nudgeSelected(0, 1) },
+			{ key: 'ArrowLeft', callback: () => nudgeSelected(-1, 0) },
+			{ key: 'ArrowRight', callback: () => nudgeSelected(1, 0) },
+			{ key: 'ArrowUp', modifier: ['shift'], callback: () => nudgeSelected(0, -10) },
+			{ key: 'ArrowDown', modifier: ['shift'], callback: () => nudgeSelected(0, 10) },
+			{ key: 'ArrowLeft', modifier: ['shift'], callback: () => nudgeSelected(-10, 0) },
+			{ key: 'ArrowRight', modifier: ['shift'], callback: () => nudgeSelected(10, 0) },
 		],
 	}}
 >
@@ -554,14 +842,21 @@
 		nodesConnectable={!readonly}
 		selectionKey="Shift"
 		multiSelectionKey="Meta"
+		snapToGrid={!readonly}
+		snapGrid={[16, 16]}
 		fitView
 		fitViewOptions={{ maxZoom: 1.2, padding: 0.2 }}
 		zoomOnScroll={true}
 		panOnDrag={true}
 		panOnScroll={false}
 		onconnect={handleConnect}
+		onbeforereconnect={handleBeforeReconnect}
+		onreconnect={handleReconnect}
+		onnodedrag={handleNodeDrag}
 		onnodedragstop={handleNodeDragStop}
 		onedgecontextmenu={handleEdgeContextMenu}
+		onnodecontextmenu={handleNodeContextMenu}
+		onmove={handleMove}
 		onselectionchange={handleSelectionChange}
 		onnodedblclick={(e) => {
 			if (readonly && ondblclicknode) {
@@ -570,7 +865,11 @@
 		}}
 	>
 		<Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+		<MiniMap pannable zoomable />
 		<EdgeMarkers />
+		<ViewportPortal target="front">
+			<AlignmentGuides guides={alignmentGuides} />
+		</ViewportPortal>
 	</SvelteFlow>
 
 	<!-- Floating search panel — shown when Cmd+F is pressed -->
@@ -580,6 +879,32 @@
 			onresults={handleSearchResults}
 			onclose={closeSearch}
 		/>
+	{/if}
+
+	<!-- Layers/outline panel toggle — draw.io-style containment tree for navigating large diagrams -->
+	{#if !readonly}
+		{#if layersOpen}
+			<LayersPanel
+				{nodes}
+				selectedNodeId={layersSelectedId}
+				onselect={handleLayerSelect}
+				onclose={() => (layersOpen = false)}
+			/>
+		{:else}
+			<button
+				type="button"
+				class="layers-toggle-btn"
+				onclick={() => (layersOpen = true)}
+				aria-label="Show layers panel"
+				title="Layers"
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+					<polygon points="12 2 2 7 12 12 22 7 12 2" />
+					<polyline points="2 17 12 22 22 17" />
+					<polyline points="2 12 12 17 22 12" />
+				</svg>
+			</button>
+		{/if}
 	{/if}
 
 	<!-- Edge type context menu — right-click an edge to change its type -->
@@ -602,6 +927,26 @@
 						{opt.label}
 					</button>
 				{/each}
+			</div>
+		</div>
+	{/if}
+
+	<!-- Node context menu — right-click a node to duplicate/delete it -->
+	{#if nodeMenu}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="edge-menu-backdrop" onclick={closeNodeMenu}>
+			<div
+				class="edge-menu"
+				style="left: {nodeMenu.x}px; top: {nodeMenu.y}px;"
+				onclick={(e) => e.stopPropagation()}
+			>
+				<button type="button" class="edge-menu-item" onclick={duplicateNodeFromMenu}>
+					Duplicate
+				</button>
+				<button type="button" class="edge-menu-item edge-menu-item-danger" onclick={deleteNodeFromMenu}>
+					Delete
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -665,6 +1010,42 @@
 	}
 
 	:global(.dark) .edge-menu-item:hover {
+		background: #1e293b;
+	}
+
+	.edge-menu-item-danger {
+		color: #dc2626;
+	}
+
+	.edge-menu-item-danger:hover {
+		background: rgba(220, 38, 38, 0.08);
+	}
+
+	.layers-toggle-btn {
+		position: absolute;
+		left: 12px;
+		top: 12px;
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 9px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text-secondary);
+		cursor: pointer;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+		transition: all 0.15s ease;
+	}
+
+	.layers-toggle-btn:hover {
+		background: var(--color-surface-tertiary);
+		color: var(--color-text-primary);
+	}
+
+	:global(.dark) .layers-toggle-btn:hover {
 		background: #1e293b;
 	}
 

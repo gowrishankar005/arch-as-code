@@ -15,13 +15,17 @@
  * Sub-flow nesting is handled by @xyflow/svelte parentId independently.
  */
 
-import ELK from 'elkjs/lib/elk.bundled.js';
-import type { ElkNode, ElkExtendedEdge } from 'elkjs/lib/elk.bundled.js';
+import ELKSync from 'elkjs/lib/elk.bundled.js';
+import ELKApi from 'elkjs/lib/elk-api.js';
+// eslint-disable-next-line import/no-unresolved -- Vite worker import, typed via src/vite-env.d.ts
+import ElkWorkerCtor from 'elkjs/lib/elk-worker.js?worker';
+import type { ElkNode, ElkExtendedEdge, ElkPoint } from 'elkjs/lib/elk.bundled.js';
 import type {
 	CalmArchitecture,
 	CalmRelationship,
 	CalmRelationshipVariant
 } from '@calmstudio/calm-core';
+import { getReferencedNodeIds } from '@calmstudio/calm-core';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +33,15 @@ export type LayoutDirection = 'DOWN' | 'RIGHT' | 'UP';
 
 /** Position map: node unique-id -> {x, y, width?, height?} from ELK layout. */
 export type PositionMap = Map<string, { x: number; y: number; width?: number; height?: number }>;
+
+/** A single edge's ELK-computed route: startPoint + bendPoints + endPoint, in graph-absolute coordinates. */
+export type EdgeRoute = { points: ElkPoint[] };
+
+/** Edge route map: edge/relationship unique-id (matching Svelte Flow edge id) -> ELK-computed route. */
+export type EdgeRouteMap = Map<string, EdgeRoute>;
+
+/** Result of {@link layoutCalm}: node positions plus ELK's computed edge routing. */
+export type LayoutResult = { positions: PositionMap; edgeRoutes: EdgeRouteMap };
 
 /** The set of CALM 1.2 variant keys that imply containment. */
 const CONTAINMENT_VARIANTS: ReadonlySet<CalmRelationshipVariant> = new Set([
@@ -78,12 +91,23 @@ function expandLayoutPairs(
 }
 
 /** Default node dimensions — sized to fit typical node labels + icons */
-const NODE_WIDTH = 180;
+const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 
 // ─── ELK instance ─────────────────────────────────────────────────────────────
 
-const elk = new ELK();
+/**
+ * Runs ELK layout on a Web Worker when available (real browsers), keeping
+ * the main thread responsive for large architectures. Falls back to the
+ * synchronous bundled engine when Worker doesn't exist — SSR and vitest's
+ * jsdom test environment both lack a Worker global, so this fallback is
+ * also what every existing test exercises; the worker path is verified by
+ * code inspection and a manual browser check, not by an automated test.
+ */
+const elk =
+	typeof Worker !== 'undefined'
+		? new ELKApi({ workerFactory: () => new ElkWorkerCtor() })
+		: new ELKSync();
 
 // ─── layoutCalm ──────────────────────────────────────────────────────────────
 
@@ -96,15 +120,15 @@ const elk = new ELK();
  * @param arch - The CALM architecture to lay out.
  * @param pinnedIds - Set of node unique-ids to exclude from layout.
  * @param direction - Layout direction: 'DOWN', 'RIGHT', 'UP'. Defaults to 'DOWN'.
- * @returns A Map of node unique-id to {x, y, width?, height?} for all NON-PINNED nodes.
+ * @returns Node positions (for all NON-PINNED nodes) plus ELK's computed edge routing.
  */
 export async function layoutCalm(
 	arch: CalmArchitecture,
 	pinnedIds: Set<string>,
 	direction: LayoutDirection = 'DOWN'
-): Promise<PositionMap> {
+): Promise<LayoutResult> {
 	const freeNodes = arch.nodes.filter((n) => !pinnedIds.has(n['unique-id']));
-	if (freeNodes.length === 0) return new Map();
+	if (freeNodes.length === 0) return { positions: new Map(), edgeRoutes: new Map() };
 
 	const freeNodeIds = new Set(freeNodes.map((n) => n['unique-id']));
 
@@ -280,12 +304,15 @@ export async function layoutCalm(
 				elkNode.layoutOptions = {
 					'elk.algorithm': 'layered',
 					'elk.direction': edgeDirection,
+					'elk.edgeRouting': 'ORTHOGONAL',
+					'elk.portConstraints': 'FREE',
 					'elk.padding': '[top=48,left=32,bottom=32,right=32]',
 					'elk.spacing.nodeNode': '50',
 					'elk.layered.spacing.nodeNodeBetweenLayers': '60',
 					'elk.spacing.edgeNode': '30',
 					'elk.spacing.edgeEdge': '20',
 					'elk.layered.spacing.edgeNodeBetweenLayers': '30',
+					'elk.layered.spacing.edgeEdgeBetweenLayers': '15',
 					'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
 				};
 			} else {
@@ -341,11 +368,14 @@ export async function layoutCalm(
 		layoutOptions: {
 			'elk.algorithm': 'layered',
 			'elk.direction': direction,
+			'elk.edgeRouting': 'ORTHOGONAL',
+			'elk.portConstraints': 'FREE',
 			'elk.layered.spacing.nodeNodeBetweenLayers': '120',
 			'elk.spacing.nodeNode': '100',
 			'elk.spacing.edgeNode': '40',
 			'elk.spacing.edgeEdge': '25',
 			'elk.layered.spacing.edgeNodeBetweenLayers': '40',
+			'elk.layered.spacing.edgeEdgeBetweenLayers': '15',
 			'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
 		},
 		children: topLevelNodes,
@@ -371,7 +401,32 @@ export async function layoutCalm(
 	}
 	extractPositions(layouted);
 
-	return positionMap;
+	// Extract edge routes recursively from ELK result. Edge sections are given
+	// relative to the coordinate frame of the node that owns the `edges` array
+	// (root for topEdges, each container for its innerEdges), so we accumulate
+	// ancestor x/y offsets while descending to produce graph-absolute points.
+	//
+	// Synthetic ids (`cross-*`, `chain-*`) exist only to hint ELK about
+	// container ordering — they don't correspond to a real CALM relationship /
+	// Svelte Flow edge, so they're excluded from the returned route map.
+	const edgeRoutes: EdgeRouteMap = new Map();
+	function extractEdgeRoutes(node: ElkNode, offsetX: number, offsetY: number) {
+		for (const edge of node.edges ?? []) {
+			if (edge.id.startsWith('cross-') || edge.id.startsWith('chain-')) continue;
+			const section = edge.sections?.[0];
+			if (!section) continue;
+			const points = [section.startPoint, ...(section.bendPoints ?? []), section.endPoint].map(
+				(p) => ({ x: p.x + offsetX, y: p.y + offsetY })
+			);
+			edgeRoutes.set(edge.id, { points });
+		}
+		for (const child of node.children ?? []) {
+			extractEdgeRoutes(child, offsetX + (child.x ?? 0), offsetY + (child.y ?? 0));
+		}
+	}
+	extractEdgeRoutes(layouted, 0, 0);
+
+	return { positions: positionMap, edgeRoutes };
 }
 
 /**
@@ -384,4 +439,93 @@ function findTopLevelAncestor(nodeId: string, childToParent: Map<string, string>
 		current = childToParent.get(current)!;
 	}
 	return current;
+}
+
+/**
+ * Matches the container padding elkLayout.ts applies to nested container
+ * layout options above (`elk.padding`), so subtree-only layout lines up
+ * with what a full layoutCalm pass would have produced for the same nodes.
+ */
+const SUBTREE_PADDING = { top: 48, left: 32 };
+
+/**
+ * Recursively collects every descendant of `containerId` via composed-of /
+ * deployed-in containment relationships (children, grandchildren, etc.).
+ */
+function collectDescendants(arch: CalmArchitecture, containerId: string): Set<string> {
+	const parentChildren = new Map<string, Set<string>>();
+	for (const rel of arch.relationships) {
+		for (const pair of expandLayoutPairs(rel)) {
+			if (!CONTAINMENT_VARIANTS.has(pair.variant)) continue;
+			if (!parentChildren.has(pair.source)) parentChildren.set(pair.source, new Set());
+			parentChildren.get(pair.source)!.add(pair.target);
+		}
+	}
+
+	const result = new Set<string>();
+	const stack = Array.from(parentChildren.get(containerId) ?? []);
+	while (stack.length > 0) {
+		const id = stack.pop()!;
+		if (result.has(id)) continue;
+		result.add(id);
+		for (const child of parentChildren.get(id) ?? []) stack.push(child);
+	}
+	return result;
+}
+
+/**
+ * Runs ELK layout scoped to a single container's descendants, leaving every
+ * node outside that subtree untouched. For incremental changes (e.g. adding
+ * one node to a container) this avoids the visual disruption of a full
+ * layoutCalm pass re-flowing the entire diagram — only the affected
+ * container's interior moves.
+ *
+ * Returned positions are container-relative (offset by the same padding
+ * elkLayout.ts uses for nested containers), matching Svelte Flow's
+ * parent-relative coordinate convention for a node with `parentId` set —
+ * callers can apply them directly to the container's children without
+ * further transformation.
+ *
+ * @param arch - The full CALM architecture (used to find descendants and
+ *   the relationships between them; nodes/relationships outside the
+ *   subtree are not included in the ELK graph at all).
+ * @param containerId - unique-id of the container whose interior should be
+ *   re-laid-out. If it has no children, returns empty maps.
+ * @param direction - Layout direction: 'DOWN', 'RIGHT', 'UP'. Defaults to 'DOWN'.
+ */
+export async function layoutSubtree(
+	arch: CalmArchitecture,
+	containerId: string,
+	direction: LayoutDirection = 'DOWN'
+): Promise<LayoutResult> {
+	const descendantIds = collectDescendants(arch, containerId);
+	if (descendantIds.size === 0) return { positions: new Map(), edgeRoutes: new Map() };
+
+	const inSubtree = (id: string) => id === containerId || descendantIds.has(id);
+
+	const subArch: CalmArchitecture = {
+		nodes: arch.nodes.filter((n) => descendantIds.has(n['unique-id'])),
+		relationships: arch.relationships.filter((rel) =>
+			getReferencedNodeIds(rel).every(inSubtree)
+		),
+	};
+
+	const result = await layoutCalm(subArch, new Set(), direction);
+
+	const positions: PositionMap = new Map();
+	for (const [id, pos] of result.positions) {
+		positions.set(id, { ...pos, x: pos.x + SUBTREE_PADDING.left, y: pos.y + SUBTREE_PADDING.top });
+	}
+
+	const edgeRoutes: EdgeRouteMap = new Map();
+	for (const [id, route] of result.edgeRoutes) {
+		edgeRoutes.set(id, {
+			points: route.points.map((p) => ({
+				x: p.x + SUBTREE_PADDING.left,
+				y: p.y + SUBTREE_PADDING.top,
+			})),
+		});
+	}
+
+	return { positions, edgeRoutes };
 }

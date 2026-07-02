@@ -3,6 +3,8 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import NodeBadges from './NodeBadges.svelte';
+	import EditableLabel from './EditableLabel.svelte';
 	let { id, data, selected }: NodeProps = $props();
 	const errorCount = $derived((data as Record<string, unknown>).validationErrors as number ?? 0);
 	const warnCount = $derived((data as Record<string, unknown>).validationWarnings as number ?? 0);
@@ -21,6 +23,11 @@
 
 <div class="node" class:selected>
 	<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
+	<NodeBadges
+		controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
+		dataClassification={(data as Record<string, unknown>)['data-classification'] as string | undefined}
+		details={(data as Record<string, unknown>).details as { 'detailed-architecture'?: string; 'required-pattern'?: string } | undefined}
+	/>
 	<svg width="52" height="46" viewBox="0 0 52 46" fill="none" aria-hidden="true">
 		<polygon
 			points="26,2 50,14 50,34 26,46 2,34 2,14"
@@ -30,7 +37,11 @@
 			stroke-linejoin="round"
 		/>
 	</svg>
-	<span class="label">{data.label ?? data.calmId}</span>
+	<EditableLabel
+		nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+		value={(data.label ?? data.calmId) as string}
+		style="text-align: center; max-width: 108px;"
+	/>
 </div>
 
 <style>
@@ -48,15 +59,5 @@
 	.node.selected svg polygon {
 		stroke: var(--node-selected-ring);
 		stroke-width: 2;
-	}
-	.label {
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--node-label-color);
-		text-align: center;
-		max-width: 80px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 </style>

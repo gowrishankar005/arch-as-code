@@ -48,23 +48,34 @@ function withMutex(fn: () => void): boolean {
 
 /**
  * Apply a CalmArchitecture from JSON (e.g., from the code editor or file load).
+ *
+ * `arch` is already the full parsed document, so it is kept as-is (not
+ * reduced to `{ nodes, relationships }`) — otherwise top-level fields such as
+ * `flows`, `decorators`, `$schema`, `$id` would be dropped on every file load
+ * or code-panel edit, before the canvas ever gets involved.
+ *
  * Returns true on success, false if a sync is already in progress.
  */
 export function applyFromJson(arch: CalmArchitecture): boolean {
 	return withMutex(() => {
-		model = { nodes: [...arch.nodes], relationships: [...arch.relationships] };
+		model = { ...arch, nodes: [...arch.nodes], relationships: [...arch.relationships] };
 	});
 }
 
 /**
  * Apply Svelte Flow nodes/edges from the canvas (e.g., after drag/drop).
  * Converts via flowToCalm and updates the canonical model.
+ *
+ * Merges into the existing model rather than replacing it — flowToCalm only
+ * produces `{ nodes, relationships }`, so a full replace would silently drop
+ * top-level fields it doesn't know about (flows, decorators, $schema, $id).
+ *
  * Returns true on success, false if a sync is already in progress.
  */
 export function applyFromCanvas(nodes: Node[], edges: Edge[]): boolean {
 	return withMutex(() => {
 		const arch = flowToCalm(nodes, edges);
-		model = { nodes: [...arch.nodes], relationships: [...arch.relationships] };
+		model = { ...model, nodes: [...arch.nodes], relationships: [...arch.relationships] };
 	});
 }
 

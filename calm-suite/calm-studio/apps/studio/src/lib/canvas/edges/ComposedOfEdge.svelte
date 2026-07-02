@@ -8,7 +8,7 @@
   Flow overlays render as sibling group (outside the dimmed wrapper).
 -->
 <script lang="ts">
-	import { BaseEdge, getSmoothStepPath, type EdgeProps } from '@xyflow/svelte';
+	import { BaseEdge, EdgeReconnectAnchor, getSmoothStepPath, type EdgeProps } from '@xyflow/svelte';
 	import FlowOverlay from './FlowOverlay.svelte';
 	import type { CalmTransition } from '@calmstudio/calm-core';
 
@@ -24,8 +24,18 @@
 		style
 	}: EdgeProps = $props();
 
-	const [edgePath, labelX, labelY] = $derived(
+	// Prefer ELK's computed orthogonal route when available; fall back to
+	// Svelte Flow's smooth-step path otherwise (see ConnectsEdge.svelte).
+	const elkPath = $derived((data as Record<string, unknown>)?.elkPath as string | undefined);
+	const [fallbackPath, fallbackLabelX, fallbackLabelY] = $derived(
 		getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition })
+	);
+	const edgePath = $derived(elkPath ?? fallbackPath);
+	const labelX = $derived(
+		elkPath ? ((data as Record<string, unknown>)?.elkLabelX as number) : fallbackLabelX
+	);
+	const labelY = $derived(
+		elkPath ? ((data as Record<string, unknown>)?.elkLabelY as number) : fallbackLabelY
 	);
 
 	const validationStyle = $derived(
@@ -35,9 +45,11 @@
 				? 'stroke: #d97706; stroke-width: 2;'
 				: undefined
 	);
-	const finalStyle = $derived(validationStyle
-		? `stroke-dasharray: 6 4; ${style ?? ''} ${validationStyle}`
-		: `stroke-dasharray: 6 4; ${style ?? ''}`);
+	// Explicit fallback stroke so the edge stays visible when exported to a
+	// standalone SVG/PNG — see ConnectsEdge.svelte for why this is needed.
+	const finalStyle = $derived(
+		`stroke: var(--xy-edge-stroke, #94a3b8); color: var(--xy-edge-stroke, #94a3b8); stroke-dasharray: 6 4; ${style ?? ''} ${validationStyle ?? ''}`
+	);
 
 	const flowTransition = $derived((data as Record<string, unknown>)?.flowTransition as CalmTransition | null | undefined);
 	const dimmed = $derived((data as Record<string, unknown>)?.dimmed === true);
@@ -50,6 +62,8 @@
 		markerEnd="url(#marker-diamond-filled)"
 		style={finalStyle}
 	/>
+	<EdgeReconnectAnchor type="source" position={{ x: sourceX, y: sourceY }} />
+	<EdgeReconnectAnchor type="target" position={{ x: targetX, y: targetY }} />
 </g>
 
 {#if flowTransition}

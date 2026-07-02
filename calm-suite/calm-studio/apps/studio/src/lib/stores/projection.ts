@@ -33,7 +33,25 @@ import type {
 	CalmRelationshipType,
 	CalmRelationshipVariant
 } from '@calmstudio/calm-core';
+import type { EdgeRouteMap } from '$lib/layout/elkLayout';
 import { resolveNodeType } from '$lib/canvas/nodeTypes';
+
+/** CALM 1.2 `details` — { detailed-architecture?, required-pattern? }. */
+type CalmNodeDetails = NonNullable<CalmNode['details']>;
+
+/** Builds an orthogonal SVG path `d` string from ELK's ordered route points. */
+function svgPathFromPoints(points: Array<{ x: number; y: number }>): string {
+	if (points.length === 0) return '';
+	const [first, ...rest] = points;
+	return `M ${first.x},${first.y}` + rest.map((p) => ` L ${p.x},${p.y}`).join('');
+}
+
+/** Midpoint of an ELK route, used as the edge label anchor. */
+function midpointOfPoints(points: Array<{ x: number; y: number }>): { x: number; y: number } {
+	const mid = points[Math.floor((points.length - 1) / 2)];
+	const next = points[Math.ceil((points.length - 1) / 2)];
+	return { x: (mid.x + next.x) / 2, y: (mid.y + next.y) / 2 };
+}
 
 /** The set of CALM variant keys that imply containment. */
 const CONTAINMENT_VARIANTS: ReadonlySet<CalmRelationshipVariant> = new Set([
@@ -125,7 +143,8 @@ function buildRelationshipType(
  */
 export function calmToFlow(
 	arch: CalmArchitecture,
-	positionMap?: Map<string, { x: number; y: number; width?: number; height?: number }>
+	positionMap?: Map<string, { x: number; y: number; width?: number; height?: number }>,
+	edgeRoutes?: EdgeRouteMap
 ): { nodes: Node[]; edges: Edge[] } {
 	// Build containment map from CALM relationships.
 	//   composed-of: container is parent of each child
@@ -180,7 +199,8 @@ export function calmToFlow(
 				customMetadata: cn.customMetadata ?? {},
 				controls: cn.controls,
 				'data-classification': cn['data-classification'],
-				metadata: cn.metadata
+				metadata: cn.metadata,
+				details: cn.details
 			}
 		};
 
@@ -210,8 +230,12 @@ export function calmToFlow(
 		const pairs = expandEdgePairs(cr);
 		const multi = pairs.length > 1;
 		pairs.forEach((pair, i) => {
+			const edgeId = multi ? `${cr['unique-id']}#${i}` : cr['unique-id'];
+			const route = edgeRoutes?.get(edgeId);
+			const label = route ? midpointOfPoints(route.points) : undefined;
+
 			edges.push({
-				id: multi ? `${cr['unique-id']}#${i}` : cr['unique-id'],
+				id: edgeId,
 				source: pair.source,
 				target: pair.target,
 				type: pair.variant,
@@ -221,7 +245,12 @@ export function calmToFlow(
 					protocol: cr.protocol,
 					description: cr.description,
 					controls: cr.controls,
-					metadata: cr.metadata
+					metadata: cr.metadata,
+					...(route && {
+						elkPath: svgPathFromPoints(route.points),
+						elkLabelX: label!.x,
+						elkLabelY: label!.y
+					})
 				}
 			});
 		});
@@ -252,6 +281,7 @@ export function flowToCalm(nodes: Node[], edges: Edge[]): CalmArchitecture {
 			controls?: CalmControls;
 			'data-classification'?: string;
 			metadata?: Record<string, unknown>;
+			details?: CalmNodeDetails;
 		};
 
 		const node: CalmNode = {
@@ -268,6 +298,7 @@ export function flowToCalm(nodes: Node[], edges: Edge[]): CalmArchitecture {
 		if (d.controls && Object.keys(d.controls).length > 0) node.controls = d.controls;
 		if (d['data-classification']) node['data-classification'] = d['data-classification'];
 		if (d.metadata && Object.keys(d.metadata).length > 0) node.metadata = d.metadata;
+		if (d.details && Object.keys(d.details).length > 0) node.details = d.details;
 
 		return node;
 	});

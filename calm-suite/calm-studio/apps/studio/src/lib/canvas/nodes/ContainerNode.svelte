@@ -3,16 +3,17 @@
 <script lang="ts">
 	import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import NodeBadges from './NodeBadges.svelte';
+	import EditableLabel from './EditableLabel.svelte';
 	let { id, data, selected }: NodeProps = $props();
 
-	let collapsed = $state(data.collapsed ?? false);
+	const collapsed = $derived((data as Record<string, unknown>).collapsed === true);
 	const errorCount = $derived((data as Record<string, unknown>).validationErrors as number ?? 0);
 	const warnCount = $derived((data as Record<string, unknown>).validationWarnings as number ?? 0);
 
 	function toggleCollapse() {
-		collapsed = !collapsed;
 		const event = new CustomEvent('node:toggle-collapse', {
-			detail: { nodeId: id, collapsed },
+			detail: { nodeId: id, collapsed: !collapsed },
 			bubbles: true,
 			composed: true,
 		});
@@ -38,9 +39,18 @@
 {#if collapsed}
 	<div class="container collapsed" class:selected>
 		<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
+		<NodeBadges
+			controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
+			dataClassification={(data as Record<string, unknown>)['data-classification'] as string | undefined}
+			details={(data as Record<string, unknown>).details as { 'detailed-architecture'?: string; 'required-pattern'?: string } | undefined}
+		/>
 		<div class="collapsed-row">
 			<div class="dot"></div>
-			<span class="label">{data.label ?? data.calmId}</span>
+			<EditableLabel
+				nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+				value={(data.label ?? data.calmId) as string}
+				style="max-width: 168px;"
+			/>
 			<button class="toggle" onclick={toggleCollapse} title="Expand" aria-label="Expand container">
 				<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
 			</button>
@@ -49,10 +59,19 @@
 {:else}
 	<div class="container expanded" class:selected>
 		<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
+		<NodeBadges
+			controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
+			dataClassification={(data as Record<string, unknown>)['data-classification'] as string | undefined}
+			details={(data as Record<string, unknown>).details as { 'detailed-architecture'?: string; 'required-pattern'?: string } | undefined}
+		/>
 		<div class="header">
 			<div class="header-left">
 				<div class="dot"></div>
-				<span class="label">{data.label ?? data.calmId}</span>
+				<EditableLabel
+					nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+					value={(data.label ?? data.calmId) as string}
+					style="max-width: 168px;"
+				/>
 			</div>
 			<button class="toggle" onclick={toggleCollapse} title="Collapse" aria-label="Collapse container">
 				<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
@@ -120,15 +139,6 @@
 		background: var(--node-container-stroke);
 		opacity: 0.5;
 		flex-shrink: 0;
-	}
-	.label {
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--node-label-color);
-		max-width: 140px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.toggle {
 		background: none;

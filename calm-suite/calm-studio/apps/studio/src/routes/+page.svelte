@@ -47,7 +47,7 @@
 	} from '$lib/c4/c4Filter';
 	import type { C4Level } from '$lib/c4/c4Filter';
 	import { toggleTheme, isDark } from '$lib/stores/theme.svelte';
-	import { getModelJson, applyFromJson, applyFromCanvas, getModel, resetModel } from '$lib/stores/calmModel.svelte';
+	import { getModelJson, applyFromJson, applyFromCanvas, getModel, resetModel, updateNodeProperty } from '$lib/stores/calmModel.svelte';
 	import { calmToFlow } from '$lib/stores/projection';
 	import { pushSnapshot, resetHistory, undo, redo } from '$lib/stores/history.svelte';
 	import { layoutCalm, type LayoutDirection } from '$lib/layout/elkLayout';
@@ -106,6 +106,9 @@
 	let edges = $state.raw<Edge[]>([]);
 
 	let canvas: CalmCanvas;
+
+	/** Current canvas zoom level as a whole percentage, kept in sync by CalmCanvas via bind:zoomPercent. */
+	let canvasZoomPercent = $state(100);
 
 	// ─── Desktop: native title bar sync ───────────────────────────────────────
 
@@ -392,7 +395,7 @@
 
 		if (subArch.nodes.length === 0) return;
 
-		const positions = await layoutCalm(subArch, new Set(), layoutDirection);
+		const { positions } = await layoutCalm(subArch, new Set(), layoutDirection);
 		c4PositionOverrides = positions;
 
 		await tick();
@@ -592,14 +595,20 @@
 					// Project back to Svelte Flow format, preserving positions and selection
 					const projected = calmToFlow(parsed, positionMap);
 					const selectionMap = new Map<string, boolean>();
+					const collapsedMap = new Map<string, boolean>();
 					for (const n of nodes) {
-						if (n.selected && n.data?.calmId) selectionMap.set(n.data.calmId as string, true);
+						if (n.data?.calmId) {
+							if (n.selected) selectionMap.set(n.data.calmId as string, true);
+							if (n.data.collapsed) collapsedMap.set(n.data.calmId as string, true);
+						}
 					}
-					nodes = projected.nodes.map((n) =>
-						selectionMap.has(n.data?.calmId as string)
-							? { ...n, selected: true }
-							: n
-					);
+					nodes = projected.nodes.map((n) => ({
+						...n,
+						...(selectionMap.has(n.data?.calmId as string) && { selected: true }),
+						...(collapsedMap.has(n.data?.calmId as string) && {
+							data: { ...n.data, collapsed: true },
+						}),
+					}));
 					edges = projected.edges;
 
 					// Mark dirty on code-driven changes
@@ -624,6 +633,7 @@
 		const model = getModel();
 		const positionMap = new Map<string, { x: number; y: number; width?: number; height?: number }>();
 		const selectionMap = new Map<string, boolean>();
+		const collapsedMap = new Map<string, boolean>();
 		for (const n of nodes) {
 			if (n.data?.calmId) {
 				positionMap.set(n.data.calmId as string, {
@@ -632,16 +642,18 @@
 					height: n.measured?.height ?? n.height,
 				});
 				if (n.selected) selectionMap.set(n.data.calmId as string, true);
+				if (n.data.collapsed) collapsedMap.set(n.data.calmId as string, true);
 			}
 		}
 
 		const projected = calmToFlow(model, positionMap);
-		// Preserve node selection state so SvelteFlow doesn't fire deselection
-		nodes = projected.nodes.map((n) =>
-			selectionMap.has(n.data?.calmId as string)
-				? { ...n, selected: true }
-				: n
-		);
+		// Preserve node selection state and collapse state so SvelteFlow doesn't
+		// fire deselection and containers don't spring back open (S3).
+		nodes = projected.nodes.map((n) => ({
+			...n,
+			...(selectionMap.has(n.data?.calmId as string) && { selected: true }),
+			...(collapsedMap.has(n.data?.calmId as string) && { data: { ...n.data, collapsed: true } }),
+		}));
 
 		// Update edge data in place rather than replacing the array.
 		// Replacing edges causes Svelte Flow to lose internal state (selection,
@@ -682,6 +694,18 @@
 
 		// Mark dirty on property mutations
 		markDirty();
+	}
+
+	/**
+	 * Called by CalmCanvas when a node label is renamed via inline double-click
+	 * editing (EditableLabel). Mirrors the Properties panel's name-field path:
+	 * write to the canonical model, then re-project so the canvas, code panel,
+	 * and Properties panel all reflect the new name.
+	 */
+	function handleRenameNode(calmId: string, newName: string) {
+		pushSnapshot(nodes, edges);
+		updateNodeProperty(calmId, 'name', newName);
+		handlePropertyMutation();
 	}
 
 	/**
@@ -747,10 +771,10 @@
 		applyFromJson(parsed);
 
 		// Auto-layout with no pinned nodes on fresh import
-		const positionMap = await layoutCalm(parsed, new Set(), 'DOWN');
+		const { positions: positionMap, edgeRoutes } = await layoutCalm(parsed, new Set(), 'DOWN');
 
 		// Project to Svelte Flow
-		const projected = calmToFlow(parsed, positionMap);
+		const projected = calmToFlow(parsed, positionMap, edgeRoutes);
 		nodes = projected.nodes;
 		edges = projected.edges;
 
@@ -885,8 +909,8 @@
 					edges = snapshot.edges;
 				}
 			},
-			zoomIn: () => { /* TODO: wire to canvas zoom via useSvelteFlow */ },
-			zoomOut: () => { /* TODO: wire to canvas zoom via useSvelteFlow */ },
+			zoomIn: () => { canvas?.zoomInViewport(); },
+			zoomOut: () => { canvas?.zoomOutViewport(); },
 			zoomFit: () => { canvas?.fitViewport(); },
 			togglePalette: () => { /* TODO: expose palette visibility state */ },
 			toggleCode: () => { /* TODO: expose code panel visibility state */ },
@@ -1045,7 +1069,7 @@
 		);
 
 		// Run ELK for free (unpinned) nodes
-		const elkPositions = await layoutCalm(model, pinnedIds, direction);
+		const { positions: elkPositions, edgeRoutes } = await layoutCalm(model, pinnedIds, direction);
 
 		// Build final position map: ELK results + pinned node current positions
 		const finalPositions = new Map<string, { x: number; y: number }>();
@@ -1062,8 +1086,10 @@
 			finalPositions.set(id, pos);
 		}
 
-		// Project via calmToFlow with combined position map
-		const projected = calmToFlow(model, finalPositions);
+		// Project via calmToFlow with combined position map. Edges touching a
+		// pinned node have no ELK route (pinned nodes are excluded from the ELK
+		// graph) and fall back to getSmoothStepPath in the edge component.
+		const projected = calmToFlow(model, finalPositions, edgeRoutes);
 
 		// Preserve pinned flag on projected nodes
 		const pinnedMap = new Map(nodes.map((n) => [n.id, n.data?.pinned ?? false]));
@@ -1339,6 +1365,7 @@
 										readonly={true}
 										ondblclicknode={handleC4DrillDown}
 										onselectionchange={handleSelectionChange}
+										bind:zoomPercent={canvasZoomPercent}
 									/>
 								{:else}
 									<!-- Normal mode: bind nodes/edges for two-way sync -->
@@ -1350,8 +1377,46 @@
 										onselectionchange={handleSelectionChange}
 										onfileimport={importCalmFile}
 										oncanvaschange={markDirty}
+										onrenamenode={handleRenameNode}
+										bind:zoomPercent={canvasZoomPercent}
 									/>
 								{/if}
+
+								<!-- Zoom widget (draw.io-style: -, live %, +, fit-to-screen) -->
+								<div class="zoom-widget" role="group" aria-label="Zoom controls">
+									<button
+										type="button"
+										class="zoom-widget-btn"
+										onclick={() => canvas?.zoomOutViewport()}
+										aria-label="Zoom out"
+										title="Zoom out"
+									>
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+											<line x1="5" y1="12" x2="19" y2="12" />
+										</svg>
+									</button>
+									<button
+										type="button"
+										class="zoom-widget-percent"
+										onclick={() => canvas?.fitViewport()}
+										aria-label="Reset zoom to fit diagram"
+										title="Fit to screen"
+									>
+										{canvasZoomPercent}%
+									</button>
+									<button
+										type="button"
+										class="zoom-widget-btn"
+										onclick={() => canvas?.zoomInViewport()}
+										aria-label="Zoom in"
+										title="Zoom in"
+									>
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+											<line x1="12" y1="5" x2="12" y2="19" />
+											<line x1="5" y1="12" x2="19" y2="12" />
+										</svg>
+									</button>
+								</div>
 
 								<!-- Empty canvas start-from-template prompt -->
 								{#if !isC4Mode() && nodes.length === 0}
@@ -1697,6 +1762,66 @@
 	.pack-banner-dismiss:hover {
 		opacity: 1;
 		background: rgba(29, 78, 216, 0.08);
+	}
+
+	/* ─── Zoom widget (draw.io-style bottom-left zoom control) ──── */
+
+	.zoom-widget {
+		position: absolute;
+		left: 12px;
+		bottom: 12px;
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 9px;
+		padding: 2px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	}
+
+	.zoom-widget-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border: none;
+		border-radius: 6px;
+		background: transparent;
+		color: var(--color-text-secondary);
+		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.zoom-widget-btn:hover {
+		background: var(--color-surface-tertiary);
+		color: var(--color-text-primary);
+	}
+
+	.zoom-widget-percent {
+		min-width: 44px;
+		height: 28px;
+		border: none;
+		border-radius: 6px;
+		background: transparent;
+		color: var(--color-text-secondary);
+		font-size: 11px;
+		font-weight: 600;
+		font-family: var(--font-sans);
+		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.zoom-widget-percent:hover {
+		background: var(--color-surface-tertiary);
+		color: var(--color-text-primary);
+	}
+
+	:global(.dark) .zoom-widget-btn:hover,
+	:global(.dark) .zoom-widget-percent:hover {
+		background: #1e293b;
 	}
 
 	/* ─── Floating canvas toolbar (layout + dark mode) ──────────── */

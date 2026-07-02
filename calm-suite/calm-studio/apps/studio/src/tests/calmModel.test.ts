@@ -123,6 +123,40 @@ describe('model CRUD', () => {
 		expect(model.nodes[0]['unique-id']).toBe('svc-a');
 		expect(model.nodes[0].name).toBe('SvcA');
 	});
+
+	test('applyFromCanvas merges into the model instead of replacing it, preserving top-level fields flowToCalm does not produce', () => {
+		applyFromJson({
+			...baseArch,
+			$schema: 'https://calm.finos.org/release/1.2/meta/core.json',
+			$id: 'https://example.com/my-arch.json',
+			flows: [
+				{
+					'unique-id': 'flow-1',
+					name: 'Checkout flow',
+					description: 'User checkout',
+					transitions: [],
+				},
+			],
+		} as unknown as CalmArchitecture);
+
+		const nodes: Node[] = [
+			{
+				id: 'n1',
+				type: 'service',
+				position: { x: 0, y: 0 },
+				data: { label: 'SvcA', calmId: 'svc-a', calmType: 'service' },
+			},
+		];
+		applyFromCanvas(nodes, []);
+
+		const model = getModel();
+		expect(model.nodes).toHaveLength(1);
+		expect((model as unknown as { $schema: string }).$schema).toBe(
+			'https://calm.finos.org/release/1.2/meta/core.json'
+		);
+		expect((model as unknown as { $id: string }).$id).toBe('https://example.com/my-arch.json');
+		expect((model as unknown as { flows: unknown[] }).flows).toHaveLength(1);
+	});
 });
 
 // ─── Node property mutations ──────────────────────────────────────────────────
