@@ -108,4 +108,59 @@ describe('ControlsList', () => {
 		// "Add Control" button must NOT be present in readonly mode
 		expect(queryByRole('button', { name: /add control/i })).toBeNull();
 	});
+
+	// ─── config-url / config visibility (Finding F3) ───────────────────────────
+
+	it('displays config-url as a link when a requirement has it', async () => {
+		const controlWithConfigUrl: CalmControls = {
+			'edge-protection': {
+				description: 'Edge protection control',
+				requirements: [
+					{ 'requirement-url': 'https://example.com/req', 'config-url': 'https://example.com/config.json' },
+				],
+			},
+		};
+		const { getByRole, getByText } = render(ControlsList, {
+			props: { controls: controlWithConfigUrl, onupdate: vi.fn() },
+		});
+		await fireEvent.click(getByRole('button', { name: /controls/i }));
+		await fireEvent.click(getByText('edge-protection').closest('button')!);
+
+		expect(getByText('Config URL')).toBeTruthy();
+		const link = getByText('https://example.com/config.json');
+		expect(link.getAttribute('href')).toBe('https://example.com/config.json');
+	});
+
+	it('displays config as formatted JSON when a requirement has it', async () => {
+		const controlWithConfig: CalmControls = {
+			'edge-protection': {
+				description: 'Edge protection control',
+				requirements: [
+					{
+						'requirement-url': 'https://example.com/req',
+						config: { threshold: 5, enabled: true },
+					} as CalmControls['edge-protection']['requirements'][number],
+				],
+			},
+		};
+		const { getByRole, getByText } = render(ControlsList, {
+			props: { controls: controlWithConfig, onupdate: vi.fn() },
+		});
+		await fireEvent.click(getByRole('button', { name: /controls/i }));
+		await fireEvent.click(getByText('edge-protection').closest('button')!);
+
+		expect(getByText('Config')).toBeTruthy();
+		expect(getByText(/"threshold": 5/)).toBeTruthy();
+	});
+
+	it('does not render a config row when neither config-url nor config is present', async () => {
+		const { getByRole, getByText, queryByText } = render(ControlsList, {
+			props: { controls: securityControl, onupdate: vi.fn() },
+		});
+		await fireEvent.click(getByRole('button', { name: /controls/i }));
+		await fireEvent.click(getByText('security-domain').closest('button')!);
+
+		expect(queryByText('Config URL')).toBeNull();
+		expect(queryByText('Config')).toBeNull();
+	});
 });

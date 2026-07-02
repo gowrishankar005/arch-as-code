@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import NodeBadges from './NodeBadges.svelte';
 	import EditableLabel from './EditableLabel.svelte';
 	let { id, data, selected }: NodeProps = $props();
 	const errorCount = $derived((data as Record<string, unknown>).validationErrors as number ?? 0);
@@ -22,6 +23,11 @@
 
 <div class="node" class:selected>
 	<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
+	<NodeBadges
+		controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
+		dataClassification={(data as Record<string, unknown>)['data-classification'] as string | undefined}
+		details={(data as Record<string, unknown>).details as { 'detailed-architecture'?: string; 'required-pattern'?: string } | undefined}
+	/>
 	<svg width="40" height="48" viewBox="0 0 40 48" fill="none" aria-hidden="true">
 		<path
 			d="M20 2 L36 9 L36 26 Q36 40 20 46 Q4 40 4 26 L4 9 Z"

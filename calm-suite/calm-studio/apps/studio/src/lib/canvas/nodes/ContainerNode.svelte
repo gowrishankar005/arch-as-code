@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import NodeBadges from './NodeBadges.svelte';
 	import EditableLabel from './EditableLabel.svelte';
 	let { id, data, selected }: NodeProps = $props();
 
@@ -38,6 +39,11 @@
 {#if collapsed}
 	<div class="container collapsed" class:selected>
 		<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
+		<NodeBadges
+			controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
+			dataClassification={(data as Record<string, unknown>)['data-classification'] as string | undefined}
+			details={(data as Record<string, unknown>).details as { 'detailed-architecture'?: string; 'required-pattern'?: string } | undefined}
+		/>
 		<div class="collapsed-row">
 			<div class="dot"></div>
 			<EditableLabel
@@ -53,6 +59,11 @@
 {:else}
 	<div class="container expanded" class:selected>
 		<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
+		<NodeBadges
+			controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
+			dataClassification={(data as Record<string, unknown>)['data-classification'] as string | undefined}
+			details={(data as Record<string, unknown>).details as { 'detailed-architecture'?: string; 'required-pattern'?: string } | undefined}
+		/>
 		<div class="header">
 			<div class="header-left">
 				<div class="dot"></div>
