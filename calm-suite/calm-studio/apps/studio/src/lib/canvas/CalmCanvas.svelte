@@ -49,6 +49,7 @@
 	import { resolvePackNode } from '@calmstudio/extensions';
 	import EdgeMarkers from './edges/EdgeMarkers.svelte';
 	import NodeSearch from '$lib/search/NodeSearch.svelte';
+	import LayersPanel from './LayersPanel.svelte';
 	import { pushSnapshot, undo, redo } from '$lib/stores/history.svelte';
 	import { copy, paste } from '$lib/stores/clipboard.svelte';
 	import { applyFromCanvas } from '$lib/stores/calmModel.svelte';
@@ -308,6 +309,16 @@
 		nodes = nodes.map((n) => ({ ...n, selected: false }));
 	}
 
+	// ─── Layers panel (draw.io-style outline of the containment tree) ───────
+
+	let layersOpen = $state(false);
+	let layersSelectedId = $state<string | null>(null);
+
+	function handleLayerSelect(calmId: string) {
+		layersSelectedId = calmId;
+		navigateToNode(calmId);
+	}
+
 	// ─── DnD drop handler ────────────────────────────────────────────────────
 
 	function handleDragOver(event: DragEvent) {
@@ -558,6 +569,50 @@
 		edgeMenu = null;
 	}
 
+	// ─── Node context menu (right-click for duplicate/delete) ───────────────
+
+	let nodeMenu = $state<{ x: number; y: number; nodeId: string } | null>(null);
+
+	function handleNodeContextMenu(event: { event: MouseEvent; node: Node }) {
+		if (readonly) return;
+		event.event.preventDefault();
+		nodeMenu = {
+			x: event.event.clientX,
+			y: event.event.clientY,
+			nodeId: event.node.id,
+		};
+	}
+
+	function duplicateNodeFromMenu() {
+		if (!nodeMenu) return;
+		const target = nodes.find((n) => n.id === nodeMenu!.nodeId);
+		nodeMenu = null;
+		if (!target) return;
+		copy([{ ...target, selected: true }]);
+		const newNodes = paste(nodes);
+		if (newNodes.length > 0) {
+			pushSnapshot(nodes, edges);
+			nodes = [...nodes, ...newNodes];
+			applyFromCanvas(nodes, edges);
+			notifyChange();
+		}
+	}
+
+	function deleteNodeFromMenu() {
+		if (!nodeMenu) return;
+		const nodeId = nodeMenu.nodeId;
+		nodeMenu = null;
+		pushSnapshot(nodes, edges);
+		nodes = nodes.filter((n) => n.id !== nodeId && n.parentId !== nodeId);
+		edges = edges.filter((e) => e.source !== nodeId && e.target !== nodeId);
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
+	function closeNodeMenu() {
+		nodeMenu = null;
+	}
+
 	// ─── Alignment guides (draw.io-style snap-line hints) ────────────────────
 
 	let alignmentGuides = $state<AlignmentGuide[]>([]);
@@ -663,6 +718,31 @@
 		nodes = nodes.map((n) => ({ ...n, selected: true }));
 	}
 
+	/**
+	 * Nudge every selected node by (dx, dy) — bound to arrow keys (1px) and
+	 * Shift+arrow (10px) for pixel-precise positioning, matching draw.io.
+	 * Skips entirely if nothing is selected so plain arrow-key presses don't
+	 * interfere with typing inside inputs (shortcut action only fires when
+	 * the canvas wrapper has focus-within, not while editing text elsewhere).
+	 */
+	function nudgeSelected(dx: number, dy: number) {
+		if (readonly) return;
+		// Skip while typing (inline label rename input, search box) so arrow
+		// keys move the text cursor instead of the node — the shortcut action
+		// is scoped to this canvas wrapper, so events from any focused
+		// descendant (including EditableLabel's edit input) reach it.
+		const tag = document.activeElement?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.closest('[contenteditable]')) return;
+		const hasSelection = nodes.some((n) => n.selected);
+		if (!hasSelection) return;
+		pushSnapshot(nodes, edges);
+		nodes = nodes.map((n) =>
+			n.selected ? { ...n, position: { x: n.position.x + dx, y: n.position.y + dy } } : n
+		);
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
 	function handleToggleSearch() {
 		searchOpen = !searchOpen;
 		if (!searchOpen) {
@@ -741,6 +821,14 @@
 			{ key: 'v', modifier: ['meta'], callback: handlePaste },
 			{ key: 'a', modifier: ['meta'], callback: handleSelectAll },
 			{ key: 'f', modifier: ['meta'], callback: handleToggleSearch },
+			{ key: 'ArrowUp', callback: () => nudgeSelected(0, -1) },
+			{ key: 'ArrowDown', callback: () => nudgeSelected(0, 1) },
+			{ key: 'ArrowLeft', callback: () => nudgeSelected(-1, 0) },
+			{ key: 'ArrowRight', callback: () => nudgeSelected(1, 0) },
+			{ key: 'ArrowUp', modifier: ['shift'], callback: () => nudgeSelected(0, -10) },
+			{ key: 'ArrowDown', modifier: ['shift'], callback: () => nudgeSelected(0, 10) },
+			{ key: 'ArrowLeft', modifier: ['shift'], callback: () => nudgeSelected(-10, 0) },
+			{ key: 'ArrowRight', modifier: ['shift'], callback: () => nudgeSelected(10, 0) },
 		],
 	}}
 >
@@ -767,6 +855,7 @@
 		onnodedrag={handleNodeDrag}
 		onnodedragstop={handleNodeDragStop}
 		onedgecontextmenu={handleEdgeContextMenu}
+		onnodecontextmenu={handleNodeContextMenu}
 		onmove={handleMove}
 		onselectionchange={handleSelectionChange}
 		onnodedblclick={(e) => {
@@ -792,6 +881,32 @@
 		/>
 	{/if}
 
+	<!-- Layers/outline panel toggle — draw.io-style containment tree for navigating large diagrams -->
+	{#if !readonly}
+		{#if layersOpen}
+			<LayersPanel
+				{nodes}
+				selectedNodeId={layersSelectedId}
+				onselect={handleLayerSelect}
+				onclose={() => (layersOpen = false)}
+			/>
+		{:else}
+			<button
+				type="button"
+				class="layers-toggle-btn"
+				onclick={() => (layersOpen = true)}
+				aria-label="Show layers panel"
+				title="Layers"
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+					<polygon points="12 2 2 7 12 12 22 7 12 2" />
+					<polyline points="2 17 12 22 22 17" />
+					<polyline points="2 12 12 17 22 12" />
+				</svg>
+			</button>
+		{/if}
+	{/if}
+
 	<!-- Edge type context menu — right-click an edge to change its type -->
 	{#if edgeMenu}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -812,6 +927,26 @@
 						{opt.label}
 					</button>
 				{/each}
+			</div>
+		</div>
+	{/if}
+
+	<!-- Node context menu — right-click a node to duplicate/delete it -->
+	{#if nodeMenu}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="edge-menu-backdrop" onclick={closeNodeMenu}>
+			<div
+				class="edge-menu"
+				style="left: {nodeMenu.x}px; top: {nodeMenu.y}px;"
+				onclick={(e) => e.stopPropagation()}
+			>
+				<button type="button" class="edge-menu-item" onclick={duplicateNodeFromMenu}>
+					Duplicate
+				</button>
+				<button type="button" class="edge-menu-item edge-menu-item-danger" onclick={deleteNodeFromMenu}>
+					Delete
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -875,6 +1010,42 @@
 	}
 
 	:global(.dark) .edge-menu-item:hover {
+		background: #1e293b;
+	}
+
+	.edge-menu-item-danger {
+		color: #dc2626;
+	}
+
+	.edge-menu-item-danger:hover {
+		background: rgba(220, 38, 38, 0.08);
+	}
+
+	.layers-toggle-btn {
+		position: absolute;
+		left: 12px;
+		top: 12px;
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 9px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface);
+		color: var(--color-text-secondary);
+		cursor: pointer;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+		transition: all 0.15s ease;
+	}
+
+	.layers-toggle-btn:hover {
+		background: var(--color-surface-tertiary);
+		color: var(--color-text-primary);
+	}
+
+	:global(.dark) .layers-toggle-btn:hover {
 		background: #1e293b;
 	}
 
