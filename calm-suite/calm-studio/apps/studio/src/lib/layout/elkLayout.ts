@@ -15,7 +15,10 @@
  * Sub-flow nesting is handled by @xyflow/svelte parentId independently.
  */
 
-import ELK from 'elkjs/lib/elk.bundled.js';
+import ELKSync from 'elkjs/lib/elk.bundled.js';
+import ELKApi from 'elkjs/lib/elk-api.js';
+// eslint-disable-next-line import/no-unresolved -- Vite worker import, typed via src/vite-env.d.ts
+import ElkWorkerCtor from 'elkjs/lib/elk-worker.js?worker';
 import type { ElkNode, ElkExtendedEdge, ElkPoint } from 'elkjs/lib/elk.bundled.js';
 import type {
 	CalmArchitecture,
@@ -92,7 +95,18 @@ const NODE_HEIGHT = 70;
 
 // ─── ELK instance ─────────────────────────────────────────────────────────────
 
-const elk = new ELK();
+/**
+ * Runs ELK layout on a Web Worker when available (real browsers), keeping
+ * the main thread responsive for large architectures. Falls back to the
+ * synchronous bundled engine when Worker doesn't exist — SSR and vitest's
+ * jsdom test environment both lack a Worker global, so this fallback is
+ * also what every existing test exercises; the worker path is verified by
+ * code inspection and a manual browser check, not by an automated test.
+ */
+const elk =
+	typeof Worker !== 'undefined'
+		? new ELKApi({ workerFactory: () => new ElkWorkerCtor() })
+		: new ELKSync();
 
 // ─── layoutCalm ──────────────────────────────────────────────────────────────
 
