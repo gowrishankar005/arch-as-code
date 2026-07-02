@@ -41,7 +41,7 @@
 
 	import { nodeTypes, resolveNodeType } from './nodeTypes';
 	import { edgeTypes, DEFAULT_EDGE_TYPE } from './edgeTypes';
-	import { makeContainment, isContainmentType } from './containment';
+	import { makeContainment, removeContainment, isContainmentType } from './containment';
 	import { resolvePackNode } from '@calmstudio/extensions';
 	import EdgeMarkers from './edges/EdgeMarkers.svelte';
 	import NodeSearch from '$lib/search/NodeSearch.svelte';
@@ -378,6 +378,45 @@
 		notifyChange();
 	}
 
+	// ─── Edge reconnection (drag an endpoint to a different node) ───────────
+
+	/**
+	 * Gates edge reconnection behind readonly mode. EdgeReconnectAnchor calls
+	 * this before committing the endpoint change to Svelte Flow's internal
+	 * edges store — returning a falsy value aborts the reconnect entirely, so
+	 * this is the correct hook point for readonly (there's no per-edge
+	 * `reconnectable` flag in this @xyflow/svelte version).
+	 */
+	function handleBeforeReconnect(newEdge: Edge): Edge | false {
+		return readonly ? false : newEdge;
+	}
+
+	/**
+	 * Fired after EdgeReconnectAnchor has already updated the edge's
+	 * source/target in Svelte Flow's internal store (which `bind:edges`
+	 * mirrors back into our `edges` prop). Syncs the change to the CALM model
+	 * and re-establishes containment when a deployed-in/composed-of edge's
+	 * child endpoint moved to a different node.
+	 */
+	function handleReconnect(oldEdge: Edge, newConnection: Connection) {
+		if (readonly) return;
+
+		pushSnapshot(nodes, edges);
+
+		if (isContainmentType(oldEdge.type ?? '')) {
+			// Container (source) is unchanged in the common case; child (target)
+			// moving to a different node means the old child must be un-nested
+			// before the new pairing is established.
+			if (oldEdge.target !== newConnection.target) {
+				nodes = removeContainment(oldEdge.target, nodes);
+			}
+			nodes = makeContainment(newConnection.source, newConnection.target, nodes);
+		}
+
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
 	// ─── Edge context menu (right-click to change type) ─────────────────────
 
 	let edgeMenu = $state<{ x: number; y: number; edgeId: string } | null>(null);
@@ -563,6 +602,8 @@
 		panOnDrag={true}
 		panOnScroll={false}
 		onconnect={handleConnect}
+		onbeforereconnect={handleBeforeReconnect}
+		onreconnect={handleReconnect}
 		onnodedragstop={handleNodeDragStop}
 		onedgecontextmenu={handleEdgeContextMenu}
 		onselectionchange={handleSelectionChange}

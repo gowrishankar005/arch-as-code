@@ -8,7 +8,7 @@
   Flow overlays render as sibling group (outside the dimmed wrapper).
 -->
 <script lang="ts">
-	import { BaseEdge, EdgeLabel, getSmoothStepPath, type EdgeProps } from '@xyflow/svelte';
+	import { BaseEdge, EdgeLabel, EdgeReconnectAnchor, getSmoothStepPath, type EdgeProps } from '@xyflow/svelte';
 	import FlowOverlay from './FlowOverlay.svelte';
 	import type { CalmTransition } from '@calmstudio/calm-core';
 
@@ -64,6 +64,8 @@
 		markerEnd="url(#marker-arrow-filled)"
 		style={finalStyle}
 	/>
+	<EdgeReconnectAnchor type="source" position={{ x: sourceX, y: sourceY }} />
+	<EdgeReconnectAnchor type="target" position={{ x: targetX, y: targetY }} />
 
 	{#if protocolLabel}
 		<EdgeLabel x={labelX} y={labelY} class="nodrag nopan">
