@@ -561,6 +561,26 @@
 		const edgeId = selectedEdges.length > 0 ? selectedEdges[0].id : null;
 		onselectionchange?.(nodeId, edgeId);
 	}
+
+	// ─── Container collapse/expand (S3) ──────────────────────────────────────
+
+	/**
+	 * ContainerNode.svelte dispatches this on `document` when its collapse
+	 * toggle is clicked. Collapse state lives only in Svelte Flow node data
+	 * (never written to the CALM model) — it's a canvas display concern, not
+	 * architectural data, so it resets on fresh file load but survives
+	 * re-projection within a session (see handleCodeChange/handlePropertyMutation
+	 * in +page.svelte, which now carry it forward like selection state).
+	 */
+	function handleToggleCollapse(event: Event) {
+		const { nodeId, collapsed } = (event as CustomEvent<{ nodeId: string; collapsed: boolean }>).detail;
+		nodes = nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, collapsed } } : n));
+	}
+
+	$effect(() => {
+		document.addEventListener('node:toggle-collapse', handleToggleCollapse);
+		return () => document.removeEventListener('node:toggle-collapse', handleToggleCollapse);
+	});
 </script>
 
 <!--

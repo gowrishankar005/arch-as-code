@@ -592,14 +592,20 @@
 					// Project back to Svelte Flow format, preserving positions and selection
 					const projected = calmToFlow(parsed, positionMap);
 					const selectionMap = new Map<string, boolean>();
+					const collapsedMap = new Map<string, boolean>();
 					for (const n of nodes) {
-						if (n.selected && n.data?.calmId) selectionMap.set(n.data.calmId as string, true);
+						if (n.data?.calmId) {
+							if (n.selected) selectionMap.set(n.data.calmId as string, true);
+							if (n.data.collapsed) collapsedMap.set(n.data.calmId as string, true);
+						}
 					}
-					nodes = projected.nodes.map((n) =>
-						selectionMap.has(n.data?.calmId as string)
-							? { ...n, selected: true }
-							: n
-					);
+					nodes = projected.nodes.map((n) => ({
+						...n,
+						...(selectionMap.has(n.data?.calmId as string) && { selected: true }),
+						...(collapsedMap.has(n.data?.calmId as string) && {
+							data: { ...n.data, collapsed: true },
+						}),
+					}));
 					edges = projected.edges;
 
 					// Mark dirty on code-driven changes
@@ -624,6 +630,7 @@
 		const model = getModel();
 		const positionMap = new Map<string, { x: number; y: number; width?: number; height?: number }>();
 		const selectionMap = new Map<string, boolean>();
+		const collapsedMap = new Map<string, boolean>();
 		for (const n of nodes) {
 			if (n.data?.calmId) {
 				positionMap.set(n.data.calmId as string, {
@@ -632,16 +639,18 @@
 					height: n.measured?.height ?? n.height,
 				});
 				if (n.selected) selectionMap.set(n.data.calmId as string, true);
+				if (n.data.collapsed) collapsedMap.set(n.data.calmId as string, true);
 			}
 		}
 
 		const projected = calmToFlow(model, positionMap);
-		// Preserve node selection state so SvelteFlow doesn't fire deselection
-		nodes = projected.nodes.map((n) =>
-			selectionMap.has(n.data?.calmId as string)
-				? { ...n, selected: true }
-				: n
-		);
+		// Preserve node selection state and collapse state so SvelteFlow doesn't
+		// fire deselection and containers don't spring back open (S3).
+		nodes = projected.nodes.map((n) => ({
+			...n,
+			...(selectionMap.has(n.data?.calmId as string) && { selected: true }),
+			...(collapsedMap.has(n.data?.calmId as string) && { data: { ...n.data, collapsed: true } }),
+		}));
 
 		// Update edge data in place rather than replacing the array.
 		// Replacing edges causes Svelte Flow to lose internal state (selection,

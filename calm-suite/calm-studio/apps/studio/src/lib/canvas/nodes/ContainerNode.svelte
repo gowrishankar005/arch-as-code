@@ -5,14 +5,13 @@
 	import ValidationBadge from './ValidationBadge.svelte';
 	let { id, data, selected }: NodeProps = $props();
 
-	let collapsed = $state(data.collapsed ?? false);
+	const collapsed = $derived((data as Record<string, unknown>).collapsed === true);
 	const errorCount = $derived((data as Record<string, unknown>).validationErrors as number ?? 0);
 	const warnCount = $derived((data as Record<string, unknown>).validationWarnings as number ?? 0);
 
 	function toggleCollapse() {
-		collapsed = !collapsed;
 		const event = new CustomEvent('node:toggle-collapse', {
-			detail: { nodeId: id, collapsed },
+			detail: { nodeId: id, collapsed: !collapsed },
 			bubbles: true,
 			composed: true,
 		});
