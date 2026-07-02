@@ -41,7 +41,7 @@
 
 	import { nodeTypes, resolveNodeType } from './nodeTypes';
 	import { edgeTypes, DEFAULT_EDGE_TYPE } from './edgeTypes';
-	import { makeContainment, removeContainment, isContainmentType } from './containment';
+	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType } from './containment';
 	import { resolvePackNode } from '@calmstudio/extensions';
 	import EdgeMarkers from './edges/EdgeMarkers.svelte';
 	import NodeSearch from '$lib/search/NodeSearch.svelte';
@@ -373,6 +373,7 @@
 		// If changing TO a containment type, establish containment
 		if (isContainmentType(newType)) {
 			nodes = makeContainment(edge.source, edge.target, nodes);
+			nodes = autoResizeAncestors(edge.target, nodes);
 		}
 		applyFromCanvas(nodes, edges);
 		notifyChange();
@@ -411,6 +412,7 @@
 				nodes = removeContainment(oldEdge.target, nodes);
 			}
 			nodes = makeContainment(newConnection.source, newConnection.target, nodes);
+			nodes = autoResizeAncestors(newConnection.target, nodes);
 		}
 
 		applyFromCanvas(nodes, edges);
@@ -491,6 +493,7 @@
 				if (isInsideBounds(draggedNode.position, bounds)) {
 					pushSnapshot(nodes, edges);
 					nodes = makeContainment(candidate.id, draggedNode.id, nodes);
+					nodes = autoResizeAncestors(draggedNode.id, nodes);
 					applyFromCanvas(nodes, edges);
 					notifyChange();
 					return;

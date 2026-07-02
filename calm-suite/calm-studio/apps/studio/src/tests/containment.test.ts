@@ -4,7 +4,13 @@
 
 import { describe, test, expect } from 'vitest';
 import type { Node } from '@xyflow/svelte';
-import { makeContainment, removeContainment, isContainmentType } from '$lib/canvas/containment';
+import {
+	makeContainment,
+	removeContainment,
+	autoResizeContainer,
+	autoResizeAncestors,
+	isContainmentType,
+} from '$lib/canvas/containment';
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -136,6 +142,156 @@ describe('removeContainment', () => {
 		const updatedChild2 = result.find((n) => n.id === 'child-2')!;
 		expect(updatedChild2.parentId).toBe('parent-1');
 		expect(updatedChild2.extent).toBe('parent');
+	});
+});
+
+// ─── autoResizeContainer ──────────────────────────────────────────────────────
+
+describe('autoResizeContainer', () => {
+	test('is a no-op when the container has no children', () => {
+		const container = makeNode('vpc', 'container', { width: 300, height: 200 });
+		const result = autoResizeContainer('vpc', [container]);
+		const updated = result.find((n) => n.id === 'vpc')!;
+		expect(updated.width).toBe(300);
+		expect(updated.height).toBe(200);
+	});
+
+	test('grows the container to fit a child that exceeds current bounds', () => {
+		const container = makeNode('vpc', 'container', { width: 100, height: 100 });
+		const child = makeNode('subnet', 'service', {
+			parentId: 'vpc',
+			position: { x: 50, y: 50 },
+			width: 180,
+			height: 70,
+		});
+
+		const result = autoResizeContainer('vpc', [container, child]);
+		const updated = result.find((n) => n.id === 'vpc')!;
+
+		// requiredWidth = 32 (left) + (230 - 50) + 32 (right) = 244
+		// requiredHeight = 48 (top) + (120 - 50) + 32 (bottom) = 150
+		expect(updated.width).toBe(244);
+		expect(updated.height).toBe(150);
+	});
+
+	test('never shrinks a container below its current size', () => {
+		const container = makeNode('vpc', 'container', { width: 1000, height: 1000 });
+		const child = makeNode('subnet', 'service', {
+			parentId: 'vpc',
+			position: { x: 0, y: 0 },
+			width: 180,
+			height: 70,
+		});
+
+		const result = autoResizeContainer('vpc', [container, child]);
+		const updated = result.find((n) => n.id === 'vpc')!;
+
+		expect(updated.width).toBe(1000);
+		expect(updated.height).toBe(1000);
+	});
+
+	test('fits the bounding box of multiple children', () => {
+		const container = makeNode('vpc', 'container', { width: 50, height: 50 });
+		const childA = makeNode('a', 'service', {
+			parentId: 'vpc',
+			position: { x: 0, y: 0 },
+			width: 100,
+			height: 50,
+		});
+		const childB = makeNode('b', 'service', {
+			parentId: 'vpc',
+			position: { x: 200, y: 0 },
+			width: 100,
+			height: 50,
+		});
+
+		const result = autoResizeContainer('vpc', [container, childA, childB]);
+		const updated = result.find((n) => n.id === 'vpc')!;
+
+		// bbox: minX=0, maxX=300 (childB.x + width), width = 32+300+32 = 364
+		expect(updated.width).toBe(364);
+	});
+
+	test('does not mutate the original nodes array', () => {
+		const container = makeNode('vpc', 'container', { width: 50, height: 50 });
+		const child = makeNode('subnet', 'service', {
+			parentId: 'vpc',
+			position: { x: 50, y: 50 },
+			width: 180,
+			height: 70,
+		});
+		const nodes = [container, child];
+
+		autoResizeContainer('vpc', nodes);
+
+		expect(nodes[0]).toBe(container);
+		expect(container.width).toBe(50);
+	});
+});
+
+// ─── autoResizeAncestors ──────────────────────────────────────────────────────
+
+describe('autoResizeAncestors', () => {
+	test('resizes the immediate parent of the given node', () => {
+		const vpc = makeNode('vpc', 'container', { width: 50, height: 50 });
+		const subnet = makeNode('subnet', 'service', {
+			parentId: 'vpc',
+			position: { x: 100, y: 100 },
+			width: 180,
+			height: 70,
+		});
+
+		const result = autoResizeAncestors('subnet', [vpc, subnet]);
+		const updatedVpc = result.find((n) => n.id === 'vpc')!;
+
+		expect(updatedVpc.width).toBeGreaterThan(50);
+	});
+
+	test('propagates resizing up through multiple nesting levels', () => {
+		const vpc = makeNode('vpc', 'container', { width: 10, height: 10 });
+		const subnet = makeNode('subnet', 'container', {
+			parentId: 'vpc',
+			position: { x: 0, y: 0 },
+			width: 10,
+			height: 10,
+		});
+		const instance = makeNode('instance', 'service', {
+			parentId: 'subnet',
+			position: { x: 300, y: 300 },
+			width: 180,
+			height: 70,
+		});
+
+		const result = autoResizeAncestors('instance', [vpc, subnet, instance]);
+
+		const updatedSubnet = result.find((n) => n.id === 'subnet')!;
+		expect(updatedSubnet.width).toBeGreaterThan(10);
+
+		// vpc must grow to fit the now-larger subnet
+		const updatedVpc = result.find((n) => n.id === 'vpc')!;
+		expect(updatedVpc.width).toBeGreaterThan(10);
+	});
+
+	test('is a no-op for a top-level node with no parent', () => {
+		const node = makeNode('standalone', 'service');
+		const result = autoResizeAncestors('standalone', [node]);
+		expect(result).toEqual([node]);
+	});
+
+	test('does not mutate the original nodes array', () => {
+		const vpc = makeNode('vpc', 'container', { width: 10, height: 10 });
+		const subnet = makeNode('subnet', 'service', {
+			parentId: 'vpc',
+			position: { x: 100, y: 100 },
+			width: 180,
+			height: 70,
+		});
+		const nodes = [vpc, subnet];
+
+		autoResizeAncestors('subnet', nodes);
+
+		expect(nodes[0]).toBe(vpc);
+		expect(vpc.width).toBe(10);
 	});
 });
 
