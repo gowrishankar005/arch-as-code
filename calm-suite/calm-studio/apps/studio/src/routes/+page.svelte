@@ -392,7 +392,7 @@
 
 		if (subArch.nodes.length === 0) return;
 
-		const positions = await layoutCalm(subArch, new Set(), layoutDirection);
+		const { positions } = await layoutCalm(subArch, new Set(), layoutDirection);
 		c4PositionOverrides = positions;
 
 		await tick();
@@ -747,7 +747,7 @@
 		applyFromJson(parsed);
 
 		// Auto-layout with no pinned nodes on fresh import
-		const positionMap = await layoutCalm(parsed, new Set(), 'DOWN');
+		const { positions: positionMap } = await layoutCalm(parsed, new Set(), 'DOWN');
 
 		// Project to Svelte Flow
 		const projected = calmToFlow(parsed, positionMap);
@@ -1045,7 +1045,7 @@
 		);
 
 		// Run ELK for free (unpinned) nodes
-		const elkPositions = await layoutCalm(model, pinnedIds, direction);
+		const { positions: elkPositions } = await layoutCalm(model, pinnedIds, direction);
 
 		// Build final position map: ELK results + pinned node current positions
 		const finalPositions = new Map<string, { x: number; y: number }>();

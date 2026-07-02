@@ -16,7 +16,7 @@
  */
 
 import ELK from 'elkjs/lib/elk.bundled.js';
-import type { ElkNode, ElkExtendedEdge } from 'elkjs/lib/elk.bundled.js';
+import type { ElkNode, ElkExtendedEdge, ElkPoint } from 'elkjs/lib/elk.bundled.js';
 import type {
 	CalmArchitecture,
 	CalmRelationship,
@@ -29,6 +29,15 @@ export type LayoutDirection = 'DOWN' | 'RIGHT' | 'UP';
 
 /** Position map: node unique-id -> {x, y, width?, height?} from ELK layout. */
 export type PositionMap = Map<string, { x: number; y: number; width?: number; height?: number }>;
+
+/** A single edge's ELK-computed route: startPoint + bendPoints + endPoint, in graph-absolute coordinates. */
+export type EdgeRoute = { points: ElkPoint[] };
+
+/** Edge route map: edge/relationship unique-id (matching Svelte Flow edge id) -> ELK-computed route. */
+export type EdgeRouteMap = Map<string, EdgeRoute>;
+
+/** Result of {@link layoutCalm}: node positions plus ELK's computed edge routing. */
+export type LayoutResult = { positions: PositionMap; edgeRoutes: EdgeRouteMap };
 
 /** The set of CALM 1.2 variant keys that imply containment. */
 const CONTAINMENT_VARIANTS: ReadonlySet<CalmRelationshipVariant> = new Set([
@@ -96,15 +105,15 @@ const elk = new ELK();
  * @param arch - The CALM architecture to lay out.
  * @param pinnedIds - Set of node unique-ids to exclude from layout.
  * @param direction - Layout direction: 'DOWN', 'RIGHT', 'UP'. Defaults to 'DOWN'.
- * @returns A Map of node unique-id to {x, y, width?, height?} for all NON-PINNED nodes.
+ * @returns Node positions (for all NON-PINNED nodes) plus ELK's computed edge routing.
  */
 export async function layoutCalm(
 	arch: CalmArchitecture,
 	pinnedIds: Set<string>,
 	direction: LayoutDirection = 'DOWN'
-): Promise<PositionMap> {
+): Promise<LayoutResult> {
 	const freeNodes = arch.nodes.filter((n) => !pinnedIds.has(n['unique-id']));
-	if (freeNodes.length === 0) return new Map();
+	if (freeNodes.length === 0) return { positions: new Map(), edgeRoutes: new Map() };
 
 	const freeNodeIds = new Set(freeNodes.map((n) => n['unique-id']));
 
@@ -280,12 +289,14 @@ export async function layoutCalm(
 				elkNode.layoutOptions = {
 					'elk.algorithm': 'layered',
 					'elk.direction': edgeDirection,
+					'elk.edgeRouting': 'ORTHOGONAL',
 					'elk.padding': '[top=48,left=32,bottom=32,right=32]',
 					'elk.spacing.nodeNode': '50',
 					'elk.layered.spacing.nodeNodeBetweenLayers': '60',
 					'elk.spacing.edgeNode': '30',
 					'elk.spacing.edgeEdge': '20',
 					'elk.layered.spacing.edgeNodeBetweenLayers': '30',
+					'elk.layered.spacing.edgeEdgeBetweenLayers': '15',
 					'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
 				};
 			} else {
@@ -341,11 +352,13 @@ export async function layoutCalm(
 		layoutOptions: {
 			'elk.algorithm': 'layered',
 			'elk.direction': direction,
+			'elk.edgeRouting': 'ORTHOGONAL',
 			'elk.layered.spacing.nodeNodeBetweenLayers': '120',
 			'elk.spacing.nodeNode': '100',
 			'elk.spacing.edgeNode': '40',
 			'elk.spacing.edgeEdge': '25',
 			'elk.layered.spacing.edgeNodeBetweenLayers': '40',
+			'elk.layered.spacing.edgeEdgeBetweenLayers': '15',
 			'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
 		},
 		children: topLevelNodes,
@@ -371,7 +384,32 @@ export async function layoutCalm(
 	}
 	extractPositions(layouted);
 
-	return positionMap;
+	// Extract edge routes recursively from ELK result. Edge sections are given
+	// relative to the coordinate frame of the node that owns the `edges` array
+	// (root for topEdges, each container for its innerEdges), so we accumulate
+	// ancestor x/y offsets while descending to produce graph-absolute points.
+	//
+	// Synthetic ids (`cross-*`, `chain-*`) exist only to hint ELK about
+	// container ordering — they don't correspond to a real CALM relationship /
+	// Svelte Flow edge, so they're excluded from the returned route map.
+	const edgeRoutes: EdgeRouteMap = new Map();
+	function extractEdgeRoutes(node: ElkNode, offsetX: number, offsetY: number) {
+		for (const edge of node.edges ?? []) {
+			if (edge.id.startsWith('cross-') || edge.id.startsWith('chain-')) continue;
+			const section = edge.sections?.[0];
+			if (!section) continue;
+			const points = [section.startPoint, ...(section.bendPoints ?? []), section.endPoint].map(
+				(p) => ({ x: p.x + offsetX, y: p.y + offsetY })
+			);
+			edgeRoutes.set(edge.id, { points });
+		}
+		for (const child of node.children ?? []) {
+			extractEdgeRoutes(child, offsetX + (child.x ?? 0), offsetY + (child.y ?? 0));
+		}
+	}
+	extractEdgeRoutes(layouted, 0, 0);
+
+	return { positions: positionMap, edgeRoutes };
 }
 
 /**
