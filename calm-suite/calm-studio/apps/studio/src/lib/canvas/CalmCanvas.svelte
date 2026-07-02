@@ -29,11 +29,11 @@
 		Background,
 		BackgroundVariant,
 		MiniMap,
+		ViewportPortal,
 		useSvelteFlow,
 		type Node,
 		type Edge,
 		type Connection,
-		type NodeDragEvent,
 		type Viewport,
 	} from '@xyflow/svelte';
 	import { shortcut } from '@svelte-put/shortcut';
@@ -42,6 +42,8 @@
 	import { nodeTypes, resolveNodeType } from './nodeTypes';
 	import { edgeTypes, DEFAULT_EDGE_TYPE } from './edgeTypes';
 	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType } from './containment';
+	import { computeAlignmentGuides, type AlignmentGuide } from './alignmentGuides';
+	import AlignmentGuides from './AlignmentGuides.svelte';
 	import { resolvePackNode } from '@calmstudio/extensions';
 	import EdgeMarkers from './edges/EdgeMarkers.svelte';
 	import NodeSearch from '$lib/search/NodeSearch.svelte';
@@ -50,6 +52,17 @@
 	import { applyFromCanvas } from '$lib/stores/calmModel.svelte';
 
 	import '@xyflow/svelte/dist/style.css';
+
+	/**
+	 * Real payload shape for onnodedrag/onnodedragstart/onnodedragstop per
+	 * NodeWrapper.svelte's actual dispatch: `{ event, targetNode, nodes }`.
+	 * There is no `NodeDragEvent` export in this @xyflow/svelte version (1.6.0)
+	 * — a stale import previously typed these handlers as `NodeDragEvent` and
+	 * read `event.node`, which is always undefined on the real payload
+	 * (`targetNode`, not `node`), silently no-op'ing drag-stop entirely
+	 * (no position sync, no drag-into-container detection).
+	 */
+	type NodeDragPayload = { event: MouseEvent | TouchEvent; targetNode: Node | null; nodes: Node[] };
 
 	// ─── Container scaffold helper ──────────────────────────────────────────
 	// When a container with defaultChildren is placed, auto-create child nodes
@@ -455,6 +468,15 @@
 		edgeMenu = null;
 	}
 
+	// ─── Alignment guides (draw.io-style snap-line hints) ────────────────────
+
+	let alignmentGuides = $state<AlignmentGuide[]>([]);
+
+	function handleNodeDrag(event: NodeDragPayload) {
+		if (readonly || !event.targetNode) return;
+		alignmentGuides = computeAlignmentGuides(event.targetNode, nodes);
+	}
+
 	// ─── Node drag-into-container ────────────────────────────────────────────
 
 	/**
@@ -474,10 +496,12 @@
 		);
 	}
 
-	function handleNodeDragStop(event: NodeDragEvent) {
+	function handleNodeDragStop(event: NodeDragPayload) {
 		if (readonly) return;
 
-		const draggedNode = event.node;
+		alignmentGuides = [];
+
+		const draggedNode = event.targetNode;
 		if (!draggedNode) return;
 		// Don't reparent nodes that are already parented or are containers
 		if (draggedNode.type === 'container' || draggedNode.parentId) return;
@@ -650,6 +674,7 @@
 		onconnect={handleConnect}
 		onbeforereconnect={handleBeforeReconnect}
 		onreconnect={handleReconnect}
+		onnodedrag={handleNodeDrag}
 		onnodedragstop={handleNodeDragStop}
 		onedgecontextmenu={handleEdgeContextMenu}
 		onselectionchange={handleSelectionChange}
@@ -662,6 +687,9 @@
 		<Background variant={BackgroundVariant.Dots} gap={20} size={1} />
 		<MiniMap pannable zoomable />
 		<EdgeMarkers />
+		<ViewportPortal target="front">
+			<AlignmentGuides guides={alignmentGuides} />
+		</ViewportPortal>
 	</SvelteFlow>
 
 	<!-- Floating search panel — shown when Cmd+F is pressed -->
