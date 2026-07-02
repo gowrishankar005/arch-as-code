@@ -45,9 +45,11 @@
 				? 'stroke: #d97706; stroke-width: 2;'
 				: undefined
 	);
-	const finalStyle = $derived(validationStyle
-		? `stroke-dasharray: 6 4; ${style ?? ''} ${validationStyle}`
-		: `stroke-dasharray: 6 4; ${style ?? ''}`);
+	// Explicit fallback stroke so the edge stays visible when exported to a
+	// standalone SVG/PNG — see ConnectsEdge.svelte for why this is needed.
+	const finalStyle = $derived(
+		`stroke: var(--xy-edge-stroke, #94a3b8); color: var(--xy-edge-stroke, #94a3b8); stroke-dasharray: 6 4; ${style ?? ''} ${validationStyle ?? ''}`
+	);
 
 	const flowTransition = $derived((data as Record<string, unknown>)?.flowTransition as CalmTransition | null | undefined);
 	const dimmed = $derived((data as Record<string, unknown>)?.dimmed === true);
