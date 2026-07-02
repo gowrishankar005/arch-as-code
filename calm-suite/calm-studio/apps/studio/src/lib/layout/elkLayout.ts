@@ -91,7 +91,7 @@ function expandLayoutPairs(
 }
 
 /** Default node dimensions — sized to fit typical node labels + icons */
-const NODE_WIDTH = 180;
+const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 
 // ─── ELK instance ─────────────────────────────────────────────────────────────
@@ -305,6 +305,7 @@ export async function layoutCalm(
 					'elk.algorithm': 'layered',
 					'elk.direction': edgeDirection,
 					'elk.edgeRouting': 'ORTHOGONAL',
+					'elk.portConstraints': 'FREE',
 					'elk.padding': '[top=48,left=32,bottom=32,right=32]',
 					'elk.spacing.nodeNode': '50',
 					'elk.layered.spacing.nodeNodeBetweenLayers': '60',
@@ -368,6 +369,7 @@ export async function layoutCalm(
 			'elk.algorithm': 'layered',
 			'elk.direction': direction,
 			'elk.edgeRouting': 'ORTHOGONAL',
+			'elk.portConstraints': 'FREE',
 			'elk.layered.spacing.nodeNodeBetweenLayers': '120',
 			'elk.spacing.nodeNode': '100',
 			'elk.spacing.edgeNode': '40',

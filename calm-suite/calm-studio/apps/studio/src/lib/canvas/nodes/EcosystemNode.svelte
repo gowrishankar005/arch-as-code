@@ -40,7 +40,7 @@
 	<EditableLabel
 		nodeId={(data as Record<string, unknown>).calmId as string ?? id}
 		value={(data.label ?? data.calmId) as string}
-		style="text-align: center; max-width: 80px;"
+		style="text-align: center; max-width: 108px;"
 	/>
 </div>
 

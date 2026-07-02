@@ -91,7 +91,7 @@
 
 <style>
 	.label {
-		font-size: 10px;
+		font-size: 11.5px;
 		font-weight: 600;
 		color: var(--node-label-color);
 		overflow: hidden;
@@ -100,7 +100,7 @@
 		display: inline-block;
 	}
 	.label-edit {
-		font-size: 10px;
+		font-size: 11.5px;
 		font-weight: 600;
 		font-family: inherit;
 		color: var(--node-label-color);

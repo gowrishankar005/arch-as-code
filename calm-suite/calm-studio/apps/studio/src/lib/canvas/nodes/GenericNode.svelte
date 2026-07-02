@@ -32,7 +32,7 @@
 	<EditableLabel
 		nodeId={(data as Record<string, unknown>).calmId as string ?? id}
 		value={(data.label ?? data.calmId) as string}
-		style="text-align: center; max-width: 100px;"
+		style="text-align: center; max-width: 128px;"
 	/>
 	{#if data.calmType}
 		<span class="badge">{data.calmType}</span>
