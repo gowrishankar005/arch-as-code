@@ -25,6 +25,7 @@ import type {
 	CalmRelationship,
 	CalmRelationshipVariant
 } from '@calmstudio/calm-core';
+import { getReferencedNodeIds } from '@calmstudio/calm-core';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -436,4 +437,93 @@ function findTopLevelAncestor(nodeId: string, childToParent: Map<string, string>
 		current = childToParent.get(current)!;
 	}
 	return current;
+}
+
+/**
+ * Matches the container padding elkLayout.ts applies to nested container
+ * layout options above (`elk.padding`), so subtree-only layout lines up
+ * with what a full layoutCalm pass would have produced for the same nodes.
+ */
+const SUBTREE_PADDING = { top: 48, left: 32 };
+
+/**
+ * Recursively collects every descendant of `containerId` via composed-of /
+ * deployed-in containment relationships (children, grandchildren, etc.).
+ */
+function collectDescendants(arch: CalmArchitecture, containerId: string): Set<string> {
+	const parentChildren = new Map<string, Set<string>>();
+	for (const rel of arch.relationships) {
+		for (const pair of expandLayoutPairs(rel)) {
+			if (!CONTAINMENT_VARIANTS.has(pair.variant)) continue;
+			if (!parentChildren.has(pair.source)) parentChildren.set(pair.source, new Set());
+			parentChildren.get(pair.source)!.add(pair.target);
+		}
+	}
+
+	const result = new Set<string>();
+	const stack = Array.from(parentChildren.get(containerId) ?? []);
+	while (stack.length > 0) {
+		const id = stack.pop()!;
+		if (result.has(id)) continue;
+		result.add(id);
+		for (const child of parentChildren.get(id) ?? []) stack.push(child);
+	}
+	return result;
+}
+
+/**
+ * Runs ELK layout scoped to a single container's descendants, leaving every
+ * node outside that subtree untouched. For incremental changes (e.g. adding
+ * one node to a container) this avoids the visual disruption of a full
+ * layoutCalm pass re-flowing the entire diagram — only the affected
+ * container's interior moves.
+ *
+ * Returned positions are container-relative (offset by the same padding
+ * elkLayout.ts uses for nested containers), matching Svelte Flow's
+ * parent-relative coordinate convention for a node with `parentId` set —
+ * callers can apply them directly to the container's children without
+ * further transformation.
+ *
+ * @param arch - The full CALM architecture (used to find descendants and
+ *   the relationships between them; nodes/relationships outside the
+ *   subtree are not included in the ELK graph at all).
+ * @param containerId - unique-id of the container whose interior should be
+ *   re-laid-out. If it has no children, returns empty maps.
+ * @param direction - Layout direction: 'DOWN', 'RIGHT', 'UP'. Defaults to 'DOWN'.
+ */
+export async function layoutSubtree(
+	arch: CalmArchitecture,
+	containerId: string,
+	direction: LayoutDirection = 'DOWN'
+): Promise<LayoutResult> {
+	const descendantIds = collectDescendants(arch, containerId);
+	if (descendantIds.size === 0) return { positions: new Map(), edgeRoutes: new Map() };
+
+	const inSubtree = (id: string) => id === containerId || descendantIds.has(id);
+
+	const subArch: CalmArchitecture = {
+		nodes: arch.nodes.filter((n) => descendantIds.has(n['unique-id'])),
+		relationships: arch.relationships.filter((rel) =>
+			getReferencedNodeIds(rel).every(inSubtree)
+		),
+	};
+
+	const result = await layoutCalm(subArch, new Set(), direction);
+
+	const positions: PositionMap = new Map();
+	for (const [id, pos] of result.positions) {
+		positions.set(id, { ...pos, x: pos.x + SUBTREE_PADDING.left, y: pos.y + SUBTREE_PADDING.top });
+	}
+
+	const edgeRoutes: EdgeRouteMap = new Map();
+	for (const [id, route] of result.edgeRoutes) {
+		edgeRoutes.set(id, {
+			points: route.points.map((p) => ({
+				x: p.x + SUBTREE_PADDING.left,
+				y: p.y + SUBTREE_PADDING.top,
+			})),
+		});
+	}
+
+	return { positions, edgeRoutes };
 }

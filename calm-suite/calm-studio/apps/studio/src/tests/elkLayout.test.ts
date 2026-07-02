@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import type { CalmArchitecture } from '@calmstudio/calm-core';
-import { layoutCalm } from '$lib/layout/elkLayout';
+import { layoutCalm, layoutSubtree } from '$lib/layout/elkLayout';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -137,5 +137,120 @@ describe('layoutCalm edge routes', () => {
 		const { edgeRoutes } = await layoutCalm(containedArch, new Set());
 		expect(edgeRoutes.has('rel-inner')).toBe(true);
 		expect(edgeRoutes.get('rel-inner')!.points.length).toBeGreaterThanOrEqual(2);
+	});
+});
+
+// ─── layoutSubtree tests ───────────────────────────────────────────────────────
+
+describe('layoutSubtree', () => {
+	const vpcWithTwoChildren: CalmArchitecture = {
+		nodes: [
+			{ 'unique-id': 'vpc', 'node-type': 'network', name: 'VPC', description: 'VPC' },
+			{ 'unique-id': 'svc-a', 'node-type': 'service', name: 'SvcA', description: 'A' },
+			{ 'unique-id': 'svc-b', 'node-type': 'service', name: 'SvcB', description: 'B' },
+			{ 'unique-id': 'outside', 'node-type': 'service', name: 'Outside', description: 'Outside' },
+		],
+		relationships: [
+			{
+				'unique-id': 'contains-a',
+				'relationship-type': { 'deployed-in': { container: 'vpc', nodes: ['svc-a'] } },
+			},
+			{
+				'unique-id': 'contains-b',
+				'relationship-type': { 'deployed-in': { container: 'vpc', nodes: ['svc-b'] } },
+			},
+			{
+				'unique-id': 'unrelated',
+				'relationship-type': {
+					connects: { source: { node: 'outside' }, destination: { node: 'svc-a' } },
+				},
+			},
+		],
+	};
+
+	it('returns positions only for the container\'s descendants, not other nodes', async () => {
+		const { positions } = await layoutSubtree(vpcWithTwoChildren, 'vpc');
+		expect(positions.has('svc-a')).toBe(true);
+		expect(positions.has('svc-b')).toBe(true);
+		expect(positions.has('vpc')).toBe(false);
+		expect(positions.has('outside')).toBe(false);
+	});
+
+	it('offsets positions by the container padding so children are not flush with the edge', async () => {
+		const { positions } = await layoutSubtree(vpcWithTwoChildren, 'vpc');
+		for (const pos of positions.values()) {
+			expect(pos.x).toBeGreaterThanOrEqual(32);
+			expect(pos.y).toBeGreaterThanOrEqual(48);
+		}
+	});
+
+	it('returns empty maps for a container with no children', async () => {
+		const noChildren: CalmArchitecture = {
+			nodes: [{ 'unique-id': 'lonely', 'node-type': 'network', name: 'Lonely', description: 'x' }],
+			relationships: [],
+		};
+		const result = await layoutSubtree(noChildren, 'lonely');
+		expect(result.positions.size).toBe(0);
+		expect(result.edgeRoutes.size).toBe(0);
+	});
+
+	it('includes grandchildren of nested containers', async () => {
+		const nested: CalmArchitecture = {
+			nodes: [
+				{ 'unique-id': 'vpc', 'node-type': 'network', name: 'VPC', description: 'x' },
+				{ 'unique-id': 'subnet', 'node-type': 'network', name: 'Subnet', description: 'x' },
+				{ 'unique-id': 'instance', 'node-type': 'service', name: 'Instance', description: 'x' },
+			],
+			relationships: [
+				{
+					'unique-id': 'vpc-subnet',
+					'relationship-type': { 'deployed-in': { container: 'vpc', nodes: ['subnet'] } },
+				},
+				{
+					'unique-id': 'subnet-instance',
+					'relationship-type': { 'deployed-in': { container: 'subnet', nodes: ['instance'] } },
+				},
+			],
+		};
+		const { positions } = await layoutSubtree(nested, 'vpc');
+		expect(positions.has('subnet')).toBe(true);
+		expect(positions.has('instance')).toBe(true);
+	});
+
+	it('produces an edge route for a connects relationship fully inside the subtree', async () => {
+		const withInnerEdge: CalmArchitecture = {
+			nodes: [
+				{ 'unique-id': 'vpc', 'node-type': 'network', name: 'VPC', description: 'x' },
+				{ 'unique-id': 'svc-a', 'node-type': 'service', name: 'SvcA', description: 'x' },
+				{ 'unique-id': 'svc-b', 'node-type': 'service', name: 'SvcB', description: 'x' },
+			],
+			relationships: [
+				{
+					'unique-id': 'contains-a',
+					'relationship-type': { 'deployed-in': { container: 'vpc', nodes: ['svc-a'] } },
+				},
+				{
+					'unique-id': 'contains-b',
+					'relationship-type': { 'deployed-in': { container: 'vpc', nodes: ['svc-b'] } },
+				},
+				{
+					'unique-id': 'inner-connects',
+					'relationship-type': {
+						connects: { source: { node: 'svc-a' }, destination: { node: 'svc-b' } },
+					},
+				},
+			],
+		};
+		const { edgeRoutes } = await layoutSubtree(withInnerEdge, 'vpc');
+		expect(edgeRoutes.has('inner-connects')).toBe(true);
+	});
+
+	it('does not include a relationship that crosses outside the subtree', async () => {
+		const { positions } = await layoutSubtree(vpcWithTwoChildren, 'vpc');
+		// svc-a and outside are connected via 'unrelated', but 'outside' isn't
+		// in the subtree — svc-a must still get a position from its own
+		// containment relationship, just not one influenced by 'outside'.
+		expect(positions.has('svc-a')).toBe(true);
+		expect(positions.has('outside')).toBe(false);
 	});
 });

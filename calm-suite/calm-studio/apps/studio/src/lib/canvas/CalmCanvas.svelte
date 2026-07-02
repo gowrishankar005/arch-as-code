@@ -44,6 +44,8 @@
 	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType } from './containment';
 	import { computeAlignmentGuides, type AlignmentGuide } from './alignmentGuides';
 	import AlignmentGuides from './AlignmentGuides.svelte';
+	import { layoutSubtree } from '$lib/layout/elkLayout';
+	import type { CalmArchitecture } from '@calmstudio/calm-core';
 	import { resolvePackNode } from '@calmstudio/extensions';
 	import EdgeMarkers from './edges/EdgeMarkers.svelte';
 	import NodeSearch from '$lib/search/NodeSearch.svelte';
@@ -66,12 +68,14 @@
 
 	// ─── Container scaffold helper ──────────────────────────────────────────
 	// When a container with defaultChildren is placed, auto-create child nodes
-	// inside it with composed-of edges in a 2-column grid layout.
+	// inside it with composed-of edges. Positions start from a fixed 2-column
+	// grid, then get replaced by an ELK-computed layoutSubtree pass scoped to
+	// just this new container — the grid is only a fallback if that fails.
 
-	function scaffoldChildren(
+	async function scaffoldChildren(
 		parentNode: Node,
 		childTypes: string[],
-	): { childNodes: Node[]; childEdges: Edge[] } {
+	): Promise<{ childNodes: Node[]; childEdges: Edge[] }> {
 		const cols = 2;
 		const padX = 30;
 		const padY = 50;
@@ -113,6 +117,33 @@
 				type: 'composed-of',
 				data: { protocol: '', description: '' },
 			});
+		}
+
+		try {
+			const subArch: CalmArchitecture = {
+				nodes: [
+					{ 'unique-id': parentNode.id, 'node-type': 'container', name: 'New Container', description: '' },
+					...childNodes.map((n) => ({
+						'unique-id': n.id,
+						'node-type': (n.data as Record<string, unknown>).calmType as string,
+						name: n.data.label as string,
+						description: '',
+					})),
+				],
+				relationships: childNodes.map((n) => ({
+					'unique-id': `${parentNode.id}-${n.id}`,
+					'relationship-type': {
+						'composed-of': { container: parentNode.id, nodes: [n.id] },
+					},
+				})),
+			};
+			const { positions } = await layoutSubtree(subArch, parentNode.id);
+			for (const child of childNodes) {
+				const pos = positions.get(child.id);
+				if (pos) child.position = { x: pos.x, y: pos.y };
+			}
+		} catch {
+			// ELK failed for some reason — keep the fixed grid fallback positions.
 		}
 
 		return { childNodes, childEdges };
@@ -269,7 +300,7 @@
 		}
 
 		if (hasScaffold) {
-			const { childNodes, childEdges } = scaffoldChildren(newNode, packMeta.defaultChildren!);
+			const { childNodes, childEdges } = await scaffoldChildren(newNode, packMeta.defaultChildren!);
 			nodes = [...nodes, newNode, ...childNodes];
 			edges = [...edges, ...childEdges];
 		} else {
@@ -285,7 +316,7 @@
 	 * Place a node at the viewport center.
 	 * Called by parent (+page.svelte) in response to NodePalette's placenode event.
 	 */
-	export function placeNodeAtCenter(calmType: string) {
+	export async function placeNodeAtCenter(calmType: string) {
 		const position = screenToFlowPosition({
 			x: window.innerWidth / 2,
 			y: window.innerHeight / 2,
@@ -314,7 +345,7 @@
 		}
 
 		if (hasScaffold) {
-			const { childNodes, childEdges } = scaffoldChildren(newNode, packMeta.defaultChildren!);
+			const { childNodes, childEdges } = await scaffoldChildren(newNode, packMeta.defaultChildren!);
 			nodes = [...nodes, newNode, ...childNodes];
 			edges = [...edges, ...childEdges];
 		} else {
