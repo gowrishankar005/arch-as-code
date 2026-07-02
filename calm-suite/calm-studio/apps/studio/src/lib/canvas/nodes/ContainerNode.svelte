@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import EditableLabel from './EditableLabel.svelte';
 	let { id, data, selected }: NodeProps = $props();
 
 	const collapsed = $derived((data as Record<string, unknown>).collapsed === true);
@@ -39,7 +40,11 @@
 		<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
 		<div class="collapsed-row">
 			<div class="dot"></div>
-			<span class="label">{data.label ?? data.calmId}</span>
+			<EditableLabel
+				nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+				value={(data.label ?? data.calmId) as string}
+				style="max-width: 140px;"
+			/>
 			<button class="toggle" onclick={toggleCollapse} title="Expand" aria-label="Expand container">
 				<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
 			</button>
@@ -51,7 +56,11 @@
 		<div class="header">
 			<div class="header-left">
 				<div class="dot"></div>
-				<span class="label">{data.label ?? data.calmId}</span>
+				<EditableLabel
+					nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+					value={(data.label ?? data.calmId) as string}
+					style="max-width: 140px;"
+				/>
 			</div>
 			<button class="toggle" onclick={toggleCollapse} title="Collapse" aria-label="Collapse container">
 				<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
@@ -119,15 +128,6 @@
 		background: var(--node-container-stroke);
 		opacity: 0.5;
 		flex-shrink: 0;
-	}
-	.label {
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--node-label-color);
-		max-width: 140px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.toggle {
 		background: none;

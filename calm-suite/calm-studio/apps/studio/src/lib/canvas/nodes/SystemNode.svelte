@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import EditableLabel from './EditableLabel.svelte';
 	let { id, data, selected }: NodeProps = $props();
 	const errorCount = $derived((data as Record<string, unknown>).validationErrors as number ?? 0);
 	const warnCount = $derived((data as Record<string, unknown>).validationWarnings as number ?? 0);
@@ -27,7 +28,10 @@
 			<rect x="3" y="3" width="18" height="18" rx="2" /><rect x="7" y="7" width="10" height="10" rx="1" stroke-width="1.2" />
 		</svg>
 	</div>
-	<span class="label">{data.label ?? data.calmId}</span>
+	<EditableLabel
+		nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+		value={(data.label ?? data.calmId) as string}
+	/>
 </div>
 
 <style>
@@ -55,13 +59,5 @@
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-	}
-	.label {
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--node-label-color);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 </style>

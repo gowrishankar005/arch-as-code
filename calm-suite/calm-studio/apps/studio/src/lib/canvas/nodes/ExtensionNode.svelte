@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import EditableLabel from './EditableLabel.svelte';
 	import { resolvePackNode } from '@calmstudio/extensions';
 
 	let { id, data, selected }: NodeProps = $props();
@@ -52,7 +53,11 @@
 			<rect x="3" y="3" width="18" height="18" rx="3"/>
 		</svg>
 	{/if}
-	<span class="label">{label}</span>
+	<EditableLabel
+		nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+		value={label}
+		style="text-align: center; max-width: 80px;"
+	/>
 	{#if dataClassification}
 		<span
 			class="data-classification-badge"
@@ -87,17 +92,6 @@
 
 	.icon-fallback {
 		color: var(--node-generic-stroke, currentColor);
-	}
-
-	.label {
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--node-label-color);
-		text-align: center;
-		max-width: 80px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	.data-classification-badge {

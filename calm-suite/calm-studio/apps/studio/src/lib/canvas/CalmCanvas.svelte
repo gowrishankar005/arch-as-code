@@ -116,6 +116,7 @@
 		oncanvaschange,
 		readonly = false,
 		ondblclicknode,
+		onrenamenode,
 	}: {
 		nodes?: Node[];
 		edges?: Edge[];
@@ -131,6 +132,8 @@
 		readonly?: boolean;
 		/** Called when a node is double-clicked in readonly mode. Used for C4 drill-down navigation. */
 		ondblclicknode?: (node: Node) => void;
+		/** Called when a node label is renamed via inline double-click editing (EditableLabel). Receives the CALM unique-id and the new name. */
+		onrenamenode?: (calmId: string, newName: string) => void;
 	} = $props();
 
 	/**
@@ -580,6 +583,26 @@
 	$effect(() => {
 		document.addEventListener('node:toggle-collapse', handleToggleCollapse);
 		return () => document.removeEventListener('node:toggle-collapse', handleToggleCollapse);
+	});
+
+	// ─── Inline label rename (draw.io-parity double-click editing) ──────────
+
+	/**
+	 * EditableLabel.svelte dispatches this on `document` when a node label
+	 * edit is committed. Unlike collapse state, a rename mutates the CALM
+	 * model, so it's gated on readonly here — this is the single place that
+	 * decides whether a rename is allowed, instead of threading a readonly
+	 * flag into all 12 node type components.
+	 */
+	function handleRenameNode(event: Event) {
+		if (readonly) return;
+		const { nodeId, name } = (event as CustomEvent<{ nodeId: string; name: string }>).detail;
+		onrenamenode?.(nodeId, name);
+	}
+
+	$effect(() => {
+		document.addEventListener('node:rename', handleRenameNode);
+		return () => document.removeEventListener('node:rename', handleRenameNode);
 	});
 </script>
 

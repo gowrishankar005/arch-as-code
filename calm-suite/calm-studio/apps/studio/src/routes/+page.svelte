@@ -47,7 +47,7 @@
 	} from '$lib/c4/c4Filter';
 	import type { C4Level } from '$lib/c4/c4Filter';
 	import { toggleTheme, isDark } from '$lib/stores/theme.svelte';
-	import { getModelJson, applyFromJson, applyFromCanvas, getModel, resetModel } from '$lib/stores/calmModel.svelte';
+	import { getModelJson, applyFromJson, applyFromCanvas, getModel, resetModel, updateNodeProperty } from '$lib/stores/calmModel.svelte';
 	import { calmToFlow } from '$lib/stores/projection';
 	import { pushSnapshot, resetHistory, undo, redo } from '$lib/stores/history.svelte';
 	import { layoutCalm, type LayoutDirection } from '$lib/layout/elkLayout';
@@ -691,6 +691,18 @@
 
 		// Mark dirty on property mutations
 		markDirty();
+	}
+
+	/**
+	 * Called by CalmCanvas when a node label is renamed via inline double-click
+	 * editing (EditableLabel). Mirrors the Properties panel's name-field path:
+	 * write to the canonical model, then re-project so the canvas, code panel,
+	 * and Properties panel all reflect the new name.
+	 */
+	function handleRenameNode(calmId: string, newName: string) {
+		pushSnapshot(nodes, edges);
+		updateNodeProperty(calmId, 'name', newName);
+		handlePropertyMutation();
 	}
 
 	/**
@@ -1361,6 +1373,7 @@
 										onselectionchange={handleSelectionChange}
 										onfileimport={importCalmFile}
 										oncanvaschange={markDirty}
+										onrenamenode={handleRenameNode}
 									/>
 								{/if}
 

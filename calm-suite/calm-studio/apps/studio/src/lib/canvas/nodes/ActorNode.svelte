@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import EditableLabel from './EditableLabel.svelte';
 	let { id, data, selected }: NodeProps = $props();
 	const errorCount = $derived((data as Record<string, unknown>).validationErrors as number ?? 0);
 	const warnCount = $derived((data as Record<string, unknown>).validationWarnings as number ?? 0);
@@ -25,7 +26,11 @@
 		<circle cx="16" cy="9" r="7" fill="var(--node-actor-bg)" stroke="var(--node-actor-stroke)" stroke-width="1.5" />
 		<path d="M6 36 Q6 22 16 22 Q26 22 26 36" fill="var(--node-actor-bg)" stroke="var(--node-actor-stroke)" stroke-width="1.5" />
 	</svg>
-	<span class="label">{data.label ?? data.calmId}</span>
+	<EditableLabel
+		nodeId={(data as Record<string, unknown>).calmId as string ?? id}
+		value={(data.label ?? data.calmId) as string}
+		style="text-align: center; max-width: 80px;"
+	/>
 </div>
 
 <style>
@@ -44,15 +49,5 @@
 	.node.selected svg path {
 		stroke: var(--node-selected-ring);
 		stroke-width: 2;
-	}
-	.label {
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--node-label-color);
-		text-align: center;
-		max-width: 80px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 </style>
