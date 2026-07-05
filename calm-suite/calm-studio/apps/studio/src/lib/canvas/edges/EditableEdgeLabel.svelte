@@ -64,10 +64,12 @@
 		use:focusOnMount
 	/>
 {:else}
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<span
 		class="edge-label"
+		role="button"
+		tabindex="0"
 		ondblclick={startEdit}
+		onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); startEdit(); } }}
 	>{value}</span>
 {/if}
 
