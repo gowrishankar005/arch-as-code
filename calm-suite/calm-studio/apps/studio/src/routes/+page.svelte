@@ -47,7 +47,7 @@
 	} from '$lib/c4/c4Filter';
 	import type { C4Level } from '$lib/c4/c4Filter';
 	import { toggleTheme, isDark } from '$lib/stores/theme.svelte';
-	import { getModelJson, applyFromJson, applyFromCanvas, getModel, resetModel, updateNodeProperty } from '$lib/stores/calmModel.svelte';
+	import { getModelJson, applyFromJson, applyFromCanvas, getModel, resetModel, updateNodeProperty, updateEdgeProperty } from '$lib/stores/calmModel.svelte';
 	import { calmToFlow } from '$lib/stores/projection';
 	import { pushSnapshot, resetHistory, undo, redo } from '$lib/stores/history.svelte';
 	import { layoutCalm, type LayoutDirection } from '$lib/layout/elkLayout';
@@ -101,6 +101,7 @@
 		getFlowTransitionForEdge,
 		isNodeInActiveFlow,
 	} from '$lib/stores/flowState.svelte';
+	import { scheduleAutosave, getAutosaveDraft, clearAutosave, type AutosaveDraft } from '$lib/stores/autosave.svelte';
 
 	let nodes = $state.raw<Node[]>([]);
 	let edges = $state.raw<Edge[]>([]);
@@ -450,6 +451,39 @@
 
 	// ─── Import error state — set by importCalmFile on invalid JSON ──────────
 
+	// ─── Auto-save recovery ──────────────────────────────────────────────────
+
+	let recoveryDraft = $state<AutosaveDraft | null>(null);
+
+	onMount(() => {
+		const draft = getAutosaveDraft();
+		if (draft) recoveryDraft = draft;
+	});
+
+	$effect(() => {
+		const dirty = getIsDirty();
+		if (dirty) {
+			scheduleAutosave(getModelJson(), getFileName());
+		}
+	});
+
+	async function handleRecoverDraft() {
+		if (!recoveryDraft) return;
+		await importCalmFile(recoveryDraft.json);
+		if (recoveryDraft.filename) {
+			markDirty();
+		}
+		recoveryDraft = null;
+		clearAutosave();
+	}
+
+	function handleDismissRecovery() {
+		recoveryDraft = null;
+		clearAutosave();
+	}
+
+	// ─── Import error state — set by importCalmFile on invalid JSON ──────────
+
 	let importError = $state<string | null>(null);
 
 	// ─── Extension pack banner state — shown when pack types detected on import ─
@@ -708,6 +742,12 @@
 		handlePropertyMutation();
 	}
 
+	function handleRenameEdgeLabel(edgeId: string, newValue: string) {
+		pushSnapshot(nodes, edges);
+		updateEdgeProperty(edgeId, 'protocol', newValue);
+		handlePropertyMutation();
+	}
+
 	/**
 	 * Called by PropertiesPanel before the first mutation in a selection session.
 	 * Pushes an undo snapshot so property edits can be undone as a group.
@@ -816,6 +856,7 @@
 			const json = getModelJson();
 			const handle = await saveFile(json, getFileHandle(), getFileName() ?? 'architecture.calm.json');
 			markClean(undefined, handle);
+			clearAutosave();
 		} catch (e) {
 			// User cancelled or save failed — remain dirty
 		}
@@ -840,6 +881,7 @@
 				// Blob download — we can mark clean since content was "saved" (downloaded)
 				markClean();
 			}
+			clearAutosave();
 		} catch (e) {
 			// User cancelled or save failed — remain dirty
 		}
@@ -854,6 +896,7 @@
 		resetHistory();
 		resetFileState();
 		clearValidation();
+		clearAutosave();
 		nodes = [];
 		edges = [];
 	}
@@ -895,20 +938,8 @@
 			exportCalm: handleExportCalm,
 			exportSvg: handleExportSvg,
 			exportPng: handleExportPng,
-			undo: () => {
-				const snapshot = undo();
-				if (snapshot) {
-					nodes = snapshot.nodes;
-					edges = snapshot.edges;
-				}
-			},
-			redo: () => {
-				const snapshot = redo();
-				if (snapshot) {
-					nodes = snapshot.nodes;
-					edges = snapshot.edges;
-				}
-			},
+			undo: handleUndo,
+			redo: handleRedo,
 			zoomIn: () => { canvas?.zoomInViewport(); },
 			zoomOut: () => { canvas?.zoomOutViewport(); },
 			zoomFit: () => { canvas?.fitViewport(); },
@@ -947,6 +978,24 @@
 			stopMcpSidecar().catch(() => {});
 		};
 	});
+
+	// ─── Undo / Redo ─────────────────────────────────────────────────────────
+
+	function handleUndo() {
+		const snapshot = undo();
+		if (snapshot) {
+			nodes = snapshot.nodes;
+			edges = snapshot.edges;
+		}
+	}
+
+	function handleRedo() {
+		const snapshot = redo();
+		if (snapshot) {
+			nodes = snapshot.nodes;
+			edges = snapshot.edges;
+		}
+	}
 
 	// ─── Export operations ────────────────────────────────────────────────────
 
@@ -1243,6 +1292,29 @@
 			</div>
 		{/if}
 
+		<!-- Auto-save recovery banner: shown on page load when a recovery draft exists -->
+		{#if recoveryDraft}
+			<div class="recovery-banner" role="alert">
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+					<path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+					<polyline points="1 4 1 10 7 10" />
+				</svg>
+				<span class="recovery-message">
+					Unsaved changes found from {new Date(recoveryDraft.timestamp).toLocaleString()}{recoveryDraft.filename ? ` (${recoveryDraft.filename})` : ''}
+				</span>
+				<button
+					type="button"
+					class="recovery-btn recovery-btn-primary"
+					onclick={handleRecoverDraft}
+				>Recover</button>
+				<button
+					type="button"
+					class="recovery-btn recovery-btn-dismiss"
+					onclick={handleDismissRecovery}
+				>Dismiss</button>
+			</div>
+		{/if}
+
 		<!-- Extension pack info banner: shown when pack-prefixed node types are detected on import -->
 		{#if extensionPackBanner}
 			<div class="pack-banner" role="status">
@@ -1294,8 +1366,36 @@
 								/>
 							{/if}
 
-							<!-- Floating toolbar (layout controls + dark mode toggle) -->
+							<!-- Floating toolbar (undo/redo + layout controls + dark mode toggle) -->
 							<div class="canvas-toolbar">
+								<!-- Undo / Redo -->
+								<div class="layout-group" role="group" aria-label="Undo and redo">
+									<button
+										type="button"
+										class="canvas-toolbar-btn"
+										onclick={handleUndo}
+										aria-label="Undo (Cmd+Z)"
+										title="Undo (⌘Z)"
+									>
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<polyline points="1 4 1 10 7 10" />
+											<path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+										</svg>
+									</button>
+									<button
+										type="button"
+										class="canvas-toolbar-btn"
+										onclick={handleRedo}
+										aria-label="Redo (Cmd+Shift+Z)"
+										title="Redo (⌘⇧Z)"
+									>
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<polyline points="23 4 23 10 17 10" />
+											<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+										</svg>
+									</button>
+								</div>
+
 								<!-- Auto-layout controls -->
 								<div class="layout-group" role="group" aria-label="Auto-layout controls">
 									<!-- Direction dropdown -->
@@ -1378,6 +1478,7 @@
 										onfileimport={importCalmFile}
 										oncanvaschange={markDirty}
 										onrenamenode={handleRenameNode}
+										onrenameedgelabel={handleRenameEdgeLabel}
 										bind:zoomPercent={canvasZoomPercent}
 									/>
 								{/if}
@@ -1762,6 +1863,63 @@
 	.pack-banner-dismiss:hover {
 		opacity: 1;
 		background: rgba(29, 78, 216, 0.08);
+	}
+
+	/* ─── Auto-save recovery banner ────────────────────────────── */
+
+	.recovery-banner {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		background: #fffbeb;
+		border-bottom: 1px solid #fde68a;
+		padding: 8px 16px;
+		font-size: 12px;
+		font-family: var(--font-sans);
+		color: #92400e;
+		flex-shrink: 0;
+	}
+
+	:global(.dark) .recovery-banner {
+		background: #1c1508;
+		border-color: #78350f;
+		color: #fbbf24;
+	}
+
+	.recovery-message {
+		flex: 1;
+	}
+
+	.recovery-btn {
+		font-size: 11px;
+		font-family: var(--font-sans);
+		font-weight: 600;
+		padding: 4px 12px;
+		border-radius: 5px;
+		cursor: pointer;
+		flex-shrink: 0;
+		border: none;
+	}
+
+	.recovery-btn-primary {
+		background: #f59e0b;
+		color: #fff;
+	}
+
+	.recovery-btn-primary:hover {
+		background: #d97706;
+	}
+
+	.recovery-btn-dismiss {
+		background: transparent;
+		border: 1px solid currentColor;
+		color: inherit;
+		opacity: 0.7;
+	}
+
+	.recovery-btn-dismiss:hover {
+		opacity: 1;
+		background: rgba(146, 64, 14, 0.08);
 	}
 
 	/* ─── Zoom widget (draw.io-style bottom-left zoom control) ──── */

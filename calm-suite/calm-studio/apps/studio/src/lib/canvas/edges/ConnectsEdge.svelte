@@ -10,6 +10,7 @@
 <script lang="ts">
 	import { BaseEdge, EdgeLabel, EdgeReconnectAnchor, getSmoothStepPath, type EdgeProps } from '@xyflow/svelte';
 	import FlowOverlay from './FlowOverlay.svelte';
+	import EditableEdgeLabel from './EditableEdgeLabel.svelte';
 	import type { CalmTransition } from '@calmstudio/calm-core';
 
 	let {
@@ -79,9 +80,7 @@
 
 	{#if protocolLabel}
 		<EdgeLabel x={labelX} y={labelY} class="nodrag nopan">
-			<span class="edge-label">
-				{protocolLabel}
-			</span>
+			<EditableEdgeLabel edgeId={id} value={String(protocolLabel)} />
 		</EdgeLabel>
 	{/if}
 </g>
@@ -99,23 +98,4 @@
 {/if}
 
 <style>
-	.edge-label {
-		display: inline-block;
-		padding: 2px 8px;
-		font-family: var(--node-font);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.02em;
-		color: var(--color-text-secondary);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 6px;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-	}
-
-	:global(.dark) .edge-label {
-		background: #111827;
-		border-color: #334155;
-		color: #94a3b8;
-	}
 </style>
