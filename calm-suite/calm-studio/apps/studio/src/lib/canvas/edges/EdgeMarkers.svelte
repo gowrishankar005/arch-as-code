@@ -15,26 +15,28 @@
     <!-- Filled arrowhead — used by ConnectsEdge and InteractsEdge -->
     <marker
       id="marker-arrow-filled"
-      markerWidth="10"
-      markerHeight="7"
-      refX="9"
-      refY="3.5"
+      viewBox="0 0 14 10"
+      markerWidth="14"
+      markerHeight="10"
+      refX="13"
+      refY="5"
       orient="auto-start-reverse"
     >
-      <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+      <polygon points="0 0, 14 5, 0 10" fill="currentColor" />
     </marker>
 
     <!-- Open diamond — used by DeployedInEdge -->
     <marker
       id="marker-diamond-open"
-      markerWidth="12"
-      markerHeight="8"
-      refX="11"
-      refY="4"
+      viewBox="0 0 14 10"
+      markerWidth="14"
+      markerHeight="10"
+      refX="13"
+      refY="5"
       orient="auto-start-reverse"
     >
       <polygon
-        points="0 4, 5.5 0, 11 4, 5.5 8"
+        points="0 5, 7 0, 14 5, 7 10"
         fill="none"
         stroke="currentColor"
         stroke-width="1.5"
@@ -44,26 +46,28 @@
     <!-- Filled diamond — used by ComposedOfEdge -->
     <marker
       id="marker-diamond-filled"
-      markerWidth="12"
-      markerHeight="8"
-      refX="11"
-      refY="4"
+      viewBox="0 0 14 10"
+      markerWidth="14"
+      markerHeight="10"
+      refX="13"
+      refY="5"
       orient="auto-start-reverse"
     >
-      <polygon points="0 4, 5.5 0, 11 4, 5.5 8" fill="currentColor" />
+      <polygon points="0 5, 7 0, 14 5, 7 10" fill="currentColor" />
     </marker>
 
     <!-- Open arrowhead — used by OptionsEdge -->
     <marker
       id="marker-arrow-open"
-      markerWidth="10"
-      markerHeight="7"
-      refX="9"
-      refY="3.5"
+      viewBox="0 0 14 10"
+      markerWidth="14"
+      markerHeight="10"
+      refX="13"
+      refY="5"
       orient="auto-start-reverse"
     >
       <polyline
-        points="0 0, 9 3.5, 0 7"
+        points="0 0, 13 5, 0 10"
         fill="none"
         stroke="currentColor"
         stroke-width="1.5"

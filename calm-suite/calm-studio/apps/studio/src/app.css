@@ -297,6 +297,10 @@ body {
 	border-width: 2px;
 }
 
+.svelte-flow .svelte-flow__edge-path {
+	stroke-width: 1.5px;
+}
+
 /* ─── Selection & interaction refinements ───────────────────────────────── */
 
 .svelte-flow .svelte-flow__selection {

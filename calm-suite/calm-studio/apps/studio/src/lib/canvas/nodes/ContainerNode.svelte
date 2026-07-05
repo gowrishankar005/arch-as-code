@@ -25,10 +25,14 @@
 	<NodeResizer minWidth={180} minHeight={120} isVisible={selected} />
 {/if}
 
-<Handle type="target" position={Position.Top} />
-<Handle type="source" position={Position.Bottom} />
-<Handle type="target" position={Position.Left} />
-<Handle type="source" position={Position.Right} />
+<Handle type="target" position={Position.Top} id="top-target" />
+<Handle type="source" position={Position.Top} id="top-source" />
+<Handle type="target" position={Position.Bottom} id="bottom-target" />
+<Handle type="source" position={Position.Bottom} id="bottom-source" />
+<Handle type="target" position={Position.Left} id="left-target" />
+<Handle type="source" position={Position.Left} id="left-source" />
+<Handle type="target" position={Position.Right} id="right-target" />
+<Handle type="source" position={Position.Right} id="right-source" />
 
 {#if data.interfaces}
 	{#each data.interfaces as iface, i}
@@ -131,7 +135,7 @@
 		align-items: center;
 		gap: 6px;
 	}
-	.body { flex: 1; }
+	.body { flex: 1; pointer-events: none; }
 	.dot {
 		width: 6px;
 		height: 6px;
