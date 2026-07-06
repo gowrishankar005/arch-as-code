@@ -82,7 +82,9 @@ describe('calmToFlow', () => {
 		const { nodes } = calmToFlow(connectsArch, posMap);
 		const svc = nodes.find((n) => n.id === 'svc-1')!;
 		const db = nodes.find((n) => n.id === 'db-1')!;
-		expect(svc.position).toEqual({ x: 200, y: 300 });
+		// Non-container nodes with ELK positions get +40 offset (NODE_WIDTH/2)
+		// and origin [0.5, 0] for center-alignment.
+		expect(svc.position).toEqual({ x: 240, y: 300 });
 		// db-1 is index 1 in the arch, not in posMap → staggered: x = 100 + 1*160 = 260
 		expect(db.position).toEqual({ x: 260, y: 100 });
 	});

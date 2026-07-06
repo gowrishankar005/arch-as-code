@@ -292,9 +292,16 @@ body {
 }
 
 .svelte-flow .svelte-flow__handle {
-	width: 8px;
-	height: 8px;
-	border-width: 2px;
+	width: 6px;
+	height: 6px;
+	border-width: 1.5px;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.svelte-flow .svelte-flow__node:hover .svelte-flow__handle,
+.svelte-flow .svelte-flow__node.selected .svelte-flow__handle {
+	opacity: 1;
 }
 
 .svelte-flow .svelte-flow__edge-path {

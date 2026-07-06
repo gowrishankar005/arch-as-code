@@ -75,7 +75,15 @@ export function applyFromJson(arch: CalmArchitecture): boolean {
 export function applyFromCanvas(nodes: Node[], edges: Edge[]): boolean {
 	return withMutex(() => {
 		const arch = flowToCalm(nodes, edges);
-		model = { ...model, nodes: [...arch.nodes], relationships: [...arch.relationships] };
+		// Preserve containment relationships (deployed-in, composed-of) that are
+		// not projected as canvas edges — spatial nesting handles them visually.
+		const canvasRelIds = new Set(arch.relationships.map(r => r['unique-id']));
+		const preserved = model.relationships.filter(r => {
+			if (canvasRelIds.has(r['unique-id'])) return false;
+			const rt = r['relationship-type'];
+			return 'deployed-in' in rt || 'composed-of' in rt;
+		});
+		model = { ...model, nodes: [...arch.nodes], relationships: [...arch.relationships, ...preserved] };
 	});
 }
 

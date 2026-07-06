@@ -26,7 +26,7 @@
 	{/each}
 {/if}
 
-<div class="node" class:selected>
+<div class="node" class:selected title={(data as Record<string, unknown>).description as string ?? ""}>
 	<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
 	<NodeBadges
 		controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}

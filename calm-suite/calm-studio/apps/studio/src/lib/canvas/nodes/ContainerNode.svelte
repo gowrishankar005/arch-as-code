@@ -41,7 +41,7 @@
 {/if}
 
 {#if collapsed}
-	<div class="container collapsed" class:selected>
+	<div class="container collapsed" class:selected title={(data as Record<string, unknown>).description as string ?? ""}>
 		<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
 		<NodeBadges
 			controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
@@ -61,7 +61,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="container expanded" class:selected>
+	<div class="container expanded" class:selected title={(data as Record<string, unknown>).description as string ?? ""}>
 		<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
 		<NodeBadges
 			controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}

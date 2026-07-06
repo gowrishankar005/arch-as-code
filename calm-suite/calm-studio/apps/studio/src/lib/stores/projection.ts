@@ -53,6 +53,65 @@ function midpointOfPoints(points: Array<{ x: number; y: number }>): { x: number;
 	return { x: (mid.x + next.x) / 2, y: (mid.y + next.y) / 2 };
 }
 
+/** ELK layout node dimensions — must match elkLayout.ts constants. */
+const NODE_WIDTH = 80;
+const NODE_HEIGHT = 70;
+
+/**
+ * Resolve a node's absolute position by walking up the containment chain.
+ * ELK stores child positions relative to their parent container, so we
+ * accumulate ancestor offsets to get graph-absolute coordinates.
+ */
+function absoluteCenter(
+	nodeId: string,
+	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
+	childToParent: Map<string, string>,
+	containerIds: ReadonlySet<string>
+): { x: number; y: number } | undefined {
+	const pos = positionMap.get(nodeId);
+	if (!pos) return undefined;
+
+	let ax = pos.x;
+	let ay = pos.y;
+	let current = nodeId;
+	while (childToParent.has(current)) {
+		const pid = childToParent.get(current)!;
+		const pp = positionMap.get(pid);
+		if (!pp) break;
+		ax += pp.x;
+		ay += pp.y;
+		current = pid;
+	}
+
+	const isContainer = containerIds.has(nodeId);
+	return {
+		x: ax + (isContainer ? (pos.width ?? 300) / 2 : NODE_WIDTH / 2),
+		y: ay + (isContainer ? (pos.height ?? 200) / 2 : NODE_HEIGHT / 2),
+	};
+}
+
+/**
+ * Choose the best source/target handle pair based on the dominant direction
+ * between two node centers. This makes edges connect to the nearest side
+ * of each node (like draw.io) instead of always using bottom→top.
+ */
+function bestHandlePair(
+	srcCenter: { x: number; y: number },
+	tgtCenter: { x: number; y: number }
+): { sourceHandle: string; targetHandle: string } {
+	const dx = tgtCenter.x - srcCenter.x;
+	const dy = tgtCenter.y - srcCenter.y;
+
+	if (Math.abs(dy) >= Math.abs(dx)) {
+		return dy >= 0
+			? { sourceHandle: 'bottom-source', targetHandle: 'top-target' }
+			: { sourceHandle: 'top-source', targetHandle: 'bottom-target' };
+	}
+	return dx >= 0
+		? { sourceHandle: 'right-source', targetHandle: 'left-target' }
+		: { sourceHandle: 'left-source', targetHandle: 'right-target' };
+}
+
 /** The set of CALM variant keys that imply containment. */
 const CONTAINMENT_VARIANTS: ReadonlySet<CalmRelationshipVariant> = new Set([
 	'deployed-in',
@@ -186,10 +245,19 @@ export function calmToFlow(
 		const position = posEntry ? { x: posEntry.x, y: posEntry.y } : { x: 100 + idx * 160, y: 100 };
 
 		const type = isParent ? 'container' : resolveNodeType(cn['node-type']);
+
+		// For non-container nodes with ELK positions, shift x to the ELK cell
+		// center (x + NODE_WIDTH/2 = x + 40) and use origin [0.5, 0] so Svelte
+		// Flow interprets x as the node's horizontal center. This ensures all
+		// nodes in the same ELK column are perfectly center-aligned.
+		const useCenter = type !== 'container' && posEntry;
+		if (useCenter) position.x += 40;
+
 		const node: Node = {
 			id: cn['unique-id'],
 			type,
 			position,
+			...(useCenter && { origin: [0.5, 0] as [number, number] }),
 			data: {
 				label: cn.name,
 				calmId: cn['unique-id'],
@@ -228,16 +296,34 @@ export function calmToFlow(
 	const edges: Edge[] = [];
 	for (const cr of arch.relationships) {
 		const pairs = expandEdgePairs(cr);
+		if (pairs.length === 0) continue;
+		// Skip containment edges — spatial nesting already communicates containment
+		if (CONTAINMENT_VARIANTS.has(pairs[0].variant)) continue;
 		const multi = pairs.length > 1;
 		pairs.forEach((pair, i) => {
 			const edgeId = multi ? `${cr['unique-id']}#${i}` : cr['unique-id'];
 			const route = edgeRoutes?.get(edgeId);
 			const label = route ? midpointOfPoints(route.points) : undefined;
 
+			// Select nearest handles based on relative node positions
+			const srcCenter = positionMap
+				? absoluteCenter(pair.source, positionMap, childToParent, parentIds)
+				: undefined;
+			const tgtCenter = positionMap
+				? absoluteCenter(pair.target, positionMap, childToParent, parentIds)
+				: undefined;
+			const handles = srcCenter && tgtCenter
+				? bestHandlePair(srcCenter, tgtCenter)
+				: undefined;
+
 			edges.push({
 				id: edgeId,
 				source: pair.source,
 				target: pair.target,
+				...(handles && {
+					sourceHandle: handles.sourceHandle,
+					targetHandle: handles.targetHandle,
+				}),
 				type: pair.variant,
 				data: {
 					calmRelId: cr['unique-id'],

@@ -90,8 +90,11 @@ function expandLayoutPairs(
 	return [];
 }
 
-/** Default node dimensions — sized to fit typical node labels + icons */
-const NODE_WIDTH = 200;
+/** Default node dimensions — approximates actual rendered node sizes so ELK
+ *  positions nodes close to where they'll visually appear. Actual rendered
+ *  widths range from ~34px (actor icon) to ~80px (service with label); 80px
+ *  keeps the center offset small for all types. */
+const NODE_WIDTH = 80;
 const NODE_HEIGHT = 70;
 
 // ─── ELK instance ─────────────────────────────────────────────────────────────
@@ -344,7 +347,10 @@ export async function layoutCalm(
 	}
 	topLevelNodes.forEach(collectUsedEdges);
 
-	// Deduplicate: multiple inner edges may map to the same top-level ancestor pair
+	// Deduplicate: multiple inner edges may map to the same top-level ancestor pair.
+	// Track remapped edge ids so we can exclude their routes later — ELK routes
+	// them to the container boundary, not to the actual child node.
+	const remappedEdgeIds = new Set<string>();
 	const seenTopEdgePairs = new Set<string>();
 	const topEdges: ElkExtendedEdge[] = [];
 	for (const r of layoutEdges) {
@@ -356,6 +362,9 @@ export async function layoutCalm(
 		const pairKey = `${src}->${tgt}`;
 		if (seenTopEdgePairs.has(pairKey)) continue;
 		seenTopEdgePairs.add(pairKey);
+		if (src !== r.source || tgt !== r.target) {
+			remappedEdgeIds.add(r.id);
+		}
 		topEdges.push({
 			id: r.id,
 			sources: [src],
@@ -413,6 +422,7 @@ export async function layoutCalm(
 	function extractEdgeRoutes(node: ElkNode, offsetX: number, offsetY: number) {
 		for (const edge of node.edges ?? []) {
 			if (edge.id.startsWith('cross-') || edge.id.startsWith('chain-')) continue;
+			if (remappedEdgeIds.has(edge.id)) continue;
 			const section = edge.sections?.[0];
 			if (!section) continue;
 			const points = [section.startPoint, ...(section.bendPoints ?? []), section.endPoint].map(
