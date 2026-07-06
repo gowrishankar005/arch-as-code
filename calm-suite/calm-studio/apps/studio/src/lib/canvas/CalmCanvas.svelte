@@ -50,6 +50,9 @@
 	import EdgeMarkers from './edges/EdgeMarkers.svelte';
 	import NodeSearch from '$lib/search/NodeSearch.svelte';
 	import LayersPanel from './LayersPanel.svelte';
+	import ShortcutHelp from './ShortcutHelp.svelte';
+	import AlignToolbar from './AlignToolbar.svelte';
+	import { computeAlignPositions, computeDistributePositions, type SizedItem } from './alignUtils';
 	import { pushSnapshot, undo, redo } from '$lib/stores/history.svelte';
 	import { copy, paste } from '$lib/stores/clipboard.svelte';
 	import { applyFromCanvas } from '$lib/stores/calmModel.svelte';
@@ -162,6 +165,7 @@
 		readonly = false,
 		ondblclicknode,
 		onrenamenode,
+		onrenameedgelabel,
 		zoomPercent = $bindable(100),
 	}: {
 		nodes?: Node[];
@@ -180,6 +184,8 @@
 		ondblclicknode?: (node: Node) => void;
 		/** Called when a node label is renamed via inline double-click editing (EditableLabel). Receives the CALM unique-id and the new name. */
 		onrenamenode?: (calmId: string, newName: string) => void;
+		/** Called when an edge label is renamed via inline double-click editing (EditableEdgeLabel). Receives edge id and new label value. */
+		onrenameedgelabel?: (edgeId: string, newValue: string) => void;
 		/** Current zoom level as a whole percentage (e.g. 100). Kept in sync via onmove; parent can read it for a zoom-level display widget. */
 		zoomPercent?: number;
 	} = $props();
@@ -307,6 +313,66 @@
 		searchOpen = false;
 		// Deselect all nodes when search closes
 		nodes = nodes.map((n) => ({ ...n, selected: false }));
+	}
+
+	// ─── Align & distribute ─────────────────────────────────────────────────
+
+	const selectedNodeCount = $derived(nodes.filter((n) => n.selected).length);
+
+	function getSelectedNodes(): { node: Node; w: number; h: number }[] {
+		return nodes
+			.filter((n) => n.selected)
+			.map((n) => ({
+				node: n,
+				w: n.measured?.width ?? n.width ?? 150,
+				h: n.measured?.height ?? n.height ?? 60,
+			}));
+	}
+
+	function handleAlign(direction: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') {
+		if (readonly) return;
+		const sel = getSelectedNodes();
+		if (sel.length < 2) return;
+		pushSnapshot(nodes, edges);
+
+		const items: SizedItem[] = sel.map((s) => ({
+			id: s.node.id, x: s.node.position.x, y: s.node.position.y, w: s.w, h: s.h,
+		}));
+		const posMap = computeAlignPositions(items, direction);
+		nodes = nodes.map((n) => {
+			const pos = posMap.get(n.id);
+			return pos ? { ...n, position: { x: pos.x, y: pos.y } } : n;
+		});
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
+	function handleDistribute(axis: 'horizontal' | 'vertical') {
+		if (readonly) return;
+		const sel = getSelectedNodes();
+		if (sel.length < 3) return;
+		pushSnapshot(nodes, edges);
+
+		const items: SizedItem[] = sel.map((s) => ({
+			id: s.node.id, x: s.node.position.x, y: s.node.position.y, w: s.w, h: s.h,
+		}));
+		const posMap = computeDistributePositions(items, axis);
+		nodes = nodes.map((n) => {
+			const pos = posMap.get(n.id);
+			return pos ? { ...n, position: { x: pos.x, y: pos.y } } : n;
+		});
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
+	// ─── Shortcut help modal ─────────────────────────────────────────────────
+
+	let shortcutHelpOpen = $state(false);
+
+	function handleToggleShortcutHelp() {
+		const tag = document.activeElement?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.closest('[contenteditable]')) return;
+		shortcutHelpOpen = !shortcutHelpOpen;
 	}
 
 	// ─── Layers panel (draw.io-style outline of the containment tree) ───────
@@ -565,6 +631,20 @@
 		}
 	}
 
+	function deleteEdgeFromMenu() {
+		if (!edgeMenu) return;
+		const edgeId = edgeMenu.edgeId;
+		edgeMenu = null;
+		pushSnapshot(nodes, edges);
+		const edge = edges.find((e) => e.id === edgeId);
+		if (edge && isContainmentType(edge.type ?? '')) {
+			nodes = removeContainment(edge.source, edge.target, nodes);
+		}
+		edges = edges.filter((e) => e.id !== edgeId);
+		applyFromCanvas(nodes, edges);
+		notifyChange();
+	}
+
 	function closeEdgeMenu() {
 		edgeMenu = null;
 	}
@@ -798,6 +878,32 @@
 		document.addEventListener('node:rename', handleRenameNode);
 		return () => document.removeEventListener('node:rename', handleRenameNode);
 	});
+
+	function handleRenameEdgeLabel(event: Event) {
+		if (readonly) return;
+		const { edgeId, value } = (event as CustomEvent<{ edgeId: string; value: string }>).detail;
+		onrenameedgelabel?.(edgeId, value);
+	}
+
+	$effect(() => {
+		document.addEventListener('edge:rename-label', handleRenameEdgeLabel);
+		return () => document.removeEventListener('edge:rename-label', handleRenameEdgeLabel);
+	});
+
+	// ─── "?" key to toggle shortcut help ─────────────────────────────────────
+
+	$effect(() => {
+		function handleShortcutHelpKey(e: KeyboardEvent) {
+			if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+				const tag = document.activeElement?.tagName;
+				if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.closest('[contenteditable]')) return;
+				e.preventDefault();
+				shortcutHelpOpen = !shortcutHelpOpen;
+			}
+		}
+		window.addEventListener('keydown', handleShortcutHelpKey);
+		return () => window.removeEventListener('keydown', handleShortcutHelpKey);
+	});
 </script>
 
 <!--
@@ -907,6 +1013,15 @@
 		{/if}
 	{/if}
 
+	<!-- Align/Distribute toolbar — shown when 2+ nodes are selected -->
+	{#if !readonly}
+		<AlignToolbar
+			selectedCount={selectedNodeCount}
+			onalign={handleAlign}
+			ondistribute={handleDistribute}
+		/>
+	{/if}
+
 	<!-- Edge type context menu — right-click an edge to change its type -->
 	{#if edgeMenu}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -927,6 +1042,10 @@
 						{opt.label}
 					</button>
 				{/each}
+				<hr class="edge-menu-divider" />
+				<button type="button" class="edge-menu-item edge-menu-item-danger" onclick={deleteEdgeFromMenu}>
+					Delete
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -949,6 +1068,11 @@
 				</button>
 			</div>
 		</div>
+	{/if}
+
+	<!-- Keyboard shortcut reference — triggered by "?" key -->
+	{#if shortcutHelpOpen}
+		<ShortcutHelp onclose={() => (shortcutHelpOpen = false)} />
 	{/if}
 </div>
 
@@ -1011,6 +1135,12 @@
 
 	:global(.dark) .edge-menu-item:hover {
 		background: #1e293b;
+	}
+
+	.edge-menu-divider {
+		border: none;
+		border-top: 1px solid var(--color-border);
+		margin: 4px 0;
 	}
 
 	.edge-menu-item-danger {

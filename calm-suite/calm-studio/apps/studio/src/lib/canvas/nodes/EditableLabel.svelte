@@ -51,6 +51,7 @@
 			e.preventDefault();
 			commit();
 		} else if (e.key === 'Escape') {
+			editValue = value;
 			editing = false;
 		}
 	}
