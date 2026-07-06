@@ -228,6 +228,9 @@ export function calmToFlow(
 	const edges: Edge[] = [];
 	for (const cr of arch.relationships) {
 		const pairs = expandEdgePairs(cr);
+		if (pairs.length === 0) continue;
+		// Skip containment edges — spatial nesting already communicates containment
+		if (CONTAINMENT_VARIANTS.has(pairs[0].variant)) continue;
 		const multi = pairs.length > 1;
 		pairs.forEach((pair, i) => {
 			const edgeId = multi ? `${cr['unique-id']}#${i}` : cr['unique-id'];
