@@ -53,6 +53,65 @@ function midpointOfPoints(points: Array<{ x: number; y: number }>): { x: number;
 	return { x: (mid.x + next.x) / 2, y: (mid.y + next.y) / 2 };
 }
 
+/** ELK layout node dimensions — must match elkLayout.ts constants. */
+const NODE_WIDTH = 80;
+const NODE_HEIGHT = 70;
+
+/**
+ * Resolve a node's absolute position by walking up the containment chain.
+ * ELK stores child positions relative to their parent container, so we
+ * accumulate ancestor offsets to get graph-absolute coordinates.
+ */
+function absoluteCenter(
+	nodeId: string,
+	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
+	childToParent: Map<string, string>,
+	containerIds: ReadonlySet<string>
+): { x: number; y: number } | undefined {
+	const pos = positionMap.get(nodeId);
+	if (!pos) return undefined;
+
+	let ax = pos.x;
+	let ay = pos.y;
+	let current = nodeId;
+	while (childToParent.has(current)) {
+		const pid = childToParent.get(current)!;
+		const pp = positionMap.get(pid);
+		if (!pp) break;
+		ax += pp.x;
+		ay += pp.y;
+		current = pid;
+	}
+
+	const isContainer = containerIds.has(nodeId);
+	return {
+		x: ax + (isContainer ? (pos.width ?? 300) / 2 : NODE_WIDTH / 2),
+		y: ay + (isContainer ? (pos.height ?? 200) / 2 : NODE_HEIGHT / 2),
+	};
+}
+
+/**
+ * Choose the best source/target handle pair based on the dominant direction
+ * between two node centers. This makes edges connect to the nearest side
+ * of each node (like draw.io) instead of always using bottom→top.
+ */
+function bestHandlePair(
+	srcCenter: { x: number; y: number },
+	tgtCenter: { x: number; y: number }
+): { sourceHandle: string; targetHandle: string } {
+	const dx = tgtCenter.x - srcCenter.x;
+	const dy = tgtCenter.y - srcCenter.y;
+
+	if (Math.abs(dy) >= Math.abs(dx)) {
+		return dy >= 0
+			? { sourceHandle: 'bottom-source', targetHandle: 'top-target' }
+			: { sourceHandle: 'top-source', targetHandle: 'bottom-target' };
+	}
+	return dx >= 0
+		? { sourceHandle: 'right-source', targetHandle: 'left-target' }
+		: { sourceHandle: 'left-source', targetHandle: 'right-target' };
+}
+
 /** The set of CALM variant keys that imply containment. */
 const CONTAINMENT_VARIANTS: ReadonlySet<CalmRelationshipVariant> = new Set([
 	'deployed-in',
@@ -246,10 +305,25 @@ export function calmToFlow(
 			const route = edgeRoutes?.get(edgeId);
 			const label = route ? midpointOfPoints(route.points) : undefined;
 
+			// Select nearest handles based on relative node positions
+			const srcCenter = positionMap
+				? absoluteCenter(pair.source, positionMap, childToParent, parentIds)
+				: undefined;
+			const tgtCenter = positionMap
+				? absoluteCenter(pair.target, positionMap, childToParent, parentIds)
+				: undefined;
+			const handles = srcCenter && tgtCenter
+				? bestHandlePair(srcCenter, tgtCenter)
+				: undefined;
+
 			edges.push({
 				id: edgeId,
 				source: pair.source,
 				target: pair.target,
+				...(handles && {
+					sourceHandle: handles.sourceHandle,
+					targetHandle: handles.targetHandle,
+				}),
 				type: pair.variant,
 				data: {
 					calmRelId: cr['unique-id'],
