@@ -186,10 +186,19 @@ export function calmToFlow(
 		const position = posEntry ? { x: posEntry.x, y: posEntry.y } : { x: 100 + idx * 160, y: 100 };
 
 		const type = isParent ? 'container' : resolveNodeType(cn['node-type']);
+
+		// For non-container nodes with ELK positions, shift x to the ELK cell
+		// center (x + NODE_WIDTH/2 = x + 40) and use origin [0.5, 0] so Svelte
+		// Flow interprets x as the node's horizontal center. This ensures all
+		// nodes in the same ELK column are perfectly center-aligned.
+		const useCenter = type !== 'container' && posEntry;
+		if (useCenter) position.x += 40;
+
 		const node: Node = {
 			id: cn['unique-id'],
 			type,
 			position,
+			...(useCenter && { origin: [0.5, 0] as [number, number] }),
 			data: {
 				label: cn.name,
 				calmId: cn['unique-id'],
