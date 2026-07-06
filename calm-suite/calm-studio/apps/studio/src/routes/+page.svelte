@@ -525,6 +525,7 @@
 		await importCalmFile(JSON.stringify(arch));
 
 		// Template load doesn't bind to a file — mark clean but without filename
+		await tick();
 		markClean();
 
 		// Initialize governance score for the loaded template
@@ -833,6 +834,7 @@
 			const result = await openFile();
 			await importCalmFile(result.content, result.name);
 			// On success, importCalmFile clears importError; mark clean with new file info
+			await tick();
 			markClean(result.name, result.handle);
 			// Desktop: add to recent files and refresh menu
 			if (isTauri() && typeof result.handle === 'string') {
@@ -848,6 +850,7 @@
 		const response = await fetch(demo.path);
 		const content = await response.text();
 		await importCalmFile(content, demo.name);
+		await tick();
 		markClean(demo.name + '.calm.json', null);
 	}
 
