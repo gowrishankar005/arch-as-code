@@ -66,10 +66,20 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 3px;
-		padding: 4px 6px;
+		width: 100%;
+		height: 100%;
+		padding: 6px 8px;
+		background: var(--node-generic-bg);
+		border: 1.5px solid var(--node-generic-border);
+		border-radius: 10px;
 		cursor: default;
 		user-select: none;
 		font-family: var(--node-font);
+	}
+
+	.node.selected {
+		border-color: var(--node-selected-ring);
+		box-shadow: 0 0 0 1.5px var(--node-selected-ring);
 	}
 
 	.node.selected :global(svg) {

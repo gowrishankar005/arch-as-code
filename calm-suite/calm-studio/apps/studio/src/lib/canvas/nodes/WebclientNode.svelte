@@ -53,10 +53,19 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 3px;
-		padding: 2px 4px;
+		width: 100%;
+		height: 100%;
+		padding: 6px 8px;
+		background: var(--node-webclient-bg);
+		border: 1.5px solid var(--node-webclient-border);
+		border-radius: 10px;
 		cursor: default;
 		user-select: none;
 		font-family: var(--node-font);
+	}
+	.node.selected {
+		border-color: var(--node-selected-ring);
+		box-shadow: 0 0 0 1.5px var(--node-selected-ring);
 	}
 	.node.selected svg rect,
 	.node.selected svg line {
