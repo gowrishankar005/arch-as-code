@@ -37,6 +37,21 @@ describe('NodeBadges', () => {
 		expect(getByText('Confidential')).toBeTruthy();
 	});
 
+	// Classification color is applied via a CSS class, not an inline `style`
+	// attribute — an inline style would always win over the stylesheet and
+	// block the :global(.dark) overrides from ever applying in dark mode.
+	it.each([
+		['PII', 'classification-pii'],
+		['Confidential', 'classification-confidential'],
+		['Public', 'classification-public'],
+		['Internal', 'classification-default'],
+	])('applies the %s class for %s classification, not an inline style', (dataClassification, expectedClass) => {
+		const { getByText } = render(NodeBadges, { props: { dataClassification } });
+		const el = getByText(dataClassification);
+		expect(el.classList.contains(expectedClass)).toBe(true);
+		expect(el.getAttribute('style')).toBeNull();
+	});
+
 	it('shows a details badge when detailed-architecture is present', () => {
 		const { getByTitle } = render(NodeBadges, {
 			props: { details: { 'detailed-architecture': 'https://example.com/detailed.json' } },
