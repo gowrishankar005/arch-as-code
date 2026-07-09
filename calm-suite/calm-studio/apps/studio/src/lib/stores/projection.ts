@@ -46,11 +46,99 @@ function svgPathFromPoints(points: Array<{ x: number; y: number }>): string {
 	return `M ${first.x},${first.y}` + rest.map((p) => ` L ${p.x},${p.y}`).join('');
 }
 
-/** Midpoint of an ELK route, used as the edge label anchor. */
-function midpointOfPoints(points: Array<{ x: number; y: number }>): { x: number; y: number } {
-	const mid = points[Math.floor((points.length - 1) / 2)];
-	const next = points[Math.ceil((points.length - 1) / 2)];
-	return { x: (mid.x + next.x) / 2, y: (mid.y + next.y) / 2 };
+type Point = { x: number; y: number };
+type Rect = { x: number; y: number; width: number; height: number };
+
+/** Total length of a polyline. */
+function pathLength(points: Point[]): number {
+	let total = 0;
+	for (let i = 1; i < points.length; i++) {
+		total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+	}
+	return total;
+}
+
+/** Point at fraction `t` (0..1) along a polyline, measured by arc length. */
+function pointAtFraction(points: Point[], t: number): Point {
+	if (points.length === 1) return points[0];
+	const target = pathLength(points) * t;
+	let covered = 0;
+	for (let i = 1; i < points.length; i++) {
+		const segLen = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+		if (covered + segLen >= target || i === points.length - 1) {
+			const segT = segLen === 0 ? 0 : (target - covered) / segLen;
+			return {
+				x: points[i - 1].x + (points[i].x - points[i - 1].x) * segT,
+				y: points[i - 1].y + (points[i].y - points[i - 1].y) * segT
+			};
+		}
+		covered += segLen;
+	}
+	return points[points.length - 1];
+}
+
+/** Unit vector perpendicular to the route's direction at fraction `t` (0..1). */
+function normalAtFraction(points: Point[], t: number): Point {
+	if (points.length < 2) return { x: 0, y: 1 };
+	const target = pathLength(points) * t;
+	let covered = 0;
+	for (let i = 1; i < points.length; i++) {
+		const dx = points[i].x - points[i - 1].x;
+		const dy = points[i].y - points[i - 1].y;
+		const segLen = Math.hypot(dx, dy);
+		if (covered + segLen >= target || i === points.length - 1) {
+			if (segLen === 0) return { x: 0, y: 1 };
+			return { x: -dy / segLen, y: dx / segLen };
+		}
+		covered += segLen;
+	}
+	return { x: 0, y: 1 };
+}
+
+/** Approximate on-screen footprint of an edge's protocol-label pill, for collision checks. */
+const LABEL_WIDTH = 70;
+const LABEL_HEIGHT = 20;
+
+function labelRectAt(x: number, y: number): Rect {
+	return { x: x - LABEL_WIDTH / 2, y: y - LABEL_HEIGHT / 2, width: LABEL_WIDTH, height: LABEL_HEIGHT };
+}
+
+function rectsOverlap(a: Rect, b: Rect): boolean {
+	return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+/**
+ * Places an edge label along its ELK route. Starts at the true (arc-length)
+ * midpoint, then searches for the nearest clear spot — first by sliding
+ * along the route, then by nudging perpendicular to it at each point —
+ * that doesn't overlap a node's bounding box or an already-placed label.
+ * Sliding alone handles a label sitting on top of a node it passes behind;
+ * the perpendicular nudge is what separates labels on near-parallel edges,
+ * which sliding along either route can't do since both routes run the same
+ * direction. Falls back to the plain midpoint if nothing is clear (a rare
+ * overlap beats a label detached from its edge).
+ */
+function placeLabel(points: Point[], nodeRects: Rect[], placedLabelRects: Rect[]): Point {
+	const candidateFractions = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8];
+	const perpendicularOffsets = [0, 14, -14, 28, -28];
+	for (const t of candidateFractions) {
+		const base = pointAtFraction(points, t);
+		const normal = normalAtFraction(points, t);
+		for (const off of perpendicularOffsets) {
+			const p = { x: base.x + normal.x * off, y: base.y + normal.y * off };
+			const rect = labelRectAt(p.x, p.y);
+			const blocked =
+				nodeRects.some((r) => rectsOverlap(rect, r)) ||
+				placedLabelRects.some((r) => rectsOverlap(rect, r));
+			if (!blocked) {
+				placedLabelRects.push(rect);
+				return p;
+			}
+		}
+	}
+	const fallback = pointAtFraction(points, 0.5);
+	placedLabelRects.push(labelRectAt(fallback.x, fallback.y));
+	return fallback;
 }
 
 /** ELK layout node dimensions — must match elkLayout.ts constants. */
@@ -58,16 +146,15 @@ const NODE_WIDTH = 80;
 const NODE_HEIGHT = 70;
 
 /**
- * Resolve a node's absolute position by walking up the containment chain.
- * ELK stores child positions relative to their parent container, so we
- * accumulate ancestor offsets to get graph-absolute coordinates.
+ * Resolve a node's absolute top-left origin by walking up the containment
+ * chain. ELK stores child positions relative to their parent container, so
+ * we accumulate ancestor offsets to get graph-absolute coordinates.
  */
-function absoluteCenter(
+function absoluteOrigin(
 	nodeId: string,
 	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
-	childToParent: Map<string, string>,
-	containerIds: ReadonlySet<string>
-): { x: number; y: number } | undefined {
+	childToParent: Map<string, string>
+): Point | undefined {
 	const pos = positionMap.get(nodeId);
 	if (!pos) return undefined;
 
@@ -82,11 +169,43 @@ function absoluteCenter(
 		ay += pp.y;
 		current = pid;
 	}
+	return { x: ax, y: ay };
+}
 
+function absoluteCenter(
+	nodeId: string,
+	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
+	childToParent: Map<string, string>,
+	containerIds: ReadonlySet<string>
+): { x: number; y: number } | undefined {
+	const origin = absoluteOrigin(nodeId, positionMap, childToParent);
+	if (!origin) return undefined;
+
+	const pos = positionMap.get(nodeId)!;
 	const isContainer = containerIds.has(nodeId);
 	return {
-		x: ax + (isContainer ? (pos.width ?? 300) / 2 : NODE_WIDTH / 2),
-		y: ay + (isContainer ? (pos.height ?? 200) / 2 : NODE_HEIGHT / 2),
+		x: origin.x + (isContainer ? (pos.width ?? 300) / 2 : NODE_WIDTH / 2),
+		y: origin.y + (isContainer ? (pos.height ?? 200) / 2 : NODE_HEIGHT / 2),
+	};
+}
+
+/** Resolve a node's absolute bounding box, for edge-label collision checks. */
+function absoluteRect(
+	nodeId: string,
+	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
+	childToParent: Map<string, string>,
+	containerIds: ReadonlySet<string>
+): Rect | undefined {
+	const origin = absoluteOrigin(nodeId, positionMap, childToParent);
+	if (!origin) return undefined;
+
+	const pos = positionMap.get(nodeId)!;
+	const isContainer = containerIds.has(nodeId);
+	return {
+		x: origin.x,
+		y: origin.y,
+		width: isContainer ? (pos.width ?? 300) : NODE_WIDTH,
+		height: isContainer ? (pos.height ?? 200) : NODE_HEIGHT,
 	};
 }
 
@@ -288,6 +407,15 @@ export function calmToFlow(
 	// Svelte Flow requires parents before children.
 	nodes.sort((a, b) => getDepth(a.id) - getDepth(b.id));
 
+	// Node bounding boxes, for keeping edge labels off of nodes below.
+	const nodeRects: Rect[] = positionMap
+		? arch.nodes
+				.map((cn) => absoluteRect(cn['unique-id'], positionMap, childToParent, parentIds))
+				.filter((r): r is Rect => r !== undefined)
+		: [];
+	// Accumulates as labels are placed below, so later edges avoid earlier labels too.
+	const placedLabelRects: Rect[] = [];
+
 	// Expand each CALM relationship into one or more Svelte Flow edges.
 	// We tag each edge with its source CalmRelationship's unique-id and variant
 	// in `data.calm` so flowToCalm can reconstruct the nested form losslessly
@@ -303,7 +431,7 @@ export function calmToFlow(
 		pairs.forEach((pair, i) => {
 			const edgeId = multi ? `${cr['unique-id']}#${i}` : cr['unique-id'];
 			const route = edgeRoutes?.get(edgeId);
-			const label = route ? midpointOfPoints(route.points) : undefined;
+			const label = route ? placeLabel(route.points, nodeRects, placedLabelRects) : undefined;
 
 			// Select nearest handles based on relative node positions
 			const srcCenter = positionMap

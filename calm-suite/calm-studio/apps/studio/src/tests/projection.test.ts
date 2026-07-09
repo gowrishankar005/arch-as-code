@@ -96,13 +96,85 @@ describe('calmToFlow', () => {
 		const { edges } = calmToFlow(connectsArch, undefined, edgeRoutes);
 		const edge = edges[0];
 		expect(edge.data?.elkPath).toBe('M 0,0 L 10,0 L 10,20');
+		// Label sits at the true arc-length midpoint of the route (total
+		// length 30: 10 along the first segment, 20 along the second — the
+		// halfway point at length 15 is a quarter of the way into the
+		// second segment).
 		expect(edge.data?.elkLabelX).toBe(10);
-		expect(edge.data?.elkLabelY).toBe(0);
+		expect(edge.data?.elkLabelY).toBe(5);
 	});
 
 	test('leaves edge.data.elkPath undefined when no matching edgeRoute exists', () => {
 		const { edges } = calmToFlow(connectsArch, undefined, new Map());
 		expect(edges[0].data?.elkPath).toBeUndefined();
+	});
+
+	test('nudges an edge label off the route midpoint when a node sits there', () => {
+		// svc-1 at (0,0), db-1 at (300,0) (both default 80x70 leaf boxes) — the
+		// route's naive midpoint (150,35) lands squarely inside a third node
+		// placed right on top of it.
+		const posMap = new Map([
+			['svc-1', { x: 0, y: 0 }],
+			['db-1', { x: 300, y: 0 }],
+			['blocker-1', { x: 110, y: 0 }],
+		]);
+		const archWithBlocker: CalmArchitecture = {
+			...connectsArch,
+			nodes: [...connectsArch.nodes, { 'unique-id': 'blocker-1', 'node-type': 'service', name: 'Blocker' }],
+		};
+		const edgeRoutes = new Map([
+			['rel-1', { points: [{ x: 40, y: 35 }, { x: 340, y: 35 }] }],
+		]);
+		const { edges } = calmToFlow(archWithBlocker, posMap, edgeRoutes);
+		const edge = edges.find((e) => e.id === 'rel-1')!;
+		// Naive midpoint would be (190, 35) — inside blocker-1's box
+		// (110..190 x, 0..70 y). The placed label must land outside it.
+		const insideBlocker =
+			(edge.data?.elkLabelX as number) > 110 &&
+			(edge.data?.elkLabelX as number) < 190 &&
+			(edge.data?.elkLabelY as number) > 0 &&
+			(edge.data?.elkLabelY as number) < 70;
+		expect(insideBlocker).toBe(false);
+	});
+
+	test('offsets a second edge label so it does not stack on the first', () => {
+		// Two parallel edges routed along nearly the same line — their naive
+		// midpoints would coincide.
+		const twoEdgeArch: CalmArchitecture = {
+			nodes: [
+				{ 'unique-id': 'a', 'node-type': 'service', name: 'A' },
+				{ 'unique-id': 'b', 'node-type': 'service', name: 'B' },
+				{ 'unique-id': 'c', 'node-type': 'service', name: 'C' },
+				{ 'unique-id': 'd', 'node-type': 'service', name: 'D' },
+			],
+			relationships: [
+				{
+					'unique-id': 'rel-a',
+					'relationship-type': { connects: { source: { node: 'a' }, destination: { node: 'b' } } },
+					protocol: 'HTTP',
+				},
+				{
+					'unique-id': 'rel-b',
+					'relationship-type': { connects: { source: { node: 'c' }, destination: { node: 'd' } } },
+					protocol: 'HTTPS',
+				},
+			],
+		};
+		const edgeRoutes = new Map([
+			['rel-a', { points: [{ x: 0, y: 0 }, { x: 200, y: 0 }] }],
+			['rel-b', { points: [{ x: 0, y: 4 }, { x: 200, y: 4 }] }],
+		]);
+		const { edges } = calmToFlow(twoEdgeArch, undefined, edgeRoutes);
+		const labelA = edges.find((e) => e.id === 'rel-a')!.data;
+		const labelB = edges.find((e) => e.id === 'rel-b')!.data;
+		// Naive midpoints (100,0) and (100,4) are 4px apart — well within a
+		// label pill's footprint (~70x20). Approximate each as a pill rect
+		// and confirm the placed labels no longer overlap.
+		const rectAt = (x: number, y: number) => ({ x: x - 35, y: y - 10, width: 70, height: 20 });
+		const a = rectAt(labelA?.elkLabelX as number, labelA?.elkLabelY as number);
+		const b = rectAt(labelB?.elkLabelX as number, labelB?.elkLabelY as number);
+		const overlap = a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+		expect(overlap).toBe(false);
 	});
 });
 
