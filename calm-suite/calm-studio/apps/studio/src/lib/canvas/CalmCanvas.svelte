@@ -212,6 +212,22 @@
 		fitView({ duration: 300, maxZoom: 1.2, padding: 0.2 });
 	}
 
+	/**
+	 * Fit the viewport to just the currently selected nodes — Cmd/Ctrl+Shift+F.
+	 * No-op when nothing is selected (distinct from the toolbar's "Fit to
+	 * screen" button, which always fits the whole diagram).
+	 */
+	function fitToSelection() {
+		const selected = nodes.filter((n) => n.selected);
+		if (selected.length === 0) return;
+		fitView({
+			nodes: selected.map((n) => ({ id: n.id })),
+			duration: 300,
+			maxZoom: 1.2,
+			padding: 0.2,
+		});
+	}
+
 	const ZOOM_STEP = 1.2;
 	const MIN_ZOOM_PERCENT = 10;
 	const MAX_ZOOM_PERCENT = 400;
@@ -950,6 +966,13 @@
 			{ key: 'v', modifier: ['meta'], callback: handlePaste },
 			{ key: 'a', modifier: ['meta'], callback: handleSelectAll },
 			{ key: 'f', modifier: ['meta'], callback: handleToggleSearch },
+			// Nested modifier array = both held together (this library's
+			// flat-array form means "either alone" — see its own JSDoc).
+			// Shift+F: some platforms/browsers report event.key as the
+			// shifted 'F' even with a modifier held (not just plain 'f'),
+			// so both cases are bound to be safe across environments.
+			{ key: 'f', modifier: [['meta', 'shift']], callback: fitToSelection },
+			{ key: 'F', modifier: [['meta', 'shift']], callback: fitToSelection },
 			{ key: 'ArrowUp', callback: () => nudgeSelected(0, -1) },
 			{ key: 'ArrowDown', callback: () => nudgeSelected(0, 1) },
 			{ key: 'ArrowLeft', callback: () => nudgeSelected(-1, 0) },

@@ -62,6 +62,7 @@
 			title: 'Navigation',
 			shortcuts: [
 				{ keys: [`${mod}F`], action: 'Search nodes' },
+				{ keys: [`${mod}${shift}F`], action: 'Fit view to selection' },
 				{ keys: ['?'], action: 'Show this help' },
 			],
 		},
