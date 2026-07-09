@@ -202,6 +202,9 @@
 
 	const { screenToFlowPosition, fitView, setCenter, getViewport, setViewport } = useSvelteFlow();
 
+	/** Canvas wrapper div — see restoreCanvasFocus() for why this needs a stable ref. */
+	let wrapperEl: HTMLDivElement | undefined;
+
 	/**
 	 * Fit all nodes into view. Called by parent after import or layout.
 	 */
@@ -862,6 +865,22 @@
 	// ─── Inline label rename (draw.io-parity double-click editing) ──────────
 
 	/**
+	 * Committing an inline rename unmounts the <input>/<select> that was
+	 * focused, and the rename mutation replaces the nodes/edges arrays
+	 * (calmToFlow re-projection), which can also tear down and rebuild the
+	 * edited label's own component. Either way focus ends up on <body> —
+	 * an ancestor of this wrapper div, not a descendant, so the Cmd+Z
+	 * `use:shortcut` binding below never sees the keydown and undo becomes
+	 * a silent no-op right after any rename. Refocusing this wrapper
+	 * (stable across the mutation, unlike the label element) fixes it.
+	 * Deferred one macrotask because focusing synchronously/after tick()
+	 * still loses to the in-flight store update (verified empirically).
+	 */
+	function restoreCanvasFocus() {
+		setTimeout(() => wrapperEl?.focus({ preventScroll: true }), 0);
+	}
+
+	/**
 	 * EditableLabel.svelte dispatches this on `document` when a node label
 	 * edit is committed. Unlike collapse state, a rename mutates the CALM
 	 * model, so it's gated on readonly here — this is the single place that
@@ -872,6 +891,7 @@
 		if (readonly) return;
 		const { nodeId, name } = (event as CustomEvent<{ nodeId: string; name: string }>).detail;
 		onrenamenode?.(nodeId, name);
+		restoreCanvasFocus();
 	}
 
 	$effect(() => {
@@ -883,6 +903,7 @@
 		if (readonly) return;
 		const { edgeId, value } = (event as CustomEvent<{ edgeId: string; value: string }>).detail;
 		onrenameedgelabel?.(edgeId, value);
+		restoreCanvasFocus();
 	}
 
 	$effect(() => {
@@ -914,7 +935,9 @@
   Keyboard shortcuts are bound via @svelte-put/shortcut action on the wrapper div.
 -->
 <div
-	class="relative h-full w-full"
+	bind:this={wrapperEl}
+	class="relative h-full w-full canvas-wrapper"
+	tabindex="-1"
 	ondragover={handleDragOver}
 	ondrop={handleDrop}
 	role="main"
@@ -1077,6 +1100,10 @@
 </div>
 
 <style>
+	.canvas-wrapper:focus {
+		outline: none;
+	}
+
 	.edge-menu-backdrop {
 		position: fixed;
 		inset: 0;
