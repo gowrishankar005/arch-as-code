@@ -780,7 +780,7 @@
 
 	function handleUndo() {
 		if (readonly) return;
-		const snapshot = undo();
+		const snapshot = undo(nodes, edges);
 		if (snapshot) {
 			nodes = snapshot.nodes;
 			edges = snapshot.edges;
@@ -790,7 +790,7 @@
 
 	function handleRedo() {
 		if (readonly) return;
-		const snapshot = redo();
+		const snapshot = redo(nodes, edges);
 		if (snapshot) {
 			nodes = snapshot.nodes;
 			edges = snapshot.edges;
@@ -961,7 +961,12 @@
 	use:shortcut={{
 		trigger: [
 			{ key: 'z', modifier: ['meta'], callback: handleUndo },
-			{ key: 'z', modifier: ['meta', 'shift'], callback: handleRedo },
+			// Nested modifier array = both held together; the flat form
+			// means "either alone" (see the fit-to-selection trigger below
+			// for the full explanation). Both key cases bound since Shift
+			// held down can report event.key as uppercase 'Z'.
+			{ key: 'z', modifier: [['meta', 'shift']], callback: handleRedo },
+			{ key: 'Z', modifier: [['meta', 'shift']], callback: handleRedo },
 			{ key: 'c', modifier: ['meta'], callback: handleCopy },
 			{ key: 'v', modifier: ['meta'], callback: handlePaste },
 			{ key: 'a', modifier: ['meta'], callback: handleSelectAll },

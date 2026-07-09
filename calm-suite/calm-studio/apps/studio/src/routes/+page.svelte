@@ -987,7 +987,7 @@
 	// ─── Undo / Redo ─────────────────────────────────────────────────────────
 
 	function handleUndo() {
-		const snapshot = undo();
+		const snapshot = undo(nodes, edges);
 		if (snapshot) {
 			nodes = snapshot.nodes;
 			edges = snapshot.edges;
@@ -995,7 +995,7 @@
 	}
 
 	function handleRedo() {
-		const snapshot = redo();
+		const snapshot = redo(nodes, edges);
 		if (snapshot) {
 			nodes = snapshot.nodes;
 			edges = snapshot.edges;
