@@ -16,7 +16,8 @@
  */
 
 import type { Node, Edge } from '@xyflow/svelte';
-import type { CalmArchitecture, CalmInterface, CalmNode, CalmRelationship } from '@calmstudio/calm-core';
+import type { CalmArchitecture, CalmInterface, CalmNode, CalmRelationship, CalmRelationshipType } from '@calmstudio/calm-core';
+import { getContainerAndNodes } from '@calmstudio/calm-core';
 import { flowToCalm } from '$lib/stores/projection';
 
 // ─── Module-level state ───────────────────────────────────────────────────────
@@ -76,12 +77,37 @@ export function applyFromCanvas(nodes: Node[], edges: Edge[]): boolean {
 	return withMutex(() => {
 		const arch = flowToCalm(nodes, edges);
 		// Preserve containment relationships (deployed-in, composed-of) that are
-		// not projected as canvas edges — spatial nesting handles them visually.
+		// not projected as canvas edges — calmToFlow deliberately never creates
+		// an edge for them (spatial nesting communicates containment visually
+		// instead). But only preserve an entry whose child(ren) still have the
+		// matching parentId on the live canvas — CalmCanvas.svelte's drag-out
+		// and nudge-out handling only clears parentId (there's no edge to
+		// remove), so a naive "preserve every deployed-in/composed-of" would
+		// keep reporting a node as contained forever after the user dragged it
+		// out, even though the canvas and the exported CALM JSON would then
+		// disagree with each other.
 		const canvasRelIds = new Set(arch.relationships.map(r => r['unique-id']));
-		const preserved = model.relationships.filter(r => {
-			if (canvasRelIds.has(r['unique-id'])) return false;
+		const nodeById = new Map(nodes.map((n) => [n.id, n]));
+		const preserved = model.relationships.flatMap((r): CalmRelationship[] => {
+			if (canvasRelIds.has(r['unique-id'])) return [];
 			const rt = r['relationship-type'];
-			return 'deployed-in' in rt || 'composed-of' in rt;
+			if (!('deployed-in' in rt) && !('composed-of' in rt)) return [];
+			const containment = getContainerAndNodes(r);
+			if (!containment) return [];
+			const stillContained = containment.nodes.filter(
+				(childId) => nodeById.get(childId)?.parentId === containment.container
+			);
+			if (stillContained.length === 0) return [];
+			if (stillContained.length === containment.nodes.length) return [r];
+			// Some (not all) children were dragged/nudged out — keep the
+			// relationship, but only for the children still actually nested.
+			const variant = 'deployed-in' in rt ? 'deployed-in' : 'composed-of';
+			return [{
+				...r,
+				'relationship-type': {
+					[variant]: { container: containment.container, nodes: stillContained },
+				} as CalmRelationshipType,
+			}];
 		});
 		model = { ...model, nodes: [...arch.nodes], relationships: [...arch.relationships, ...preserved] };
 	});

@@ -159,6 +159,87 @@ describe('model CRUD', () => {
 	});
 });
 
+// ─── applyFromCanvas containment preservation ─────────────────────────────────
+//
+// calmToFlow never creates a Svelte Flow edge for deployed-in/composed-of
+// relationships (containment is communicated by spatial nesting, not an
+// edge), so applyFromCanvas has to separately "remember" those relationships
+// across every canvas sync or they'd be silently dropped. CalmCanvas.svelte's
+// drag-out and nudge-out handling only clears a node's parentId — there's no
+// edge to remove — so this preservation logic must check parentId itself, or
+// a node the user visibly un-nested keeps reporting as contained forever.
+
+describe('applyFromCanvas containment preservation', () => {
+	beforeEach(() => {
+		resetModel();
+	});
+
+	const containmentArch: CalmArchitecture = {
+		nodes: [
+			{ 'unique-id': 'container-a', 'node-type': 'system', name: 'Container A', description: '' },
+			{ 'unique-id': 'child-a', 'node-type': 'service', name: 'Child A', description: '' },
+		],
+		relationships: [
+			{
+				'unique-id': 'r1',
+				'relationship-type': { 'deployed-in': { container: 'container-a', nodes: ['child-a'] } },
+			},
+		],
+	};
+
+	test('preserves a deployed-in relationship while the child still has the matching parentId', () => {
+		applyFromJson(containmentArch);
+		const nodes: Node[] = [
+			{ id: 'container-a', type: 'container', position: { x: 0, y: 0 }, data: { calmId: 'container-a', calmType: 'system' } },
+			{ id: 'child-a', type: 'service', parentId: 'container-a', position: { x: 10, y: 10 }, data: { calmId: 'child-a', calmType: 'service' } },
+		];
+		applyFromCanvas(nodes, []);
+		const model = getModel();
+		expect(model.relationships).toHaveLength(1);
+		expect(model.relationships[0]['unique-id']).toBe('r1');
+	});
+
+	test('drops a deployed-in relationship once the child no longer has the matching parentId (dragged/nudged out)', () => {
+		applyFromJson(containmentArch);
+		const nodes: Node[] = [
+			{ id: 'container-a', type: 'container', position: { x: 0, y: 0 }, data: { calmId: 'container-a', calmType: 'system' } },
+			// parentId cleared — matches what removeContainment() does.
+			{ id: 'child-a', type: 'service', position: { x: 500, y: 500 }, data: { calmId: 'child-a', calmType: 'service' } },
+		];
+		applyFromCanvas(nodes, []);
+		const model = getModel();
+		expect(model.relationships).toHaveLength(0);
+	});
+
+	test('keeps a multi-child deployed-in relationship for only the children still nested, once one is dragged out', () => {
+		const arch: CalmArchitecture = {
+			nodes: [
+				{ 'unique-id': 'container-a', 'node-type': 'system', name: 'Container A', description: '' },
+				{ 'unique-id': 'child-a', 'node-type': 'service', name: 'Child A', description: '' },
+				{ 'unique-id': 'child-b', 'node-type': 'service', name: 'Child B', description: '' },
+			],
+			relationships: [
+				{
+					'unique-id': 'r1',
+					'relationship-type': { 'deployed-in': { container: 'container-a', nodes: ['child-a', 'child-b'] } },
+				},
+			],
+		};
+		applyFromJson(arch);
+		const nodes: Node[] = [
+			{ id: 'container-a', type: 'container', position: { x: 0, y: 0 }, data: { calmId: 'container-a', calmType: 'system' } },
+			{ id: 'child-a', type: 'service', parentId: 'container-a', position: { x: 10, y: 10 }, data: { calmId: 'child-a', calmType: 'service' } },
+			// child-b's parentId cleared — dragged out.
+			{ id: 'child-b', type: 'service', position: { x: 900, y: 900 }, data: { calmId: 'child-b', calmType: 'service' } },
+		];
+		applyFromCanvas(nodes, []);
+		const model = getModel();
+		expect(model.relationships).toHaveLength(1);
+		const rel = model.relationships[0]['relationship-type'] as { 'deployed-in': { nodes: string[] } };
+		expect(rel['deployed-in'].nodes).toEqual(['child-a']);
+	});
+});
+
 // ─── Node property mutations ──────────────────────────────────────────────────
 
 describe('node property mutations', () => {
