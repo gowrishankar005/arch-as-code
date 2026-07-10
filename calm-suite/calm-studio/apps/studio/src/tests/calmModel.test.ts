@@ -238,6 +238,83 @@ describe('applyFromCanvas containment preservation', () => {
 		const rel = model.relationships[0]['relationship-type'] as { 'deployed-in': { nodes: string[] } };
 		expect(rel['deployed-in'].nodes).toEqual(['child-a']);
 	});
+
+	// calmToFlow never creates an edge for containment, and CalmCanvas.svelte's
+	// drag-in handling (makeContainment) only sets parentId, adding no edge
+	// either — so a node freshly dropped into a container has no relationship
+	// backing it at all until applyFromCanvas synthesizes one.
+
+	test('synthesizes a new composed-of relationship for a node whose parentId has no backing relationship (drag-in)', () => {
+		applyFromJson({
+			nodes: [
+				{ 'unique-id': 'container-a', 'node-type': 'system', name: 'Container A', description: '' },
+				{ 'unique-id': 'free-node', 'node-type': 'service', name: 'Free Node', description: '' },
+			],
+			relationships: [],
+		});
+		const nodes: Node[] = [
+			{ id: 'container-a', type: 'container', position: { x: 0, y: 0 }, data: { calmId: 'container-a', calmType: 'system' } },
+			// parentId just set — matches what makeContainment() does on drag-in.
+			{ id: 'free-node', type: 'service', parentId: 'container-a', position: { x: 10, y: 10 }, data: { calmId: 'free-node', calmType: 'service' } },
+		];
+		applyFromCanvas(nodes, []);
+		const model = getModel();
+		expect(model.relationships).toHaveLength(1);
+		const rel = model.relationships[0]['relationship-type'] as { 'composed-of': { container: string; nodes: string[] } };
+		expect(rel['composed-of']).toEqual({ container: 'container-a', nodes: ['free-node'] });
+	});
+
+	test('does not duplicate the synthesized relationship on a subsequent sync with no changes', () => {
+		applyFromJson({
+			nodes: [
+				{ 'unique-id': 'container-a', 'node-type': 'system', name: 'Container A', description: '' },
+				{ 'unique-id': 'free-node', 'node-type': 'service', name: 'Free Node', description: '' },
+			],
+			relationships: [],
+		});
+		const nodes: Node[] = [
+			{ id: 'container-a', type: 'container', position: { x: 0, y: 0 }, data: { calmId: 'container-a', calmType: 'system' } },
+			{ id: 'free-node', type: 'service', parentId: 'container-a', position: { x: 10, y: 10 }, data: { calmId: 'free-node', calmType: 'service' } },
+		];
+		applyFromCanvas(nodes, []);
+		const firstSyncId = getModel().relationships[0]['unique-id'];
+		// Second sync, e.g. a reposition within the same container — nothing
+		// about containment changed.
+		const repositioned = nodes.map((n) =>
+			n.id === 'free-node' ? { ...n, position: { x: 20, y: 20 } } : n
+		);
+		applyFromCanvas(repositioned, []);
+		const model = getModel();
+		expect(model.relationships).toHaveLength(1);
+		expect(model.relationships[0]['unique-id']).toBe(firstSyncId);
+	});
+
+	test('does not synthesize a relationship for containment already backed by a canvas edge', () => {
+		applyFromJson({
+			nodes: [
+				{ 'unique-id': 'container-a', 'node-type': 'system', name: 'Container A', description: '' },
+				{ 'unique-id': 'child-a', 'node-type': 'service', name: 'Child A', description: '' },
+			],
+			relationships: [],
+		});
+		const nodes: Node[] = [
+			{ id: 'container-a', type: 'container', position: { x: 0, y: 0 }, data: { calmId: 'container-a', calmType: 'system' } },
+			{ id: 'child-a', type: 'service', parentId: 'container-a', position: { x: 10, y: 10 }, data: { calmId: 'child-a', calmType: 'service' } },
+		];
+		const edges: Edge[] = [
+			{
+				id: 'user-drawn-rel',
+				source: 'container-a',
+				target: 'child-a',
+				type: 'deployed-in',
+				data: { calmVariant: 'deployed-in' },
+			},
+		];
+		applyFromCanvas(nodes, edges);
+		const model = getModel();
+		expect(model.relationships).toHaveLength(1);
+		expect(model.relationships[0]['unique-id']).toBe('user-drawn-rel');
+	});
 });
 
 // ─── Node property mutations ──────────────────────────────────────────────────

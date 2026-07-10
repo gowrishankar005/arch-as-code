@@ -759,6 +759,37 @@
 		});
 	}
 
+	/**
+	 * Finds the most specific (smallest-area) node whose bounds contain
+	 * `point`, among nodes that could plausibly act as a container. Any node
+	 * type can become a container when something is dropped into it. When
+	 * candidates are nested (a subnet inside a VPC), the point sits inside
+	 * BOTH bounding boxes by definition — pick the smallest-area match (the
+	 * deepest container), not just the first one in iteration order, or a
+	 * drop onto a small nested container would always land in its outermost
+	 * ancestor instead.
+	 */
+	function findBestContainer(excludeId: string, point: { x: number; y: number }): Node | null {
+		let best: { candidate: Node; area: number } | null = null;
+		for (const candidate of nodes) {
+			if (candidate.id === excludeId) continue;
+			if (candidate.type === 'container' || (candidate.measured?.width && candidate.measured.width > 100)) {
+				// absolutePositionOf, not candidate.position directly — a
+				// candidate that's itself nested (e.g. a subnet inside a VPC)
+				// stores position relative to ITS parent, not the canvas, so
+				// using it bare would test the wrong rectangle.
+				const width = candidate.measured?.width ?? candidate.width ?? 200;
+				const height = candidate.measured?.height ?? candidate.height ?? 150;
+				const bounds = { ...absolutePositionOf(candidate.id, nodes), width, height };
+				if (isInsideBounds(point, bounds)) {
+					const area = width * height;
+					if (!best || area < best.area) best = { candidate, area };
+				}
+			}
+		}
+		return best?.candidate ?? null;
+	}
+
 	function handleNodeDragStop(event: NodeDragPayload) {
 		if (readonly) return;
 
@@ -767,59 +798,43 @@
 		const draggedNode = event.targetNode;
 		if (!draggedNode) return;
 
-		if (draggedNode.parentId) {
-			// Dragging OUT: a currently-contained node landed outside its
-			// parent's bounds — remove containment so it becomes a free
-			// top-level node exactly where it was dropped. removeContainment
-			// converts its position from parent-relative to absolute, so it
-			// doesn't jump (see containment.ts's absolutePositionOf).
-			if (!isStillInsideParent(draggedNode.id)) {
-				pushSnapshot(nodes, edges);
-				nodes = removeContainment(draggedNode.id, nodes);
-				applyFromCanvas(nodes, edges);
-				notifyChange();
-				return;
-			}
-			// Still inside its container — just a reposition; fall through to
-			// the regular drag-stop sync below.
-		} else if (draggedNode.type !== 'container') {
-			// Dragging IN: find any large node whose bounds contain the dragged
-			// node's position. Any node type can become a container when
-			// something is dropped into it. When candidates are nested (a
-			// subnet inside a VPC), the drop point sits inside BOTH bounding
-			// boxes by definition — pick the smallest-area match (the most
-			// specific / deepest container), not just the first one in
-			// iteration order, or a drop onto a small nested container would
-			// always land in its outermost ancestor instead.
-			let best: { candidate: Node; area: number } | null = null;
-			for (const candidate of nodes) {
-				if (candidate.id === draggedNode.id) continue;
-				if (candidate.type === 'container' || (candidate.measured?.width && candidate.measured.width > 100)) {
-					// absolutePositionOf, not candidate.position directly — a
-					// candidate that's itself nested (e.g. a subnet inside a
-					// VPC) stores position relative to ITS parent, not the
-					// canvas, so using it bare would test the wrong rectangle.
-					const width = candidate.measured?.width ?? candidate.width ?? 200;
-					const height = candidate.measured?.height ?? candidate.height ?? 150;
-					const bounds = { ...absolutePositionOf(candidate.id, nodes), width, height };
-					if (isInsideBounds(draggedNode.position, bounds)) {
-						const area = width * height;
-						if (!best || area < best.area) best = { candidate, area };
-					}
-				}
-			}
-			if (best) {
-				pushSnapshot(nodes, edges);
-				nodes = makeContainment(best.candidate.id, draggedNode.id, nodes);
-				nodes = autoResizeAncestors(draggedNode.id, nodes);
-				applyFromCanvas(nodes, edges);
-				notifyChange();
-				return;
+		let containmentChanged = false;
+
+		// Dragging OUT: any node that moved in this drag — not just the
+		// grabbed one, since a multi-selected sibling moves along with it and
+		// can cross its own parent's bounds too — that's no longer inside its
+		// current parent becomes a free top-level node exactly where it was
+		// dropped. removeContainment converts its position from
+		// parent-relative to absolute, so it doesn't jump (see
+		// containment.ts's absolutePositionOf).
+		for (const n of event.nodes) {
+			if (n.parentId && !isStillInsideParent(n.id)) {
+				if (!containmentChanged) pushSnapshot(nodes, edges);
+				containmentChanged = true;
+				nodes = removeContainment(n.id, nodes);
 			}
 		}
-		// Regular drag stop (position change only) — also covers containers
-		// being repositioned and contained nodes that moved but stayed inside
-		// their container.
+
+		// Dragging IN: re-check the grabbed node's own drop point against
+		// candidate containers if it's currently free (either it was already
+		// unparented, or the drag-out step above just cleared its parentId).
+		// Re-checking right after the drag-out step — rather than only when
+		// draggedNode started the gesture unparented — is what lets a
+		// straight drag from container A into container B reparent in one
+		// motion instead of requiring a drag-out followed by a second drag-in.
+		const current = nodes.find((n) => n.id === draggedNode.id);
+		if (current && !current.parentId && current.type !== 'container') {
+			const target = findBestContainer(current.id, current.position);
+			if (target) {
+				if (!containmentChanged) pushSnapshot(nodes, edges);
+				containmentChanged = true;
+				nodes = makeContainment(target.id, current.id, nodes);
+				nodes = autoResizeAncestors(current.id, nodes);
+			}
+		}
+
+		// Regular drag stop sync — also covers containers being repositioned
+		// and contained nodes that moved but stayed inside their container.
 		applyFromCanvas(nodes, edges);
 		notifyChange();
 	}
