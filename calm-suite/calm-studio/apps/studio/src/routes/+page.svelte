@@ -48,7 +48,7 @@
 	import type { C4Level } from '$lib/c4/c4Filter';
 	import { toggleTheme, isDark } from '$lib/stores/theme.svelte';
 	import { getModelJson, applyFromJson, applyFromCanvas, getModel, resetModel, updateNodeProperty, updateEdgeProperty } from '$lib/stores/calmModel.svelte';
-	import { calmToFlow } from '$lib/stores/projection';
+	import { calmToFlow, buildLayoutDecorator, extractLayoutPositions, toRawPosition, LAYOUT_DECORATOR_ID } from '$lib/stores/projection';
 	import { pushSnapshot, resetHistory, undo, redo } from '$lib/stores/history.svelte';
 	import { layoutCalm, type LayoutDirection } from '$lib/layout/elkLayout';
 	import { openFile, saveFile, saveFileAs } from '$lib/io/fileSystem';
@@ -56,6 +56,7 @@
 		getFileName,
 		getFileHandle,
 		getIsDirty,
+		getChangeVersion,
 		markDirty,
 		markClean,
 		resetFileState
@@ -462,8 +463,23 @@
 
 	$effect(() => {
 		const dirty = getIsDirty();
+		// getChangeVersion() increments on every markDirty() call, even while
+		// already dirty — isDirty itself only flips false->true once per
+		// editing session, which would only re-arm the debounce timer for
+		// the FIRST edit and leave the recovery draft stale for the rest of
+		// a long session. Reading the cheap counter (not `nodes` itself)
+		// re-arms it on every mutation without pulling node positions into
+		// this effect's dependencies.
+		getChangeVersion();
 		if (dirty) {
-			scheduleAutosave(getModelJson(), getFileName());
+			// Pass a thunk, not a pre-built string — getModelJsonWithLayout()
+			// reads live node positions, and building it here (inside the
+			// effect body) would make the effect re-run on every drag frame
+			// instead of only when something actually changed. scheduleAutosave
+			// calls the thunk once the debounce timer actually fires, so it
+			// always captures the freshest state regardless of how long ago
+			// this effect last ran.
+			scheduleAutosave(() => getModelJsonWithLayout(), getFileName());
 		}
 	});
 
@@ -613,11 +629,14 @@
 				const parsed = JSON.parse(newValue) as CalmArchitecture;
 				codeParseError = null;
 
-				// Build position map from current nodes to preserve positions
+				// Build position map from current nodes to preserve positions.
+				// toRawPosition() undoes calmToFlow's center-alignment shift —
+				// feeding an already-shifted position straight back in as a
+				// positionMap entry causes it to drift 40px right every time.
 				const positionMap = new Map<string, { x: number; y: number }>();
 				for (const n of nodes) {
 					if (n.data?.calmId) {
-						positionMap.set(n.data.calmId as string, { ...n.position });
+						positionMap.set(n.data.calmId as string, toRawPosition(n));
 					}
 				}
 
@@ -672,7 +691,11 @@
 		for (const n of nodes) {
 			if (n.data?.calmId) {
 				positionMap.set(n.data.calmId as string, {
-					...n.position,
+					// toRawPosition() undoes calmToFlow's center-alignment shift —
+					// see importCalmFile's saved-layout comment for why feeding an
+					// already-shifted position straight back in as a positionMap
+					// entry drifts the node 40px right every time.
+					...toRawPosition(n),
 					width: n.measured?.width ?? n.width,
 					height: n.measured?.height ?? n.height,
 				});
@@ -773,7 +796,8 @@
 	/**
 	 * Import a CALM JSON file from string content.
 	 * Validates JSON and presence of `nodes` array.
-	 * On success: applies to model, runs ELK layout, projects to canvas, fits view.
+	 * On success: applies to model, restores saved layout if present
+	 * (otherwise runs ELK layout once), projects to canvas, fits view.
 	 * On error: sets importError, canvas unchanged (no partial load).
 	 */
 	async function importCalmFile(content: string, _filename?: string) {
@@ -805,14 +829,29 @@
 			extensionPackBanner = true;
 		}
 
+		// A CalmStudio-authored layout decorator means this file already carries
+		// the user's own arrangement. Strip it from the model before it becomes
+		// canonical — it's tool-internal plumbing, not something that should
+		// appear in the CALM JSON code view — and skip ELK entirely below so
+		// reopening never scrambles a diagram someone just spent time arranging.
+		const savedPositions = extractLayoutPositions(parsed);
+		if (savedPositions) {
+			parsed = {
+				...parsed,
+				decorators: parsed.decorators?.filter((d) => d['unique-id'] !== LAYOUT_DECORATOR_ID),
+			};
+		}
+
 		// Push undo snapshot before mutation
 		pushSnapshot(nodes, edges);
 
 		// Apply to canonical model
 		applyFromJson(parsed);
 
-		// Auto-layout with no pinned nodes on fresh import
-		const { positions: positionMap } = await layoutCalm(parsed, new Set(), 'DOWN');
+		// Auto-layout only when there's no saved arrangement to restore — never
+		// on a diagram this app has already laid out once, so a fresh open
+		// doesn't discard manual rearrangement.
+		const positionMap = savedPositions ?? (await layoutCalm(parsed, new Set(), 'DOWN')).positions;
 
 		// Project to Svelte Flow — edge routing is handled by Svelte Flow's
 		// smooth-step algorithm using actual node positions, not ELK's routes
@@ -827,6 +866,22 @@
 
 		// Initialize governance score for the loaded architecture
 		refreshGovernance();
+	}
+
+	/**
+	 * Same as getModelJson(), plus a freshly-built layout decorator capturing
+	 * the current canvas positions. Used for every persistence path a file
+	 * might later be reopened from (Save, Save As, Export, autosave) so
+	 * manual rearrangement survives the round trip — see importCalmFile's
+	 * saved-layout handling. NOT used for the CALM JSON code-view binding or
+	 * the calmscript/Scaler.toml exports, which show the user's own
+	 * architecture, not CalmStudio's internal layout bookkeeping.
+	 */
+	function getModelJsonWithLayout(): string {
+		const arch = getModel();
+		const otherDecorators = (arch.decorators ?? []).filter((d) => d['unique-id'] !== LAYOUT_DECORATOR_ID);
+		const withLayout = { ...arch, decorators: [...otherDecorators, buildLayoutDecorator(nodes)] };
+		return JSON.stringify(withLayout, null, 2);
 	}
 
 	// ─── File operations ──────────────────────────────────────────────────────
@@ -858,7 +913,7 @@
 
 	async function handleSave() {
 		try {
-			const json = getModelJson();
+			const json = getModelJsonWithLayout();
 			const handle = await saveFile(json, getFileHandle(), getFileName() ?? 'architecture.calm.json');
 			markClean(undefined, handle);
 			clearAutosave();
@@ -869,7 +924,7 @@
 
 	async function handleSaveAs() {
 		try {
-			const json = getModelJson();
+			const json = getModelJsonWithLayout();
 			const handle = await saveFileAs(json, getFileName() ?? 'architecture.calm.json');
 			// saveFileAs returns:
 			// - string path (Tauri desktop)
@@ -1005,7 +1060,7 @@
 	// ─── Export operations ────────────────────────────────────────────────────
 
 	function handleExportCalm() {
-		exportAsCalm(getModelJson());
+		exportAsCalm(getModelJsonWithLayout());
 	}
 
 	async function handleExportSvg() {
@@ -1128,10 +1183,13 @@
 		// Build final position map: ELK results + pinned node current positions
 		const finalPositions = new Map<string, { x: number; y: number }>();
 
-		// Inject pinned positions from current canvas state
+		// Inject pinned positions from current canvas state. toRawPosition()
+		// undoes calmToFlow's center-alignment shift — see importCalmFile's
+		// saved-layout comment for why skipping this drifts the node 40px
+		// right every time layout re-runs.
 		for (const n of nodes) {
 			if (pinnedIds.has(n.id)) {
-				finalPositions.set(n.id, { ...n.position });
+				finalPositions.set(n.id, toRawPosition(n));
 			}
 		}
 

@@ -120,10 +120,18 @@ export function exportAsCalm(json: string, filename = 'architecture.calm.json'):
 		if ('_template' in parsed) {
 			delete parsed._template;
 		}
-		// Inject AIGF governance decorator if AI nodes exist
+		// Inject AIGF governance decorator if AI nodes exist. Appends rather
+		// than replacing parsed.decorators — this file may already carry other
+		// decorators (e.g. the calmstudio-layout one built by
+		// getModelJsonWithLayout()), which a bare assignment would silently
+		// delete. Drops any stale aigf-governance-overlay first so re-exporting
+		// doesn't accumulate duplicates.
 		const decorator = generateAIGFDecorator(parsed, filename);
 		if (decorator !== null) {
-			parsed.decorators = [decorator];
+			const otherDecorators = (parsed.decorators ?? []).filter(
+				(d) => d['unique-id'] !== 'aigf-governance-overlay'
+			);
+			parsed.decorators = [...otherDecorators, decorator];
 		}
 		cleanJson = JSON.stringify(parsed, null, 2);
 	} catch {

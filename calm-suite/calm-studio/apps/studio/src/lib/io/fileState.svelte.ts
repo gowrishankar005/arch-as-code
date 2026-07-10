@@ -25,6 +25,17 @@
 let currentFileName = $state<string | null>(null);
 let fileHandle = $state<FileSystemFileHandle | string | null>(null);
 let isDirty = $state(false);
+/**
+ * Increments on every markDirty() call, even while already dirty. isDirty
+ * itself only changes value on the false->true edge (Svelte 5 $state skips
+ * re-notifying subscribers of a same-value write), so an effect that reacts
+ * only to getIsDirty() re-runs once per editing session, not once per edit —
+ * too coarse for anything that needs to know "another change just happened"
+ * (e.g. re-arming a debounced autosave timer on every mutation). Reading
+ * this cheap counter alongside isDirty gives that without depending on
+ * whatever data actually changed.
+ */
+let changeVersion = $state(0);
 
 // ─── Getters ──────────────────────────────────────────────────────────────────
 
@@ -54,11 +65,17 @@ export function getIsDirty(): boolean {
 	return isDirty;
 }
 
+/** See changeVersion's own comment — increments on every markDirty() call. */
+export function getChangeVersion(): number {
+	return changeVersion;
+}
+
 // ─── Mutators ─────────────────────────────────────────────────────────────────
 
 /** Mark the diagram as having unsaved changes. */
 export function markDirty(): void {
 	isDirty = true;
+	changeVersion++;
 }
 
 /**

@@ -27,6 +27,7 @@ import type { Node, Edge } from '@xyflow/svelte';
 import type {
 	CalmArchitecture,
 	CalmControls,
+	CalmDecorator,
 	CalmInterface,
 	CalmNode,
 	CalmRelationship,
@@ -393,7 +394,11 @@ export function calmToFlow(
 
 		if (parentId) {
 			node.parentId = parentId;
-			node.extent = 'parent';
+			// No extent:'parent' — contained nodes must stay draggable out of
+			// their container (CalmCanvas.svelte's handleNodeDragStop detects
+			// the drop landing outside the parent's bounds and removes
+			// containment; extent:'parent' would hard-clamp the drag itself
+			// and prevent that gesture from ever happening).
 			node.zIndex = depth;
 		}
 
@@ -551,4 +556,88 @@ export function flowToCalm(nodes: Node[], edges: Edge[]): CalmArchitecture {
 	});
 
 	return { nodes: calmNodes, relationships: calmRelationships };
+}
+
+// ─── Layout persistence ─────────────────────────────────────────────────────
+
+/** unique-id and type shared by the layout-preserving decorator on both read and write. */
+export const LAYOUT_DECORATOR_ID = 'calmstudio-layout';
+
+type LayoutPosition = { x: number; y: number; width?: number; height?: number };
+
+/**
+ * Undoes calmToFlow's center-alignment shift (+40 x-offset paired with
+ * origin:[0.5,0], see the `useCenter` block above) for a live Svelte Flow
+ * node, returning its position in the same raw, top-left-origin form
+ * calmToFlow's own `positionMap` parameter expects.
+ *
+ * Every call site that rebuilds a positionMap from live `nodes` — to
+ * preserve current positions across a re-projection — MUST pass positions
+ * through this first. Skipping it is a real, confirmed bug (not
+ * theoretical): calmToFlow reapplies the +40 shift on top of a value that
+ * already has it baked in, so the node's rendered position drifts another
+ * 40px right on every round trip. Containers never get the shift, so their
+ * position passes through unchanged.
+ *
+ * Unconditional on the node's CURRENT origin — deliberately not gated on
+ * `node.origin?.[0] === 0.5`. calmToFlow shifts *any* non-container node
+ * that has a positionMap entry, regardless of what origin it currently
+ * has. A node created via palette drop (no origin set at all, plain
+ * top-left semantics) would otherwise pass through this function
+ * unchanged, then get shifted for the first time on the very next
+ * re-projection (Save→reopen, or even the first property edit, since
+ * handlePropertyMutation always rebuilds a full positionMap) — a one-time
+ * but very visible jump. Pre-emptively subtracting 40 here means that
+ * first shift lands exactly back where the node already was.
+ */
+export function toRawPosition(node: Pick<Node, 'position' | 'type'>): { x: number; y: number } {
+	if (node.type !== 'container') {
+		return { x: node.position.x - 40, y: node.position.y };
+	}
+	return { x: node.position.x, y: node.position.y };
+}
+
+/**
+ * Captures the live canvas position (and, for containers, size) of every
+ * node into a CALM decorator, so a reopened file renders exactly as the
+ * user left it instead of triggering a fresh ELK auto-layout on every open.
+ * Positions are stored in the same raw form calmToFlow's `positionMap`
+ * parameter already expects (see toRawPosition) — parent-relative for
+ * nested nodes, absolute for top-level ones.
+ */
+export function buildLayoutDecorator(nodes: Node[]): CalmDecorator {
+	const positions: Record<string, LayoutPosition> = {};
+	for (const node of nodes) {
+		const calmId = (node.data as { calmId?: string } | undefined)?.calmId ?? node.id;
+		const entry: LayoutPosition = toRawPosition(node);
+		if (node.type === 'container') {
+			if (node.width) entry.width = node.width;
+			if (node.height) entry.height = node.height;
+		}
+		positions[calmId] = entry;
+	}
+	return {
+		'unique-id': LAYOUT_DECORATOR_ID,
+		type: LAYOUT_DECORATOR_ID,
+		target: [],
+		'applies-to': Object.keys(positions),
+		data: { positions },
+	};
+}
+
+/**
+ * Extracts saved node positions from a CalmStudio layout decorator, if
+ * present. Returns null when the architecture has never been through this
+ * app before (no decorator) — the caller should fall back to ELK
+ * auto-layout in that case. Coverage doesn't need to be complete: calmToFlow
+ * already falls back to a staggered default for any node missing from the
+ * returned map.
+ */
+export function extractLayoutPositions(arch: CalmArchitecture): Map<string, LayoutPosition> | null {
+	const decorator = arch.decorators?.find(
+		(d) => d['unique-id'] === LAYOUT_DECORATOR_ID && d.type === LAYOUT_DECORATOR_ID
+	);
+	const positions = decorator?.data?.positions as Record<string, LayoutPosition> | undefined;
+	if (!positions) return null;
+	return new Map(Object.entries(positions));
 }
