@@ -1,0 +1,37 @@
+# Spectral lint profile enforcing node-typing-rules.md (R8 + R5/R6 checks)
+# Run: npx spectral lint <arch>.calm.json --ruleset governance/node-typing/spectral-node-typing.yaml
+rules:
+  node-type-allowed:
+    description: "R8: node-type must be a CALM core type or a registry entry (see governance/node-typing/node-typing-rules.json)"
+    message: "node-type '{{value}}' is not in the core enum or the org registry. Use the glossary in node-typing-rules.json for the approved mapping."
+    severity: error
+    given: "$.nodes[*].node-type"
+    then:
+      function: enumeration
+      functionOptions:
+        values:
+          - actor
+          - ecosystem
+          - system
+          - service
+          - database
+          - network
+          - ldap
+          - webclient
+          - data-asset
+          - "messaging:queue"
+          - "messaging:topic"
+          - "messaging:broker"
+          - "onprem:mainframe"
+          - "onprem:sftp"
+          - "onprem:hsm"
+
+  actor-should-interact:
+    description: "R6: actor nodes should use interacts, not appear as connects sources"
+    message: "Actor '{{value}}' is the source of a connects relationship — use interacts (rule R6)."
+    severity: warn
+    given: "$.relationships[*]['relationship-type'].connects.source.node"
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "^(customer|user|admin|actor)"

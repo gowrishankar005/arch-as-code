@@ -1,0 +1,23 @@
+{
+  "nodes": [
+    { "unique-id": "customer", "node-type": "actor", "name": "Customer", "description": "End user" },
+    { "unique-id": "web-app", "node-type": "webclient", "name": "Web App", "description": "Storefront SPA (R1: leaf webclient)" },
+    { "unique-id": "waf", "node-type": "network", "name": "WAF", "description": "Routing/filtering only (R2)" },
+    { "unique-id": "orders-api", "node-type": "service", "name": "Orders API", "description": "Runnable leaf unit (R1)" },
+    { "unique-id": "orders-db", "node-type": "database", "name": "Orders DB", "description": "Running store (R3)" },
+    { "unique-id": "customer-pii", "node-type": "data-asset", "name": "Customer PII", "description": "Governed data (R3)", "data-classification": "restricted" },
+    { "unique-id": "order-events", "node-type": "messaging:topic", "name": "Order Events", "description": "Pub/sub topic (R4)" },
+    { "unique-id": "prod-vpc", "node-type": "network", "name": "Production VPC", "description": "Zone as network container (R5)" },
+    { "unique-id": "core-ledger", "node-type": "onprem:mainframe", "name": "Core Ledger", "description": "On-prem mainframe (R7)", "metadata": [{ "hosting": "on-prem" }] }
+  ],
+  "relationships": [
+    { "unique-id": "customer-uses-web", "relationship-type": { "interacts": { "actor": "customer", "nodes": ["web-app"] } }, "description": "R6: actor uses interacts" },
+    { "unique-id": "web-to-waf", "relationship-type": { "connects": { "source": { "node": "web-app" }, "destination": { "node": "waf" } } }, "protocol": "HTTPS" },
+    { "unique-id": "waf-to-api", "relationship-type": { "connects": { "source": { "node": "waf" }, "destination": { "node": "orders-api" } } }, "protocol": "HTTPS" },
+    { "unique-id": "api-to-db", "relationship-type": { "connects": { "source": { "node": "orders-api" }, "destination": { "node": "orders-db" } } }, "protocol": "JDBC" },
+    { "unique-id": "api-to-events", "relationship-type": { "connects": { "source": { "node": "orders-api" }, "destination": { "node": "order-events" } } }, "protocol": "AMQP" },
+    { "unique-id": "vpc-contains", "relationship-type": { "deployed-in": { "container": "prod-vpc", "nodes": ["orders-api", "orders-db", "order-events"] } }, "description": "R5: zone membership via deployed-in" },
+    { "unique-id": "api-to-ledger", "relationship-type": { "connects": { "source": { "node": "orders-api" }, "destination": { "node": "core-ledger" } } }, "protocol": "TCP", "description": "R7: on-prem node participates in topology" },
+    { "unique-id": "db-holds-pii", "relationship-type": { "composed-of": { "container": "orders-db", "nodes": ["customer-pii"] } }, "description": "R3: data-asset lives inside the database node" }
+  ]
+}
