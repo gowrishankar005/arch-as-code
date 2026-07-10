@@ -6,7 +6,7 @@
     { "unique-id": "orders-api", "node-type": "service", "name": "Orders API", "description": "Runnable leaf unit (R1)" },
     { "unique-id": "orders-db", "node-type": "database", "name": "Orders DB", "description": "Running store (R3)" },
     { "unique-id": "customer-pii", "node-type": "data-asset", "name": "Customer PII", "description": "Governed data (R3)", "data-classification": "restricted" },
-    { "unique-id": "order-events", "node-type": "messaging:topic", "name": "Order Events", "description": "Pub/sub topic (R4)" },
+    { "unique-id": "order-events", "node-type": "messaging:pub-sub", "name": "Order Events", "description": "Pub/sub topic (R4)" },
     { "unique-id": "prod-vpc", "node-type": "network", "name": "Production VPC", "description": "Zone as network container (R5)" },
     { "unique-id": "core-ledger", "node-type": "onprem:mainframe", "name": "Core Ledger", "description": "On-prem mainframe (R7)", "metadata": [{ "hosting": "on-prem" }] }
   ],

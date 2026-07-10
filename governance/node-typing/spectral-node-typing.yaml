@@ -19,9 +19,11 @@ rules:
           - ldap
           - webclient
           - data-asset
-          - "messaging:queue"
-          - "messaging:topic"
-          - "messaging:broker"
+          - "messaging:message-queue"
+          - "messaging:pub-sub"
+          - "messaging:message-broker"
+          - "messaging:event-stream"
+          - "messaging:event-bus"
           - "onprem:mainframe"
           - "onprem:sftp"
           - "onprem:hsm"

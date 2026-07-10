@@ -3,7 +3,7 @@
     { "unique-id": "customer", "node-type": "actor", "name": "Customer", "description": "End user" },
     { "unique-id": "lb", "node-type": "Service", "name": "Load Balancer", "description": "VIOLATES R8 (casing) and R2 (should be network)" },
     { "unique-id": "orders-svc", "node-type": "microservice", "name": "Orders", "description": "VIOLATES R8: not core enum or registry" },
-    { "unique-id": "events", "node-type": "queue", "name": "Events", "description": "VIOLATES R8/R4: bare 'queue', should be messaging:queue" }
+    { "unique-id": "events", "node-type": "queue", "name": "Events", "description": "VIOLATES R8/R4: bare 'queue', should be messaging:message-queue" }
   ],
   "relationships": [
     { "unique-id": "customer-to-lb", "relationship-type": { "connects": { "source": { "node": "customer" }, "destination": { "node": "lb" } } }, "description": "VIOLATES R6: actor as connects source" }

@@ -56,17 +56,24 @@ point.
   with `data-classification: "restricted"`
 ❌ a `data-asset` node as the destination of a JDBC `connects`
 
-## R4 — queues, topics, brokers (custom registry type)
+## R4 — queues, topics, brokers (extension pack types)
 
-CALM core has no async primitive. Use registry types, never plain `service`:
-- **`messaging:queue`** — point-to-point (SQS, RabbitMQ queue)
-- **`messaging:topic`** — pub/sub (SNS, Kafka topic)
-- **`messaging:broker`** — the broker infrastructure itself (Kafka cluster,
-  RabbitMQ server) when modeled as a node; individual topics/queues may be
-  `deployed-in` it.
+CALM core has no async primitive. Use the **existing Studio extensions
+messaging pack type IDs** (`packages/extensions/src/packs/messaging.ts`),
+never plain `service` and never invented parallel IDs:
+- **`messaging:message-queue`** — point-to-point (SQS, RabbitMQ queue)
+- **`messaging:pub-sub`** — pub/sub topic (SNS, Kafka topic)
+- **`messaging:message-broker`** — broker infrastructure (RabbitMQ server)
+- **`messaging:event-stream`** — streaming platform (Kafka cluster)
+- **`messaging:event-bus`** — enterprise event bus
 
-Rationale: typing these `service` destroys rule precision — "only services
-connect to databases" must not accidentally license a queue to do so.
+Individual topics/queues may be `deployed-in` their broker/stream node.
+
+Rationale: (a) typing these `service` destroys rule precision — "only services
+connect to databases" must not accidentally license a queue to do so;
+(b) **extension packs are the source of truth for custom type IDs** — the
+registry reuses their IDs so imported/converted nodes render with proper
+palette icons instead of the generic fallback.
 
 ## R5 — security zones, DMZ, VPCs, subnets
 
