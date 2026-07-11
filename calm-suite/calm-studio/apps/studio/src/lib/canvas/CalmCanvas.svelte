@@ -41,7 +41,7 @@
 
 	import { nodeTypes, resolveNodeType } from './nodeTypes';
 	import { edgeTypes, DEFAULT_EDGE_TYPE } from './edgeTypes';
-	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType } from './containment';
+	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType, absolutePositionOf } from './containment';
 	import { computeAlignmentGuides, type AlignmentGuide } from './alignmentGuides';
 	import AlignmentGuides from './AlignmentGuides.svelte';
 	import { layoutSubtree } from '$lib/layout/elkLayout';
@@ -106,7 +106,6 @@
 					y: padY + row * (cellH + gapY),
 				},
 				parentId: parentNode.id,
-				extent: 'parent',
 				data: {
 					label: `New ${calmType}`,
 					calmId: childId,
@@ -202,11 +201,30 @@
 
 	const { screenToFlowPosition, fitView, setCenter, getViewport, setViewport } = useSvelteFlow();
 
+	/** Canvas wrapper div — see restoreCanvasFocus() for why this needs a stable ref. */
+	let wrapperEl: HTMLDivElement | undefined;
+
 	/**
 	 * Fit all nodes into view. Called by parent after import or layout.
 	 */
 	export function fitViewport() {
 		fitView({ duration: 300, maxZoom: 1.2, padding: 0.2 });
+	}
+
+	/**
+	 * Fit the viewport to just the currently selected nodes — Cmd/Ctrl+Shift+F.
+	 * No-op when nothing is selected (distinct from the toolbar's "Fit to
+	 * screen" button, which always fits the whole diagram).
+	 */
+	function fitToSelection() {
+		const selected = nodes.filter((n) => n.selected);
+		if (selected.length === 0) return;
+		fitView({
+			nodes: selected.map((n) => ({ id: n.id })),
+			duration: 300,
+			maxZoom: 1.2,
+			padding: 0.2,
+		});
 	}
 
 	const ZOOM_STEP = 1.2;
@@ -638,7 +656,7 @@
 		pushSnapshot(nodes, edges);
 		const edge = edges.find((e) => e.id === edgeId);
 		if (edge && isContainmentType(edge.type ?? '')) {
-			nodes = removeContainment(edge.source, edge.target, nodes);
+			nodes = removeContainment(edge.target, nodes);
 		}
 		edges = edges.filter((e) => e.id !== edgeId);
 		applyFromCanvas(nodes, edges);
@@ -721,6 +739,57 @@
 		);
 	}
 
+	/**
+	 * True when a contained node's current (absolute) position still falls
+	 * within its parent's bounds. False for a top-level node (no parent to
+	 * check against). Shared by handleNodeDragStop and nudgeSelected — both
+	 * can move a contained node outside its container now that
+	 * extent:'parent' no longer clamps movement, and both need to detect it
+	 * and remove containment so the model doesn't silently diverge from
+	 * what's rendered.
+	 */
+	function isStillInsideParent(nodeId: string): boolean {
+		const node = nodes.find((n) => n.id === nodeId);
+		const parent = node?.parentId ? nodes.find((n) => n.id === node.parentId) : undefined;
+		if (!parent) return false;
+		return isInsideBounds(absolutePositionOf(nodeId, nodes), {
+			...absolutePositionOf(parent.id, nodes),
+			width: parent.measured?.width ?? parent.width,
+			height: parent.measured?.height ?? parent.height,
+		});
+	}
+
+	/**
+	 * Finds the most specific (smallest-area) node whose bounds contain
+	 * `point`, among nodes that could plausibly act as a container. Any node
+	 * type can become a container when something is dropped into it. When
+	 * candidates are nested (a subnet inside a VPC), the point sits inside
+	 * BOTH bounding boxes by definition — pick the smallest-area match (the
+	 * deepest container), not just the first one in iteration order, or a
+	 * drop onto a small nested container would always land in its outermost
+	 * ancestor instead.
+	 */
+	function findBestContainer(excludeId: string, point: { x: number; y: number }): Node | null {
+		let best: { candidate: Node; area: number } | null = null;
+		for (const candidate of nodes) {
+			if (candidate.id === excludeId) continue;
+			if (candidate.type === 'container' || (candidate.measured?.width && candidate.measured.width > 100)) {
+				// absolutePositionOf, not candidate.position directly — a
+				// candidate that's itself nested (e.g. a subnet inside a VPC)
+				// stores position relative to ITS parent, not the canvas, so
+				// using it bare would test the wrong rectangle.
+				const width = candidate.measured?.width ?? candidate.width ?? 200;
+				const height = candidate.measured?.height ?? candidate.height ?? 150;
+				const bounds = { ...absolutePositionOf(candidate.id, nodes), width, height };
+				if (isInsideBounds(point, bounds)) {
+					const area = width * height;
+					if (!best || area < best.area) best = { candidate, area };
+				}
+			}
+		}
+		return best?.candidate ?? null;
+	}
+
 	function handleNodeDragStop(event: NodeDragPayload) {
 		if (readonly) return;
 
@@ -728,31 +797,44 @@
 
 		const draggedNode = event.targetNode;
 		if (!draggedNode) return;
-		// Don't reparent nodes that are already parented or are containers
-		if (draggedNode.type === 'container' || draggedNode.parentId) return;
 
-		// Find any large node whose bounds contain the dragged node's position.
-		// Any node type can become a container when something is dropped into it.
-		for (const candidate of nodes) {
-			if (candidate.id === draggedNode.id) continue;
-			if (candidate.type === 'container' || (candidate.measured?.width && candidate.measured.width > 100)) {
-				const bounds = {
-					x: candidate.position.x,
-					y: candidate.position.y,
-					width: candidate.measured?.width ?? candidate.width ?? 200,
-					height: candidate.measured?.height ?? candidate.height ?? 150,
-				};
-				if (isInsideBounds(draggedNode.position, bounds)) {
-					pushSnapshot(nodes, edges);
-					nodes = makeContainment(candidate.id, draggedNode.id, nodes);
-					nodes = autoResizeAncestors(draggedNode.id, nodes);
-					applyFromCanvas(nodes, edges);
-					notifyChange();
-					return;
-				}
+		let containmentChanged = false;
+
+		// Dragging OUT: any node that moved in this drag — not just the
+		// grabbed one, since a multi-selected sibling moves along with it and
+		// can cross its own parent's bounds too — that's no longer inside its
+		// current parent becomes a free top-level node exactly where it was
+		// dropped. removeContainment converts its position from
+		// parent-relative to absolute, so it doesn't jump (see
+		// containment.ts's absolutePositionOf).
+		for (const n of event.nodes) {
+			if (n.parentId && !isStillInsideParent(n.id)) {
+				if (!containmentChanged) pushSnapshot(nodes, edges);
+				containmentChanged = true;
+				nodes = removeContainment(n.id, nodes);
 			}
 		}
-		// Regular drag stop (position change only)
+
+		// Dragging IN: re-check the grabbed node's own drop point against
+		// candidate containers if it's currently free (either it was already
+		// unparented, or the drag-out step above just cleared its parentId).
+		// Re-checking right after the drag-out step — rather than only when
+		// draggedNode started the gesture unparented — is what lets a
+		// straight drag from container A into container B reparent in one
+		// motion instead of requiring a drag-out followed by a second drag-in.
+		const current = nodes.find((n) => n.id === draggedNode.id);
+		if (current && !current.parentId && current.type !== 'container') {
+			const target = findBestContainer(current.id, current.position);
+			if (target) {
+				if (!containmentChanged) pushSnapshot(nodes, edges);
+				containmentChanged = true;
+				nodes = makeContainment(target.id, current.id, nodes);
+				nodes = autoResizeAncestors(current.id, nodes);
+			}
+		}
+
+		// Regular drag stop sync — also covers containers being repositioned
+		// and contained nodes that moved but stayed inside their container.
 		applyFromCanvas(nodes, edges);
 		notifyChange();
 	}
@@ -761,7 +843,7 @@
 
 	function handleUndo() {
 		if (readonly) return;
-		const snapshot = undo();
+		const snapshot = undo(nodes, edges);
 		if (snapshot) {
 			nodes = snapshot.nodes;
 			edges = snapshot.edges;
@@ -771,7 +853,7 @@
 
 	function handleRedo() {
 		if (readonly) return;
-		const snapshot = redo();
+		const snapshot = redo(nodes, edges);
 		if (snapshot) {
 			nodes = snapshot.nodes;
 			edges = snapshot.edges;
@@ -819,6 +901,16 @@
 		nodes = nodes.map((n) =>
 			n.selected ? { ...n, position: { x: n.position.x + dx, y: n.position.y + dy } } : n
 		);
+		// A nudge can push a contained node outside its parent's bounds, same
+		// as a drag can (see handleNodeDragStop / isStillInsideParent) — check
+		// every selected, currently-contained node and un-nest any that
+		// landed outside, so the model doesn't silently diverge from what's
+		// rendered.
+		for (const n of nodes) {
+			if (n.selected && n.parentId && !isStillInsideParent(n.id)) {
+				nodes = removeContainment(n.id, nodes);
+			}
+		}
 		applyFromCanvas(nodes, edges);
 		notifyChange();
 	}
@@ -862,6 +954,22 @@
 	// ─── Inline label rename (draw.io-parity double-click editing) ──────────
 
 	/**
+	 * Committing an inline rename unmounts the <input>/<select> that was
+	 * focused, and the rename mutation replaces the nodes/edges arrays
+	 * (calmToFlow re-projection), which can also tear down and rebuild the
+	 * edited label's own component. Either way focus ends up on <body> —
+	 * an ancestor of this wrapper div, not a descendant, so the Cmd+Z
+	 * `use:shortcut` binding below never sees the keydown and undo becomes
+	 * a silent no-op right after any rename. Refocusing this wrapper
+	 * (stable across the mutation, unlike the label element) fixes it.
+	 * Deferred one macrotask because focusing synchronously/after tick()
+	 * still loses to the in-flight store update (verified empirically).
+	 */
+	function restoreCanvasFocus() {
+		setTimeout(() => wrapperEl?.focus({ preventScroll: true }), 0);
+	}
+
+	/**
 	 * EditableLabel.svelte dispatches this on `document` when a node label
 	 * edit is committed. Unlike collapse state, a rename mutates the CALM
 	 * model, so it's gated on readonly here — this is the single place that
@@ -872,6 +980,7 @@
 		if (readonly) return;
 		const { nodeId, name } = (event as CustomEvent<{ nodeId: string; name: string }>).detail;
 		onrenamenode?.(nodeId, name);
+		restoreCanvasFocus();
 	}
 
 	$effect(() => {
@@ -883,6 +992,7 @@
 		if (readonly) return;
 		const { edgeId, value } = (event as CustomEvent<{ edgeId: string; value: string }>).detail;
 		onrenameedgelabel?.(edgeId, value);
+		restoreCanvasFocus();
 	}
 
 	$effect(() => {
@@ -914,7 +1024,9 @@
   Keyboard shortcuts are bound via @svelte-put/shortcut action on the wrapper div.
 -->
 <div
-	class="relative h-full w-full"
+	bind:this={wrapperEl}
+	class="relative h-full w-full canvas-wrapper"
+	tabindex="-1"
 	ondragover={handleDragOver}
 	ondrop={handleDrop}
 	role="main"
@@ -922,11 +1034,23 @@
 	use:shortcut={{
 		trigger: [
 			{ key: 'z', modifier: ['meta'], callback: handleUndo },
-			{ key: 'z', modifier: ['meta', 'shift'], callback: handleRedo },
+			// Nested modifier array = both held together; the flat form
+			// means "either alone" (see the fit-to-selection trigger below
+			// for the full explanation). Both key cases bound since Shift
+			// held down can report event.key as uppercase 'Z'.
+			{ key: 'z', modifier: [['meta', 'shift']], callback: handleRedo },
+			{ key: 'Z', modifier: [['meta', 'shift']], callback: handleRedo },
 			{ key: 'c', modifier: ['meta'], callback: handleCopy },
 			{ key: 'v', modifier: ['meta'], callback: handlePaste },
 			{ key: 'a', modifier: ['meta'], callback: handleSelectAll },
 			{ key: 'f', modifier: ['meta'], callback: handleToggleSearch },
+			// Nested modifier array = both held together (this library's
+			// flat-array form means "either alone" — see its own JSDoc).
+			// Shift+F: some platforms/browsers report event.key as the
+			// shifted 'F' even with a modifier held (not just plain 'f'),
+			// so both cases are bound to be safe across environments.
+			{ key: 'f', modifier: [['meta', 'shift']], callback: fitToSelection },
+			{ key: 'F', modifier: [['meta', 'shift']], callback: fitToSelection },
 			{ key: 'ArrowUp', callback: () => nudgeSelected(0, -1) },
 			{ key: 'ArrowDown', callback: () => nudgeSelected(0, 1) },
 			{ key: 'ArrowLeft', callback: () => nudgeSelected(-1, 0) },
@@ -1077,6 +1201,10 @@
 </div>
 
 <style>
+	.canvas-wrapper:focus {
+		outline: none;
+	}
+
 	.edge-menu-backdrop {
 		position: fixed;
 		inset: 0;

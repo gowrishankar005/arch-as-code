@@ -10,7 +10,8 @@
   correctly with edge direction — without it markers point in wrong direction
   on edges with reversed source/target.
 -->
-<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+
+<svg id="calm-edge-markers" style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
   <defs>
     <!-- Filled arrowhead — used by ConnectsEdge and InteractsEdge -->
     <marker

@@ -28,6 +28,29 @@ import { buildScalerToml } from '$lib/io/scalerToml';
 const IMAGE_WIDTH = 1920;
 const IMAGE_HEIGHT = 1080;
 
+// ─── Shared viewport capture helper ───────────────────────────────────────────
+
+/**
+ * Run `capture` with the shared edge-marker `<defs>` (arrowheads, diamonds —
+ * see EdgeMarkers.svelte) temporarily cloned into `viewportEl`.
+ *
+ * EdgeMarkers is rendered as a sibling of Svelte Flow's `.svelte-flow__viewport`
+ * (SvelteFlow's `children` slot renders outside the Viewport component), so
+ * html-to-image — which only clones `viewportEl`'s own subtree — never sees
+ * the `<marker>` defs that edges reference via `markerEnd="url(#marker-*)"`.
+ * Without this, every exported edge silently loses its arrowhead.
+ */
+async function withEdgeMarkers<T>(viewportEl: HTMLElement, capture: () => Promise<T>): Promise<T> {
+	const markersSvg = document.getElementById('calm-edge-markers');
+	const clone = markersSvg?.cloneNode(true) as HTMLElement | undefined;
+	if (clone) viewportEl.appendChild(clone);
+	try {
+		return await capture();
+	} finally {
+		if (clone) viewportEl.removeChild(clone);
+	}
+}
+
 // ─── AIGF decorator generation ────────────────────────────────────────────────
 
 /**
@@ -97,10 +120,18 @@ export function exportAsCalm(json: string, filename = 'architecture.calm.json'):
 		if ('_template' in parsed) {
 			delete parsed._template;
 		}
-		// Inject AIGF governance decorator if AI nodes exist
+		// Inject AIGF governance decorator if AI nodes exist. Appends rather
+		// than replacing parsed.decorators — this file may already carry other
+		// decorators (e.g. the calmstudio-layout one built by
+		// getModelJsonWithLayout()), which a bare assignment would silently
+		// delete. Drops any stale aigf-governance-overlay first so re-exporting
+		// doesn't accumulate duplicates.
 		const decorator = generateAIGFDecorator(parsed, filename);
 		if (decorator !== null) {
-			parsed.decorators = [decorator];
+			const otherDecorators = (parsed.decorators ?? []).filter(
+				(d) => d['unique-id'] !== 'aigf-governance-overlay'
+			);
+			parsed.decorators = [...otherDecorators, decorator];
 		}
 		cleanJson = JSON.stringify(parsed, null, 2);
 	} catch {
@@ -155,16 +186,18 @@ export async function exportAsSvg(nodes: Node[]): Promise<void> {
 	const bounds = getNodesBounds(nodes);
 	const viewport = getViewportForBounds(bounds, IMAGE_WIDTH, IMAGE_HEIGHT, 0.5, 2, 0.1);
 
-	const dataUrl = await toSvg(viewportEl, {
-		backgroundColor: 'transparent',
-		width: IMAGE_WIDTH,
-		height: IMAGE_HEIGHT,
-		style: {
-			width: `${IMAGE_WIDTH}px`,
-			height: `${IMAGE_HEIGHT}px`,
-			transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-		},
-	});
+	const dataUrl = await withEdgeMarkers(viewportEl, () =>
+		toSvg(viewportEl, {
+			backgroundColor: 'transparent',
+			width: IMAGE_WIDTH,
+			height: IMAGE_HEIGHT,
+			style: {
+				width: `${IMAGE_WIDTH}px`,
+				height: `${IMAGE_HEIGHT}px`,
+				transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+			},
+		})
+	);
 
 	downloadDataUrl(dataUrl, 'architecture.svg');
 }
@@ -189,17 +222,19 @@ export async function exportAsPng(nodes: Node[]): Promise<void> {
 	const bounds = getNodesBounds(nodes);
 	const viewport = getViewportForBounds(bounds, IMAGE_WIDTH, IMAGE_HEIGHT, 0.5, 2, 0.1);
 
-	const dataUrl = await toPng(viewportEl, {
-		backgroundColor: 'transparent',
-		width: IMAGE_WIDTH,
-		height: IMAGE_HEIGHT,
-		pixelRatio: 2,
-		style: {
-			width: `${IMAGE_WIDTH}px`,
-			height: `${IMAGE_HEIGHT}px`,
-			transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-		},
-	});
+	const dataUrl = await withEdgeMarkers(viewportEl, () =>
+		toPng(viewportEl, {
+			backgroundColor: 'transparent',
+			width: IMAGE_WIDTH,
+			height: IMAGE_HEIGHT,
+			pixelRatio: 2,
+			style: {
+				width: `${IMAGE_WIDTH}px`,
+				height: `${IMAGE_HEIGHT}px`,
+				transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+			},
+		})
+	);
 
 	downloadDataUrl(dataUrl, 'architecture.png');
 }

@@ -42,13 +42,18 @@
 				: ''
 	);
 
-	/** Matches the classification color mapping already used by ExtensionNode/GenericNode. */
-	function classificationStyle(dc: string): string {
+	/**
+	 * Classification color mapping. A CSS class (not an inline `style`) so the
+	 * `:global(.dark) .classification-*` rules below can override it — a
+	 * hardcoded inline style would win over the stylesheet and always render
+	 * the light-mode colors, even in dark mode.
+	 */
+	function classificationClass(dc: string): string {
 		switch (dc.toLowerCase()) {
-			case 'pii': return 'background:#fef2f2;color:#dc2626;border-color:#fca5a5;';
-			case 'confidential': return 'background:#fffbeb;color:#d97706;border-color:#fcd34d;';
-			case 'public': return 'background:#f0fdf4;color:#16a34a;border-color:#86efac;';
-			default: return 'background:#f1f5f9;color:#64748b;border-color:#cbd5e1;';
+			case 'pii': return 'classification-pii';
+			case 'confidential': return 'classification-confidential';
+			case 'public': return 'classification-public';
+			default: return 'classification-default';
 		}
 	}
 </script>
@@ -69,8 +74,7 @@
 		{/if}
 		{#if dataClassification}
 			<span
-				class="badge-pill classification"
-				style={classificationStyle(dataClassification)}
+				class="badge-pill classification {classificationClass(dataClassification)}"
 				title="Data classification: {dataClassification}"
 			>{dataClassification}</span>
 		{/if}
@@ -113,5 +117,51 @@
 	.classification {
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
+	}
+
+	.classification-pii {
+		background: #fef2f2;
+		color: #dc2626;
+		border-color: #fca5a5;
+	}
+	.classification-confidential {
+		background: #fffbeb;
+		color: #d97706;
+		border-color: #fcd34d;
+	}
+	.classification-public {
+		background: #f0fdf4;
+		color: #16a34a;
+		border-color: #86efac;
+	}
+	.classification-default {
+		background: #f1f5f9;
+		color: #64748b;
+		border-color: #cbd5e1;
+	}
+
+	/* Dark mode: same tinted-glow treatment as the node-type color tokens
+	   in app.css (translucent bg + bright saturated text), instead of the
+	   light-mode pastel chips which would otherwise glow starkly against a
+	   dark canvas. */
+	:global(.dark) .classification-pii {
+		background: rgba(244, 63, 94, 0.12);
+		color: #fb7185;
+		border-color: rgba(244, 63, 94, 0.35);
+	}
+	:global(.dark) .classification-confidential {
+		background: rgba(217, 119, 6, 0.12);
+		color: #fbbf24;
+		border-color: rgba(217, 119, 6, 0.35);
+	}
+	:global(.dark) .classification-public {
+		background: rgba(34, 197, 94, 0.12);
+		color: #4ade80;
+		border-color: rgba(34, 197, 94, 0.35);
+	}
+	:global(.dark) .classification-default {
+		background: rgba(148, 163, 184, 0.08);
+		color: #94a3b8;
+		border-color: rgba(148, 163, 184, 0.3);
 	}
 </style>

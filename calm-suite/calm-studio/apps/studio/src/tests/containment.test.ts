@@ -10,6 +10,7 @@ import {
 	autoResizeContainer,
 	autoResizeAncestors,
 	isContainmentType,
+	absolutePositionOf,
 } from '$lib/canvas/containment';
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
@@ -28,6 +29,31 @@ function makeNode(
 	} as Node;
 }
 
+// ─── absolutePositionOf ────────────────────────────────────────────────────────
+
+describe('absolutePositionOf', () => {
+	test('returns a top-level node\'s own position', () => {
+		const node = makeNode('n1', 'service', { position: { x: 50, y: 60 } });
+		expect(absolutePositionOf('n1', [node])).toEqual({ x: 50, y: 60 });
+	});
+
+	test('sums a nested node\'s position with its parent\'s', () => {
+		const parent = makeNode('vpc', 'container', { position: { x: 500, y: 200 } });
+		const child = makeNode('subnet', 'service', {
+			parentId: 'vpc',
+			position: { x: 42, y: 60 },
+		});
+		expect(absolutePositionOf('subnet', [parent, child])).toEqual({ x: 542, y: 260 });
+	});
+
+	test('sums across multiple nesting levels', () => {
+		const vpc = makeNode('vpc', 'container', { position: { x: 100, y: 100 } });
+		const subnet = makeNode('subnet', 'container', { parentId: 'vpc', position: { x: 20, y: 20 } });
+		const instance = makeNode('instance', 'service', { parentId: 'subnet', position: { x: 5, y: 5 } });
+		expect(absolutePositionOf('instance', [vpc, subnet, instance])).toEqual({ x: 125, y: 125 });
+	});
+});
+
 // ─── makeContainment ─────────────────────────────────────────────────────────
 
 describe('makeContainment', () => {
@@ -42,14 +68,14 @@ describe('makeContainment', () => {
 		expect(updatedChild.parentId).toBe('parent-1');
 	});
 
-	test('sets extent:"parent" on child node', () => {
+	test('does not set extent on child node — dragging back out must stay possible', () => {
 		const parent = makeNode('parent-1', 'container');
 		const child = makeNode('child-1', 'service');
 
 		const result = makeContainment('parent-1', 'child-1', [parent, child]);
 
 		const updatedChild = result.find((n) => n.id === 'child-1')!;
-		expect(updatedChild.extent).toBe('parent');
+		expect(updatedChild.extent).toBeUndefined();
 	});
 
 	test('converts parent to container type if not already a container', () => {
@@ -106,6 +132,39 @@ describe('makeContainment', () => {
 		expect(nodes[0]).toBe(parent);
 		expect(nodes[1]).toBe(child);
 	});
+
+	test('converts an absolute-positioned top-level node to relative-to-parent', () => {
+		const parent = makeNode('parent-1', 'container', { position: { x: 500, y: 300 } });
+		const child = makeNode('child-1', 'service', { position: { x: 540, y: 360 } });
+
+		const result = makeContainment('parent-1', 'child-1', [parent, child]);
+
+		const updatedChild = result.find((n) => n.id === 'child-1')!;
+		expect(updatedChild.position).toEqual({ x: 40, y: 60 });
+	});
+
+	test('does not visually move the child — absolute position is unchanged before and after', () => {
+		const parent = makeNode('parent-1', 'container', { position: { x: 500, y: 300 } });
+		const child = makeNode('child-1', 'service', { position: { x: 540, y: 360 } });
+
+		const before = absolutePositionOf('child-1', [parent, child]);
+		const result = makeContainment('parent-1', 'child-1', [parent, child]);
+		const after = absolutePositionOf('child-1', result);
+
+		expect(after).toEqual(before);
+	});
+
+	test('re-parenting to a nested container computes position relative to that container, not the top-level one', () => {
+		const vpc = makeNode('vpc', 'container', { position: { x: 100, y: 100 } });
+		const subnet = makeNode('subnet', 'container', { parentId: 'vpc', position: { x: 20, y: 20 } });
+		const instance = makeNode('instance', 'service', { position: { x: 145, y: 145 } });
+
+		const result = makeContainment('subnet', 'instance', [vpc, subnet, instance]);
+
+		const updatedInstance = result.find((n) => n.id === 'instance')!;
+		// instance absolute (145,145) - subnet absolute (120,120) = (25,25)
+		expect(updatedInstance.position).toEqual({ x: 25, y: 25 });
+	});
 });
 
 // ─── removeContainment ───────────────────────────────────────────────────────
@@ -142,6 +201,31 @@ describe('removeContainment', () => {
 		const updatedChild2 = result.find((n) => n.id === 'child-2')!;
 		expect(updatedChild2.parentId).toBe('parent-1');
 		expect(updatedChild2.extent).toBe('parent');
+	});
+
+	test('converts the child\'s relative position back to absolute', () => {
+		const parent = makeNode('parent-1', 'container', { position: { x: 500, y: 300 } });
+		const child = makeNode('child-1', 'service', {
+			parentId: 'parent-1',
+			position: { x: 40, y: 60 },
+		});
+
+		const result = removeContainment('child-1', [parent, child]);
+
+		const updatedChild = result.find((n) => n.id === 'child-1')!;
+		expect(updatedChild.position).toEqual({ x: 540, y: 360 });
+	});
+
+	test('round-trip: containing then un-containing returns the node to its original absolute position', () => {
+		const parent = makeNode('parent-1', 'container', { position: { x: 500, y: 300 } });
+		const child = makeNode('child-1', 'service', { position: { x: 540, y: 360 } });
+
+		const contained = makeContainment('parent-1', 'child-1', [parent, child]);
+		const uncontained = removeContainment('child-1', contained);
+
+		const finalChild = uncontained.find((n) => n.id === 'child-1')!;
+		expect(finalChild.position).toEqual({ x: 540, y: 360 });
+		expect(finalChild.parentId).toBeUndefined();
 	});
 });
 

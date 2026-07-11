@@ -27,6 +27,7 @@ import type { Node, Edge } from '@xyflow/svelte';
 import type {
 	CalmArchitecture,
 	CalmControls,
+	CalmDecorator,
 	CalmInterface,
 	CalmNode,
 	CalmRelationship,
@@ -46,11 +47,99 @@ function svgPathFromPoints(points: Array<{ x: number; y: number }>): string {
 	return `M ${first.x},${first.y}` + rest.map((p) => ` L ${p.x},${p.y}`).join('');
 }
 
-/** Midpoint of an ELK route, used as the edge label anchor. */
-function midpointOfPoints(points: Array<{ x: number; y: number }>): { x: number; y: number } {
-	const mid = points[Math.floor((points.length - 1) / 2)];
-	const next = points[Math.ceil((points.length - 1) / 2)];
-	return { x: (mid.x + next.x) / 2, y: (mid.y + next.y) / 2 };
+type Point = { x: number; y: number };
+type Rect = { x: number; y: number; width: number; height: number };
+
+/** Total length of a polyline. */
+function pathLength(points: Point[]): number {
+	let total = 0;
+	for (let i = 1; i < points.length; i++) {
+		total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+	}
+	return total;
+}
+
+/** Point at fraction `t` (0..1) along a polyline, measured by arc length. */
+function pointAtFraction(points: Point[], t: number): Point {
+	if (points.length === 1) return points[0];
+	const target = pathLength(points) * t;
+	let covered = 0;
+	for (let i = 1; i < points.length; i++) {
+		const segLen = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+		if (covered + segLen >= target || i === points.length - 1) {
+			const segT = segLen === 0 ? 0 : (target - covered) / segLen;
+			return {
+				x: points[i - 1].x + (points[i].x - points[i - 1].x) * segT,
+				y: points[i - 1].y + (points[i].y - points[i - 1].y) * segT
+			};
+		}
+		covered += segLen;
+	}
+	return points[points.length - 1];
+}
+
+/** Unit vector perpendicular to the route's direction at fraction `t` (0..1). */
+function normalAtFraction(points: Point[], t: number): Point {
+	if (points.length < 2) return { x: 0, y: 1 };
+	const target = pathLength(points) * t;
+	let covered = 0;
+	for (let i = 1; i < points.length; i++) {
+		const dx = points[i].x - points[i - 1].x;
+		const dy = points[i].y - points[i - 1].y;
+		const segLen = Math.hypot(dx, dy);
+		if (covered + segLen >= target || i === points.length - 1) {
+			if (segLen === 0) return { x: 0, y: 1 };
+			return { x: -dy / segLen, y: dx / segLen };
+		}
+		covered += segLen;
+	}
+	return { x: 0, y: 1 };
+}
+
+/** Approximate on-screen footprint of an edge's protocol-label pill, for collision checks. */
+const LABEL_WIDTH = 70;
+const LABEL_HEIGHT = 20;
+
+function labelRectAt(x: number, y: number): Rect {
+	return { x: x - LABEL_WIDTH / 2, y: y - LABEL_HEIGHT / 2, width: LABEL_WIDTH, height: LABEL_HEIGHT };
+}
+
+function rectsOverlap(a: Rect, b: Rect): boolean {
+	return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+/**
+ * Places an edge label along its ELK route. Starts at the true (arc-length)
+ * midpoint, then searches for the nearest clear spot — first by sliding
+ * along the route, then by nudging perpendicular to it at each point —
+ * that doesn't overlap a node's bounding box or an already-placed label.
+ * Sliding alone handles a label sitting on top of a node it passes behind;
+ * the perpendicular nudge is what separates labels on near-parallel edges,
+ * which sliding along either route can't do since both routes run the same
+ * direction. Falls back to the plain midpoint if nothing is clear (a rare
+ * overlap beats a label detached from its edge).
+ */
+function placeLabel(points: Point[], nodeRects: Rect[], placedLabelRects: Rect[]): Point {
+	const candidateFractions = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8];
+	const perpendicularOffsets = [0, 14, -14, 28, -28];
+	for (const t of candidateFractions) {
+		const base = pointAtFraction(points, t);
+		const normal = normalAtFraction(points, t);
+		for (const off of perpendicularOffsets) {
+			const p = { x: base.x + normal.x * off, y: base.y + normal.y * off };
+			const rect = labelRectAt(p.x, p.y);
+			const blocked =
+				nodeRects.some((r) => rectsOverlap(rect, r)) ||
+				placedLabelRects.some((r) => rectsOverlap(rect, r));
+			if (!blocked) {
+				placedLabelRects.push(rect);
+				return p;
+			}
+		}
+	}
+	const fallback = pointAtFraction(points, 0.5);
+	placedLabelRects.push(labelRectAt(fallback.x, fallback.y));
+	return fallback;
 }
 
 /** ELK layout node dimensions — must match elkLayout.ts constants. */
@@ -58,16 +147,15 @@ const NODE_WIDTH = 80;
 const NODE_HEIGHT = 70;
 
 /**
- * Resolve a node's absolute position by walking up the containment chain.
- * ELK stores child positions relative to their parent container, so we
- * accumulate ancestor offsets to get graph-absolute coordinates.
+ * Resolve a node's absolute top-left origin by walking up the containment
+ * chain. ELK stores child positions relative to their parent container, so
+ * we accumulate ancestor offsets to get graph-absolute coordinates.
  */
-function absoluteCenter(
+function absoluteOrigin(
 	nodeId: string,
 	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
-	childToParent: Map<string, string>,
-	containerIds: ReadonlySet<string>
-): { x: number; y: number } | undefined {
+	childToParent: Map<string, string>
+): Point | undefined {
 	const pos = positionMap.get(nodeId);
 	if (!pos) return undefined;
 
@@ -82,11 +170,43 @@ function absoluteCenter(
 		ay += pp.y;
 		current = pid;
 	}
+	return { x: ax, y: ay };
+}
 
+function absoluteCenter(
+	nodeId: string,
+	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
+	childToParent: Map<string, string>,
+	containerIds: ReadonlySet<string>
+): { x: number; y: number } | undefined {
+	const origin = absoluteOrigin(nodeId, positionMap, childToParent);
+	if (!origin) return undefined;
+
+	const pos = positionMap.get(nodeId)!;
 	const isContainer = containerIds.has(nodeId);
 	return {
-		x: ax + (isContainer ? (pos.width ?? 300) / 2 : NODE_WIDTH / 2),
-		y: ay + (isContainer ? (pos.height ?? 200) / 2 : NODE_HEIGHT / 2),
+		x: origin.x + (isContainer ? (pos.width ?? 300) / 2 : NODE_WIDTH / 2),
+		y: origin.y + (isContainer ? (pos.height ?? 200) / 2 : NODE_HEIGHT / 2),
+	};
+}
+
+/** Resolve a node's absolute bounding box, for edge-label collision checks. */
+function absoluteRect(
+	nodeId: string,
+	positionMap: Map<string, { x: number; y: number; width?: number; height?: number }>,
+	childToParent: Map<string, string>,
+	containerIds: ReadonlySet<string>
+): Rect | undefined {
+	const origin = absoluteOrigin(nodeId, positionMap, childToParent);
+	if (!origin) return undefined;
+
+	const pos = positionMap.get(nodeId)!;
+	const isContainer = containerIds.has(nodeId);
+	return {
+		x: origin.x,
+		y: origin.y,
+		width: isContainer ? (pos.width ?? 300) : NODE_WIDTH,
+		height: isContainer ? (pos.height ?? 200) : NODE_HEIGHT,
 	};
 }
 
@@ -274,7 +394,11 @@ export function calmToFlow(
 
 		if (parentId) {
 			node.parentId = parentId;
-			node.extent = 'parent';
+			// No extent:'parent' — contained nodes must stay draggable out of
+			// their container (CalmCanvas.svelte's handleNodeDragStop detects
+			// the drop landing outside the parent's bounds and removes
+			// containment; extent:'parent' would hard-clamp the drag itself
+			// and prevent that gesture from ever happening).
 			node.zIndex = depth;
 		}
 
@@ -287,6 +411,15 @@ export function calmToFlow(
 
 	// Svelte Flow requires parents before children.
 	nodes.sort((a, b) => getDepth(a.id) - getDepth(b.id));
+
+	// Node bounding boxes, for keeping edge labels off of nodes below.
+	const nodeRects: Rect[] = positionMap
+		? arch.nodes
+				.map((cn) => absoluteRect(cn['unique-id'], positionMap, childToParent, parentIds))
+				.filter((r): r is Rect => r !== undefined)
+		: [];
+	// Accumulates as labels are placed below, so later edges avoid earlier labels too.
+	const placedLabelRects: Rect[] = [];
 
 	// Expand each CALM relationship into one or more Svelte Flow edges.
 	// We tag each edge with its source CalmRelationship's unique-id and variant
@@ -303,7 +436,7 @@ export function calmToFlow(
 		pairs.forEach((pair, i) => {
 			const edgeId = multi ? `${cr['unique-id']}#${i}` : cr['unique-id'];
 			const route = edgeRoutes?.get(edgeId);
-			const label = route ? midpointOfPoints(route.points) : undefined;
+			const label = route ? placeLabel(route.points, nodeRects, placedLabelRects) : undefined;
 
 			// Select nearest handles based on relative node positions
 			const srcCenter = positionMap
@@ -423,4 +556,88 @@ export function flowToCalm(nodes: Node[], edges: Edge[]): CalmArchitecture {
 	});
 
 	return { nodes: calmNodes, relationships: calmRelationships };
+}
+
+// ─── Layout persistence ─────────────────────────────────────────────────────
+
+/** unique-id and type shared by the layout-preserving decorator on both read and write. */
+export const LAYOUT_DECORATOR_ID = 'calmstudio-layout';
+
+type LayoutPosition = { x: number; y: number; width?: number; height?: number };
+
+/**
+ * Undoes calmToFlow's center-alignment shift (+40 x-offset paired with
+ * origin:[0.5,0], see the `useCenter` block above) for a live Svelte Flow
+ * node, returning its position in the same raw, top-left-origin form
+ * calmToFlow's own `positionMap` parameter expects.
+ *
+ * Every call site that rebuilds a positionMap from live `nodes` — to
+ * preserve current positions across a re-projection — MUST pass positions
+ * through this first. Skipping it is a real, confirmed bug (not
+ * theoretical): calmToFlow reapplies the +40 shift on top of a value that
+ * already has it baked in, so the node's rendered position drifts another
+ * 40px right on every round trip. Containers never get the shift, so their
+ * position passes through unchanged.
+ *
+ * Unconditional on the node's CURRENT origin — deliberately not gated on
+ * `node.origin?.[0] === 0.5`. calmToFlow shifts *any* non-container node
+ * that has a positionMap entry, regardless of what origin it currently
+ * has. A node created via palette drop (no origin set at all, plain
+ * top-left semantics) would otherwise pass through this function
+ * unchanged, then get shifted for the first time on the very next
+ * re-projection (Save→reopen, or even the first property edit, since
+ * handlePropertyMutation always rebuilds a full positionMap) — a one-time
+ * but very visible jump. Pre-emptively subtracting 40 here means that
+ * first shift lands exactly back where the node already was.
+ */
+export function toRawPosition(node: Pick<Node, 'position' | 'type'>): { x: number; y: number } {
+	if (node.type !== 'container') {
+		return { x: node.position.x - 40, y: node.position.y };
+	}
+	return { x: node.position.x, y: node.position.y };
+}
+
+/**
+ * Captures the live canvas position (and, for containers, size) of every
+ * node into a CALM decorator, so a reopened file renders exactly as the
+ * user left it instead of triggering a fresh ELK auto-layout on every open.
+ * Positions are stored in the same raw form calmToFlow's `positionMap`
+ * parameter already expects (see toRawPosition) — parent-relative for
+ * nested nodes, absolute for top-level ones.
+ */
+export function buildLayoutDecorator(nodes: Node[]): CalmDecorator {
+	const positions: Record<string, LayoutPosition> = {};
+	for (const node of nodes) {
+		const calmId = (node.data as { calmId?: string } | undefined)?.calmId ?? node.id;
+		const entry: LayoutPosition = toRawPosition(node);
+		if (node.type === 'container') {
+			if (node.width) entry.width = node.width;
+			if (node.height) entry.height = node.height;
+		}
+		positions[calmId] = entry;
+	}
+	return {
+		'unique-id': LAYOUT_DECORATOR_ID,
+		type: LAYOUT_DECORATOR_ID,
+		target: [],
+		'applies-to': Object.keys(positions),
+		data: { positions },
+	};
+}
+
+/**
+ * Extracts saved node positions from a CalmStudio layout decorator, if
+ * present. Returns null when the architecture has never been through this
+ * app before (no decorator) — the caller should fall back to ELK
+ * auto-layout in that case. Coverage doesn't need to be complete: calmToFlow
+ * already falls back to a staggered default for any node missing from the
+ * returned map.
+ */
+export function extractLayoutPositions(arch: CalmArchitecture): Map<string, LayoutPosition> | null {
+	const decorator = arch.decorators?.find(
+		(d) => d['unique-id'] === LAYOUT_DECORATOR_ID && d.type === LAYOUT_DECORATOR_ID
+	);
+	const positions = decorator?.data?.positions as Record<string, LayoutPosition> | undefined;
+	if (!positions) return null;
+	return new Map(Object.entries(positions));
 }
