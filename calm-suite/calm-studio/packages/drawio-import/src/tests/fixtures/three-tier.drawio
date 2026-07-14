@@ -1,0 +1,43 @@
+<mxfile host="test">
+  <diagram id="arch-1" name="Three-Tier">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="10" value="Browser" style="shape=mxgraph.network.user;" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="80" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="20" value="Web App" style="shape=mxgraph.aws4.app_runner;" vertex="1" parent="1">
+          <mxGeometry x="220" y="200" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="30" value="API Service" style="shape=mxgraph.aws4.lambda;" vertex="1" parent="1">
+          <mxGeometry x="420" y="200" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="40" value="Production DB" style="shape=mxgraph.aws4.rds;" vertex="1" parent="1">
+          <mxGeometry x="620" y="200" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="50" value="VPC" style="shape=mxgraph.aws4.vpc;" vertex="1" parent="1">
+          <mxGeometry x="180" y="140" width="620" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="Web App" style="shape=mxgraph.aws4.app_runner;" vertex="1" parent="50">
+          <mxGeometry x="40" y="60" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="31" value="API Service" style="shape=mxgraph.aws4.lambda;" vertex="1" parent="50">
+          <mxGeometry x="240" y="60" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="41" value="Production DB" style="shape=mxgraph.aws4.rds;" vertex="1" parent="50">
+          <mxGeometry x="440" y="60" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="10" target="21" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="21" target="31" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="JDBC" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="31" target="41" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

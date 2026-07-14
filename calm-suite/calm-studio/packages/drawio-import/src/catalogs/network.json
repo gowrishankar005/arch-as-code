@@ -1,0 +1,22 @@
+[
+  { "pattern": "shape=mxgraph\\.cisco\\.firewalls", "type": "network", "name": "Firewall", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.routers", "type": "network", "name": "Router", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.switches", "type": "network", "name": "Switch", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.servers", "type": "service", "name": "Server", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.storage", "type": "database", "name": "Storage", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.computers_and_peripherals\\.pc", "type": "webclient", "name": "PC", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.computers_and_peripherals\\.laptop", "type": "webclient", "name": "Laptop", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.misc\\.internet", "type": "network", "name": "Internet", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.misc\\.cloud", "type": "network", "name": "Cloud", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.cisco\\.security", "type": "network", "name": "Security Appliance", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.firewall", "type": "network", "name": "Firewall", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.router", "type": "network", "name": "Router", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.switch", "type": "network", "name": "Switch", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.server", "type": "service", "name": "Server", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.database", "type": "database", "name": "Database", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.internet", "type": "network", "name": "Internet", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.cloud", "type": "network", "name": "Cloud", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.user", "type": "actor", "name": "User", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.loadbalancer", "type": "network", "name": "Load Balancer", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.network\\.proxy", "type": "network", "name": "Proxy", "confidence": "high" }
+]

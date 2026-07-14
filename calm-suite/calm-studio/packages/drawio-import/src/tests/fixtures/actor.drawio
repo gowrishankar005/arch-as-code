@@ -1,0 +1,19 @@
+<mxfile host="test">
+  <diagram id="actor-1" name="Actor">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Customer" style="shape=mxgraph.aws4.user;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="80" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Web Portal" style="shape=mxgraph.aws4.app_runner;" vertex="1" parent="1">
+          <mxGeometry x="250" y="100" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="2" target="3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

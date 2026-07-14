@@ -11,6 +11,7 @@
     "packages/calm-core",
     "packages/extensions",
     "packages/calmscript",
+    "packages/drawio-import",
     "packages/mcp-server",
     "packages/github-action",
     "packages/vscode-extension",
