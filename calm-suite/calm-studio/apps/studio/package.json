@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@calmstudio/calm-core": "file:../../packages/calm-core",
+    "@calmstudio/drawio-import": "file:../../packages/drawio-import",
     "@calmstudio/extensions": "file:../../packages/extensions",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lint": "^6.9.5",

@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://calm.example.org/governance/node-typing-rules.json",
+  "title": "Node-typing decision rules (machine-readable companion)",
+  "version": "0.2.0",
+  "core-enum": [
+    "actor",
+    "ecosystem",
+    "system",
+    "service",
+    "database",
+    "network",
+    "ldap",
+    "webclient",
+    "data-asset"
+  ],
+  "registry": {
+    "messaging:message-queue": {
+      "description": "Point-to-point queue (SQS, RabbitMQ queue)",
+      "rule": "R4",
+      "source": "extensions/messaging pack"
+    },
+    "messaging:pub-sub": {
+      "description": "Pub/sub topic (SNS, Kafka topic consumer-facing)",
+      "rule": "R4",
+      "source": "extensions/messaging pack"
+    },
+    "messaging:message-broker": {
+      "description": "Broker infrastructure (RabbitMQ server)",
+      "rule": "R4",
+      "source": "extensions/messaging pack"
+    },
+    "messaging:event-stream": {
+      "description": "Event streaming platform (Kafka cluster)",
+      "rule": "R4",
+      "source": "extensions/messaging pack"
+    },
+    "messaging:event-bus": {
+      "description": "Enterprise event bus",
+      "rule": "R4",
+      "source": "extensions/messaging pack"
+    },
+    "onprem:mainframe": {
+      "description": "Mainframe system (renders as generic ExtensionNode until an onprem pack exists)",
+      "rule": "R7",
+      "requires-metadata": {
+        "hosting": "on-prem"
+      }
+    },
+    "onprem:sftp": {
+      "description": "SFTP server appliance",
+      "rule": "R7",
+      "requires-metadata": {
+        "hosting": "on-prem"
+      }
+    },
+    "onprem:hsm": {
+      "description": "Hardware security module",
+      "rule": "R7",
+      "requires-metadata": {
+        "hosting": "on-prem"
+      }
+    }
+  },
+  "glossary": {
+    "load balancer": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R2"
+    },
+    "lb": {
+      "node-type": "network",
+      "confidence": "medium",
+      "rule": "R2"
+    },
+    "waf": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R2"
+    },
+    "firewall": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R2"
+    },
+    "cdn": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R2"
+    },
+    "reverse proxy": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R2"
+    },
+    "api gateway": {
+      "node-type": "network",
+      "confidence": "medium",
+      "rule": "R2",
+      "note": "service if transformation/orchestration logic \u2014 always review"
+    },
+    "bff": {
+      "node-type": "service",
+      "confidence": "high",
+      "rule": "R2"
+    },
+    "database": {
+      "node-type": "database",
+      "confidence": "high",
+      "rule": "R3"
+    },
+    "db": {
+      "node-type": "database",
+      "confidence": "medium",
+      "rule": "R3"
+    },
+    "cache": {
+      "node-type": "database",
+      "confidence": "medium",
+      "rule": "R3"
+    },
+    "data lake": {
+      "node-type": "database",
+      "confidence": "medium",
+      "rule": "R3"
+    },
+    "queue": {
+      "node-type": "messaging:message-queue",
+      "confidence": "high",
+      "rule": "R4"
+    },
+    "topic": {
+      "node-type": "messaging:pub-sub",
+      "confidence": "high",
+      "rule": "R4"
+    },
+    "kafka": {
+      "node-type": "messaging:event-stream",
+      "confidence": "high",
+      "rule": "R4"
+    },
+    "event bus": {
+      "node-type": "messaging:event-bus",
+      "confidence": "medium",
+      "rule": "R4"
+    },
+    "dmz": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R5",
+      "container": true
+    },
+    "vpc": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R5",
+      "container": true
+    },
+    "subnet": {
+      "node-type": "network",
+      "confidence": "high",
+      "rule": "R5",
+      "container": true
+    },
+    "zone": {
+      "node-type": "network",
+      "confidence": "medium",
+      "rule": "R5",
+      "container": true
+    },
+    "customer": {
+      "node-type": "actor",
+      "confidence": "high",
+      "rule": "R6"
+    },
+    "user": {
+      "node-type": "actor",
+      "confidence": "high",
+      "rule": "R6"
+    },
+    "admin": {
+      "node-type": "actor",
+      "confidence": "high",
+      "rule": "R6"
+    },
+    "web app": {
+      "node-type": "webclient",
+      "confidence": "medium",
+      "rule": "R1"
+    },
+    "spa": {
+      "node-type": "webclient",
+      "confidence": "high",
+      "rule": "R1"
+    },
+    "frontend": {
+      "node-type": "webclient",
+      "confidence": "medium",
+      "rule": "R1"
+    },
+    "mainframe": {
+      "node-type": "onprem:mainframe",
+      "confidence": "high",
+      "rule": "R7"
+    },
+    "active directory": {
+      "node-type": "ldap",
+      "confidence": "high",
+      "rule": "R7"
+    }
+  },
+  "decision-rules": {
+    "R1": "system iff containment parent or external black box; else service",
+    "R2": "network if routing/filtering only; service if business/aggregation logic",
+    "R3": "database = running store; data-asset = governed data; controls split accordingly",
+    "R4": "async primitives use the extensions messaging pack type IDs (messaging:message-queue, messaging:pub-sub, messaging:message-broker, messaging:event-stream, messaging:event-bus), never service",
+    "R5": "zones are network container nodes + deployed-in; traversal rules are Rego",
+    "R6": "interacts iff source is actor and edge is usage; else connects",
+    "R7": "ldap where applicable; else onprem:* registry types + hosting metadata",
+    "R8": "only core enum + registry entries pass lint; everything else errors"
+  }
+}

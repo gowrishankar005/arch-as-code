@@ -1,0 +1,22 @@
+[
+  { "pattern": "shape=mxgraph\\.kubernetes\\.pod", "type": "service", "name": "Pod", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.deploy", "type": "service", "name": "Deployment", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.rs", "type": "service", "name": "ReplicaSet", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.ds", "type": "service", "name": "DaemonSet", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.sts", "type": "database", "name": "StatefulSet", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.job", "type": "service", "name": "Job", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.cronjob", "type": "service", "name": "CronJob", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.svc", "type": "network", "name": "Service", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.ing", "type": "network", "name": "Ingress", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.ep", "type": "network", "name": "Endpoints", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.pvc", "type": "database", "name": "PVC", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.pv", "type": "database", "name": "PersistentVolume", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.sc", "type": "database", "name": "StorageClass", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.ns", "type": "network", "name": "Namespace", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.node", "type": "service", "name": "Node", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.cm", "type": "data-asset", "name": "ConfigMap", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.secret", "type": "data-asset", "name": "Secret", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.sa", "type": "ldap", "name": "ServiceAccount", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.role", "type": "ldap", "name": "Role", "confidence": "high" },
+  { "pattern": "shape=mxgraph\\.kubernetes\\.rolebinding", "type": "ldap", "name": "RoleBinding", "confidence": "high" }
+]

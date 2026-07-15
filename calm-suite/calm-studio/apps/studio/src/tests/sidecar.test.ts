@@ -39,4 +39,19 @@ describe('buildSidecarData', () => {
 		expect(result.packs).toEqual([]);
 		expect(result.packVersions).toEqual({});
 	});
+
+	it('includes drawioStyles when provided and non-empty', () => {
+		const result = buildSidecarData([], { 'svc-mx2': 'shape=mxgraph.aws4.lambda;' });
+		expect(result.drawioStyles).toEqual({ 'svc-mx2': 'shape=mxgraph.aws4.lambda;' });
+	});
+
+	it('omits drawioStyles key entirely when styles map is empty', () => {
+		const result = buildSidecarData(['aws'], {});
+		expect(result.drawioStyles).toBeUndefined();
+	});
+
+	it('omits drawioStyles key when not provided', () => {
+		const result = buildSidecarData(['aws']);
+		expect(result.drawioStyles).toBeUndefined();
+	});
 });

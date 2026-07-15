@@ -71,6 +71,11 @@
 	import { registerFileOpenHandler } from '$lib/desktop/fileOpen';
 	import { readTextFile } from '@tauri-apps/plugin-fs';
 	import { exportAsCalm, exportAsSvg, exportAsPng, exportAsCalmscript, exportAsScalerToml } from '$lib/io/export';
+	import { importDrawio, type ConfidenceReportEntry, type DanglingEdgeEntry } from '@calmstudio/drawio-import';
+	import DrawioReviewPanel from '$lib/drawio/DrawioReviewPanel.svelte';
+	import DrawioPagePicker from '$lib/drawio/DrawioPagePicker.svelte';
+	import { getDrawioScrollToId } from '$lib/drawio/drawioReviewScroll.svelte';
+	import { setDrawioStyles, clearDrawioStyles } from '$lib/drawio/drawioStyles.svelte';
 	import type { CalmArchitecture, CalmRelationship } from '@calmstudio/calm-core';
 	import { getReferencedNodeIds } from '@calmstudio/calm-core';
 	import { detectPacksFromArch } from '$lib/io/sidecar';
@@ -502,6 +507,14 @@
 
 	let importError = $state<string | null>(null);
 
+	// ─── draw.io import review state ─────────────────────────────────────────
+	let drawioReview = $state<{
+		report: ConfidenceReportEntry[];
+		danglingEdges: DanglingEdgeEntry[];
+		pageCount: number;
+		pageName: string;
+	} | null>(null);
+
 	// ─── Extension pack banner state — shown when pack types detected on import ─
 
 	/**
@@ -868,6 +881,163 @@
 		refreshGovernance();
 	}
 
+	// ─── draw.io import ──────────────────────────────────────────────────────
+
+	/**
+	 * Open a .drawio/.xml file via a hidden file input and convert it to CALM.
+	 * Multi-page files show a page picker — each draw.io page becomes an
+	 * independent CALM architecture, so only one loads onto the canvas at a time.
+	 */
+	async function handleImportDrawio() {
+		// Dirty-state guard — import replaces the whole canvas
+		if (getIsDirty() || nodes.length > 0) {
+			const confirmed = window.confirm('You have unsaved changes. Import draw.io diagram anyway?');
+			if (!confirmed) return;
+		}
+
+		const fileContent = await pickDrawioFile();
+		if (!fileContent) return;
+
+		let result: Awaited<ReturnType<typeof importDrawio>>;
+		try {
+			result = await importDrawio(fileContent.content);
+		} catch (e) {
+			importError = 'Failed to import draw.io file: ' + (e as Error).message;
+			return;
+		}
+
+		if (result.pages.length === 0) {
+			importError = 'No diagram pages found in draw.io file.';
+			return;
+		}
+
+		if (result.pages.length === 1) {
+			await applyDrawioPage(result.pages[0]!, 1);
+			return;
+		}
+
+		// Multi-page file — let the user choose which page to import.
+		pendingDrawioResult = result;
+	}
+
+	/** Stashed multi-page import result while the page picker is open. */
+	let pendingDrawioResult = $state<Awaited<ReturnType<typeof importDrawio>> | null>(null);
+
+	function handleDrawioPageSelect(index: number) {
+		const result = pendingDrawioResult;
+		pendingDrawioResult = null;
+		if (!result) return;
+		void applyDrawioPage(result.pages[index]!, result.pages.length);
+	}
+
+	function handleDrawioPageCancel() {
+		pendingDrawioResult = null;
+	}
+
+	/** Called by DrawioReviewPanel when the user corrects a node's inferred type. */
+	function handleDrawioCorrectType(calmId: string, newType: string) {
+		pushSnapshot(nodes, edges);
+		updateNodeProperty(calmId, 'node-type', newType);
+		handlePropertyMutation();
+		drawioResolvedIds = new Set([...drawioResolvedIds, calmId]);
+	}
+
+	/** Called by DrawioReviewPanel's "accept all medium-confidence" bulk action. */
+	function handleDrawioAcceptMedium(calmIds: string[]) {
+		drawioResolvedIds = new Set([...drawioResolvedIds, ...calmIds]);
+	}
+
+	/**
+	 * Apply a single imported draw.io page to the canvas.
+	 * Geometry from draw.io is used directly as the position map so the imported
+	 * layout is preserved — ELK auto-layout is never run on import.
+	 * Shows the review panel when any nodes have low/no-match confidence or
+	 * edges couldn't be resolved.
+	 */
+	async function applyDrawioPage(
+		page: Awaited<ReturnType<typeof importDrawio>>['pages'][number],
+		pageCount: number
+	) {
+		const { architecture, confidenceReport, geometry, styles, danglingEdges } = page;
+
+		if (!Array.isArray((architecture as { nodes?: unknown }).nodes)) {
+			importError = 'draw.io import produced no nodes.';
+			return;
+		}
+
+		importError = null;
+		drawioReview = null;
+		setDrawioStyles(styles);
+		drawioResolvedIds = new Set();
+
+		pushSnapshot(nodes, edges);
+
+		const calmArch = architecture as unknown as CalmArchitecture;
+		applyFromJson(calmArch);
+
+		// Use geometry from draw.io directly — skip ELK so layout is preserved.
+		const positionMap = new Map(
+			Object.entries(geometry).map(([id, g]) => [id, g])
+		);
+		const projected = calmToFlow(calmArch, positionMap);
+		nodes = projected.nodes;
+		edges = projected.edges;
+
+		await tick();
+		canvas?.fitViewport();
+		// Import is triggered from a toolbar button, not a canvas interaction —
+		// refocus the canvas so an immediate Cmd+Z is seen by its shortcut binding.
+		canvas?.restoreCanvasFocus();
+
+		markDirty();
+		clearValidation();
+		refreshGovernance();
+
+		// Open review panel if any nodes couldn't be confidently typed, or any
+		// edges couldn't be resolved to both endpoints.
+		const needsReview = confidenceReport.filter((r) => r.confidence !== 'high');
+		if (needsReview.length > 0 || danglingEdges.length > 0) {
+			drawioReview = {
+				report: confidenceReport,
+				danglingEdges,
+				pageCount,
+				pageName: page.name,
+			};
+		}
+	}
+
+	/** Open a file picker for .drawio / .xml files and return the content. */
+	function pickDrawioFile(): Promise<{ content: string; name: string } | null> {
+		return new Promise((resolve) => {
+			const input = document.createElement('input') as HTMLInputElement;
+			input.type = 'file';
+			input.accept = '.drawio,.xml';
+
+			let settled = false;
+			const settle = (result: { content: string; name: string } | null) => {
+				if (settled) return;
+				settled = true;
+				resolve(result);
+			};
+
+			input.onchange = () => {
+				const file = input.files?.[0];
+				if (!file) { settle(null); return; }
+				const reader = new FileReader();
+				reader.onload = (e) => settle({
+					content: (e.target as FileReader).result as string,
+					name: file.name,
+				});
+				reader.readAsText(file);
+			};
+			// Fires when the user dismisses the picker without choosing a file
+			// (supported in all current browsers). Without this the promise would
+			// hang forever on cancel, since onchange never fires.
+			input.addEventListener('cancel', () => settle(null));
+			input.click();
+		});
+	}
+
 	/**
 	 * Same as getModelJson(), plus a freshly-built layout decorator capturing
 	 * the current canvas positions. Used for every persistence path a file
@@ -957,6 +1127,7 @@
 		resetFileState();
 		clearValidation();
 		clearAutosave();
+		clearDrawioStyles();
 		nodes = [];
 		edges = [];
 	}
@@ -1162,6 +1333,36 @@
 		if (enrichedNodes.some((n, i) => n !== nodes[i])) nodes = enrichedNodes;
 	});
 
+	// ─── draw.io review badge injection ───────────────────────────────────────
+
+	/** calmIds the user has resolved (corrected or bulk-accepted) in the current review session. */
+	let drawioResolvedIds = $state<Set<string>>(new Set());
+
+	/** Set of calmIds currently flagged for review (below-high confidence, not yet resolved). */
+	const drawioNeedsReviewIds = $derived(
+		new Set(
+			(drawioReview?.report ?? [])
+				.filter((r) => r.confidence !== 'high' && !drawioResolvedIds.has(r.calmId))
+				.map((r) => r.calmId)
+		)
+	);
+
+	/**
+	 * Reactively inject/remove the draw.io review badge flag into node data.
+	 * Mirrors the flow-transition dimming effect above.
+	 */
+	$effect(() => {
+		const reviewIds = drawioNeedsReviewIds;
+		const enriched = nodes.map((n) => {
+			const calmId = (n.data?.calmId as string) ?? n.id;
+			const needsReview = reviewIds.has(calmId);
+			const current = (n.data?.drawioNeedsReview as boolean | undefined) ?? false;
+			if (current === needsReview) return n;
+			return { ...n, data: { ...n.data, drawioNeedsReview: needsReview } };
+		});
+		if (enriched.some((n, i) => n !== nodes[i])) nodes = enriched;
+	});
+
 	// ─── Auto-layout ──────────────────────────────────────────────────────────
 
 	/** Currently selected layout direction (used by toolbar dropdown). */
@@ -1307,6 +1508,7 @@
 		<!-- Top: Slim toolbar -->
 		<Toolbar
 			onopen={handleOpen}
+			onimportdrawio={handleImportDrawio}
 			onsave={handleSave}
 			onsaveas={handleSaveAs}
 			onnew={handleNew}
@@ -1593,6 +1795,21 @@
 									</div>
 								{/if}
 							</SvelteFlowProvider>
+
+							<!-- draw.io import review panel — shown after import when nodes need review -->
+							{#if drawioReview}
+								<DrawioReviewPanel
+									report={drawioReview.report}
+									danglingEdges={drawioReview.danglingEdges}
+									pageCount={drawioReview.pageCount}
+									pageName={drawioReview.pageName}
+									resolvedIds={drawioResolvedIds}
+									scrollToId={getDrawioScrollToId()}
+									ondismiss={() => (drawioReview = null)}
+									oncorrecttype={handleDrawioCorrectType}
+									onacceptmedium={handleDrawioAcceptMedium}
+								/>
+							{/if}
 						</div>
 					</Pane>
 
@@ -1657,6 +1874,15 @@
 				onselect={handlePatternCatalogSelect}
 				onupload={handleSelectPattern}
 				oncancel={() => (showPatternPicker = false)}
+			/>
+		{/if}
+
+		<!-- draw.io multi-page picker — shown when an imported file has more than one page -->
+		{#if pendingDrawioResult}
+			<DrawioPagePicker
+				pages={pendingDrawioResult.pages.map((p) => ({ name: p.name, nodeCount: p.confidenceReport.length }))}
+				onselect={handleDrawioPageSelect}
+				oncancel={handleDrawioPageCancel}
 			/>
 		{/if}
 

@@ -18,6 +18,10 @@ export interface SidecarData {
 	version: string;
 	/** Per-pack version string (pack id -> version) */
 	packVersions: Record<string, string>;
+	/** Raw draw.io mxCell styles by CALM unique-id, for diagrams imported from
+	 *  draw.io — visual properties CALM can't represent, preserved so nothing
+	 *  from the original diagram is silently lost. Omitted for non-imported diagrams. */
+	drawioStyles?: Record<string, string>;
 }
 
 /**
@@ -58,8 +62,11 @@ export function detectPacksFromArch(arch: { nodes: Array<{ 'node-type': string }
 /**
  * Builds a SidecarData object for the given pack IDs.
  * All packs are assigned version '1.0.0' by default.
+ *
+ * @param drawioStyles - Optional raw draw.io styles to embed (only present
+ *   for diagrams imported from a .drawio file).
  */
-export function buildSidecarData(packIds: string[]): SidecarData {
+export function buildSidecarData(packIds: string[], drawioStyles?: Record<string, string>): SidecarData {
 	const packVersions: Record<string, string> = {};
 	for (const id of packIds) {
 		packVersions[id] = '1.0.0';
@@ -68,5 +75,6 @@ export function buildSidecarData(packIds: string[]): SidecarData {
 		packs: [...packIds],
 		version: '1.0',
 		packVersions,
+		...(drawioStyles && Object.keys(drawioStyles).length > 0 ? { drawioStyles } : {}),
 	};
 }

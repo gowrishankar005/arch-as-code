@@ -964,8 +964,14 @@
 	 * (stable across the mutation, unlike the label element) fixes it.
 	 * Deferred one macrotask because focusing synchronously/after tick()
 	 * still loses to the in-flight store update (verified empirically).
+	 *
+	 * Exported so the parent can call it after any programmatic nodes/edges
+	 * replacement that doesn't go through a canvas-originated interaction
+	 * (e.g. draw.io import) — otherwise focus is left on whatever UI element
+	 * triggered the replacement (a toolbar button) and the `use:shortcut`
+	 * binding below never sees a subsequent Cmd+Z.
 	 */
-	function restoreCanvasFocus() {
+	export function restoreCanvasFocus() {
 		setTimeout(() => wrapperEl?.focus({ preventScroll: true }), 0);
 	}
 

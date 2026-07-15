@@ -1,0 +1,2906 @@
+[
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/AI_Foundry\\.svg;",
+    "type": "service",
+    "name": "AI Foundry",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/AI_Foundry_IQ\\.svg;",
+    "type": "service",
+    "name": "AI Foundry IQ",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/AI_Studio\\.svg;",
+    "type": "service",
+    "name": "AI Studio",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Anomaly_Detector\\.svg;",
+    "type": "service",
+    "name": "Anomaly Detector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Azure_Applied_AI\\.svg;",
+    "type": "service",
+    "name": "Applied AI",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Azure_Experimentation_Studio\\.svg;",
+    "type": "service",
+    "name": "Experimentation Studio",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Azure_Machine_Learning\\.svg;",
+    "type": "service",
+    "name": "Azure Machine Learning",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Azure_Object_Understanding\\.svg;",
+    "type": "service",
+    "name": "Object Understanding",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Azure_OpenAI\\.svg;",
+    "type": "service",
+    "name": "OpenAI",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Batch_AI\\.svg;",
+    "type": "service",
+    "name": "Batch AI",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Bonsai\\.svg;",
+    "type": "service",
+    "name": "Bonsai",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Bot_Services\\.svg;",
+    "type": "service",
+    "name": "Bot Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Cognitive_Services\\.svg;",
+    "type": "service",
+    "name": "Cognitive Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Cognitive_Services_Decisions\\.svg;",
+    "type": "service",
+    "name": "Cognitive Services Decisions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Computer_Vision\\.svg;",
+    "type": "service",
+    "name": "Computer Vision",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Content_Moderators\\.svg;",
+    "type": "service",
+    "name": "Content Moderators",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Content_Safety\\.svg;",
+    "type": "service",
+    "name": "Content Safety",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Custom_Vision\\.svg;",
+    "type": "service",
+    "name": "Custom Vision",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/FRD_QA\\.svg;",
+    "type": "service",
+    "name": "FRD QA",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Face_APIs\\.svg;",
+    "type": "service",
+    "name": "Face APIs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Form_Recognizers\\.svg;",
+    "type": "service",
+    "name": "Form Recognizers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Foundry_Agent_Service\\.svg;",
+    "type": "service",
+    "name": "Foundry Agent Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Foundry_Application\\.svg;",
+    "type": "service",
+    "name": "Foundry Application",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Foundry_Control_Plane\\.svg;",
+    "type": "service",
+    "name": "Foundry Control Plane",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Foundry_Labs\\.svg;",
+    "type": "service",
+    "name": "Foundry Labs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Foundry_Local\\.svg;",
+    "type": "service",
+    "name": "Foundry Local",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Foundry_Models\\.svg;",
+    "type": "service",
+    "name": "Foundry Models",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Foundry_Project\\.svg;",
+    "type": "service",
+    "name": "Foundry Project",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Genomics\\.svg;",
+    "type": "service",
+    "name": "Genomics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Immersive_Readers\\.svg;",
+    "type": "service",
+    "name": "Immersive Readers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Language_Services\\.svg;",
+    "type": "service",
+    "name": "Language",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Language_Understanding\\.svg;",
+    "type": "service",
+    "name": "Language Understanding",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Machine_Learning\\.svg;",
+    "type": "service",
+    "name": "Machine Learning",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Machine_Learning_Studio_Classic_Web_Services\\.svg;",
+    "type": "service",
+    "name": "Machine Learning Studio - Classic Web Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Machine_Learning_Studio_Web_Service_Plans\\.svg;",
+    "type": "service",
+    "name": "Machine Learning Studio - Web Service Plans",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Machine_Learning_Studio_Workspaces\\.svg;",
+    "type": "service",
+    "name": "Machine Learning Studio - Workspaces",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Personalizers\\.svg;",
+    "type": "service",
+    "name": "Personalizers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Planetary_Computer_Pro\\.svg;",
+    "type": "service",
+    "name": "Planetary Computer Pro",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/QnA_Makers\\.svg;",
+    "type": "service",
+    "name": "QnA Makers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Serverless_Search\\.svg;",
+    "type": "service",
+    "name": "Serverless Search",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Speech_Services\\.svg;",
+    "type": "service",
+    "name": "Speech Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/ai_machine_learning/Translator_Text\\.svg;",
+    "type": "service",
+    "name": "Translator Text",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Analysis_Services\\.svg;",
+    "type": "database",
+    "name": "Analysis Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Azure_Databricks\\.svg;",
+    "type": "database",
+    "name": "Databricks",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Azure_Synapse_Analytics\\.svg;",
+    "type": "database",
+    "name": "Synapse Analytics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Azure_Workbooks\\.svg;",
+    "type": "database",
+    "name": "Workbooks",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Data_Lake_Analytics\\.svg;",
+    "type": "database",
+    "name": "Data Lake Analytics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Data_Lake_Store_Gen1\\.svg;",
+    "type": "database",
+    "name": "Data Lake Store Gen1",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Endpoint_Analytics\\.svg;",
+    "type": "database",
+    "name": "Endpoint Analytics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Event_Hub_Clusters\\.svg;",
+    "type": "messaging:event-stream",
+    "name": "Event Hub Clusters",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/HD_Insight_Clusters\\.svg;",
+    "type": "database",
+    "name": "HD Insight Clusters",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Power_BI_Embedded\\.svg;",
+    "type": "database",
+    "name": "Power BI Embedded",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/analytics/Power_Platform\\.svg;",
+    "type": "database",
+    "name": "Power Platform",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/app_services/App_Service_Certificates\\.svg;",
+    "type": "service",
+    "name": "App Service Certificates",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/app_services/App_Service_Domains\\.svg;",
+    "type": "service",
+    "name": "App Service Domains",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/app_services/App_Service_Environments\\.svg;",
+    "type": "service",
+    "name": "App Service Environments",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/app_services/App_Service_Plans\\.svg;",
+    "type": "service",
+    "name": "App Service Plans",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/app_services/App_Services\\.svg;",
+    "type": "service",
+    "name": "App Services",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/app_services/Search_Services\\.svg;",
+    "type": "service",
+    "name": "Search Services",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Application_Group\\.svg;",
+    "type": "service",
+    "name": "Application Group",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Automanaged_VM\\.svg;",
+    "type": "service",
+    "name": "Automanaged VM",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Availability_Sets\\.svg;",
+    "type": "service",
+    "name": "Availability Sets",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Azure_Compute_Galleries\\.svg;",
+    "type": "service",
+    "name": "Compute Galleries",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Azure_Linux\\.svg;",
+    "type": "service",
+    "name": "Azure Linux",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Azure_Spring_Cloud\\.svg;",
+    "type": "service",
+    "name": "Spring Cloud",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Cloud_Services_Classic\\.svg;",
+    "type": "service",
+    "name": "Cloud Services (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Container_Services_Deprecated\\.svg;",
+    "type": "service",
+    "name": "Container Services (deprecated)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Disk_Encryption_Sets\\.svg;",
+    "type": "service",
+    "name": "Disk Encryption Sets",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Disks\\.svg;",
+    "type": "service",
+    "name": "Disks",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Disks_Snapshots\\.svg;",
+    "type": "service",
+    "name": "Disks Snapshots",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Host_Groups\\.svg;",
+    "type": "service",
+    "name": "Host Groups",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Host_Pools\\.svg;",
+    "type": "service",
+    "name": "Host Pools",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Hosts\\.svg;",
+    "type": "service",
+    "name": "Hosts",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Image_Definitions\\.svg;",
+    "type": "service",
+    "name": "Image Definitions",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Image_Templates\\.svg;",
+    "type": "service",
+    "name": "Image Templates",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Image_Versions\\.svg;",
+    "type": "service",
+    "name": "Image Versions",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Images\\.svg;",
+    "type": "service",
+    "name": "Images",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Maintenance_Configuration\\.svg;",
+    "type": "service",
+    "name": "Maintenance Configuration",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Managed_Service_Fabric\\.svg;",
+    "type": "service",
+    "name": "Managed Service Fabric",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Mesh_Applications\\.svg;",
+    "type": "service",
+    "name": "Mesh Applications",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Metrics_Advisor\\.svg;",
+    "type": "service",
+    "name": "Metrics Advisor",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/OS_Images_Classic\\.svg;",
+    "type": "service",
+    "name": "OS Images (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Restore_Points\\.svg;",
+    "type": "service",
+    "name": "Restore Points",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Restore_Points_Collections\\.svg;",
+    "type": "service",
+    "name": "Restore Points Collections",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Scheduled_Actions\\.svg;",
+    "type": "service",
+    "name": "Scheduled Actions",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Shared_Image_Galleries\\.svg;",
+    "type": "service",
+    "name": "Shared Image Galleries",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Stage_Maps\\.svg;",
+    "type": "service",
+    "name": "Stage Maps",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/VM_Images_Classic\\.svg;",
+    "type": "service",
+    "name": "VM Images (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/VM_Scale_Sets\\.svg;",
+    "type": "service",
+    "name": "VM Scale Sets",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Virtual_Machine\\.svg;",
+    "type": "service",
+    "name": "Virtual Machine",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Virtual_Machines_Classic\\.svg;",
+    "type": "service",
+    "name": "Virtual Machines (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Workspaces2\\.svg;",
+    "type": "service",
+    "name": "Workspaces",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/compute/Workspaces\\.svg;",
+    "type": "service",
+    "name": "Workspaces",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/AKS_Network_Policy\\.svg;",
+    "type": "service",
+    "name": "AKS Network Policy",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Azure_Container_Storage\\.svg;",
+    "type": "service",
+    "name": "Container Storage",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Azure_Red_Hat_OpenShift\\.svg;",
+    "type": "service",
+    "name": "Red Hat OpenShift",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Batch_Accounts\\.svg;",
+    "type": "service",
+    "name": "Batch Accounts",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Container_Instances\\.svg;",
+    "type": "service",
+    "name": "Container Instances",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Container_Registries\\.svg;",
+    "type": "service",
+    "name": "Container Registries",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Kubernetes_Hub\\.svg;",
+    "type": "service",
+    "name": "Kubernetes Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Kubernetes_Services\\.svg;",
+    "type": "service",
+    "name": "Kubernetes Services",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Service_Fabric_Clusters\\.svg;",
+    "type": "service",
+    "name": "Service Fabric Clusters",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/containers/Service_Groups\\.svg;",
+    "type": "service",
+    "name": "Service Groups",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Cosmos_DB\\.svg;",
+    "type": "database",
+    "name": "Cosmos DB",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Data_Explorer_Clusters\\.svg;",
+    "type": "database",
+    "name": "Data Explorer Clusters",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Database_MariaDB_Server\\.svg;",
+    "type": "database",
+    "name": "Database MariaDB Server",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Database_Migration_Services\\.svg;",
+    "type": "database",
+    "name": "Database Migration Services",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Database_MySQL_Server\\.svg;",
+    "type": "database",
+    "name": "Database MySQL Server",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Database_PostgreSQL_Server\\.svg;",
+    "type": "database",
+    "name": "Database PostgreSQL Server",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Database_PostgreSQL_Server_Group\\.svg;",
+    "type": "database",
+    "name": "Database PostgreSQL Server Group",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_DocumentDB\\.svg;",
+    "type": "database",
+    "name": "Azure DocumentDB",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Managed_Redis\\.svg;",
+    "type": "database",
+    "name": "Azure Managed Redis",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_Purview_Accounts\\.svg;",
+    "type": "database",
+    "name": "Purview Accounts",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_SQL\\.svg;",
+    "type": "database",
+    "name": "SQL",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_SQL_Edge\\.svg;",
+    "type": "database",
+    "name": "SQL Edge",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_SQL_Server_Stretch_Databases\\.svg;",
+    "type": "database",
+    "name": "SQL Server Stretch Databases",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Azure_SQL_VM\\.svg;",
+    "type": "database",
+    "name": "SQL VM",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Cache_Redis\\.svg;",
+    "type": "database",
+    "name": "Cache Redis",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Data_Factory\\.svg;",
+    "type": "database",
+    "name": "Data Factory",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Elastic_Job_Agents\\.svg;",
+    "type": "database",
+    "name": "Elastic Job Agents",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Instance_Pools\\.svg;",
+    "type": "database",
+    "name": "Instance Pools",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Managed_Database\\.svg;",
+    "type": "database",
+    "name": "Managed Database",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Oracle_Database\\.svg;",
+    "type": "database",
+    "name": "Oracle Database",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SQL_Data_Warehouses\\.svg;",
+    "type": "database",
+    "name": "SQL Data Warehouses",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SQL_Database\\.svg;",
+    "type": "database",
+    "name": "SQL Database",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SQL_Database_Fleet_Manager\\.svg;",
+    "type": "database",
+    "name": "SQL Database Fleet Manager",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SQL_Elastic_Pools\\.svg;",
+    "type": "database",
+    "name": "SQL Elastic Pools",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SQL_Managed_Instance\\.svg;",
+    "type": "database",
+    "name": "SQL Managed Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SQL_Server\\.svg;",
+    "type": "database",
+    "name": "SQL Server",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SQL_Server_Registries\\.svg;",
+    "type": "database",
+    "name": "SQL Server Registries",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/SSIS_Lift_And_Shift_IR\\.svg;",
+    "type": "database",
+    "name": "SSIS Lift and Shift IR",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/databases/Virtual_Clusters\\.svg;",
+    "type": "database",
+    "name": "Virtual Clusters",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/API_Connections\\.svg;",
+    "type": "service",
+    "name": "API Connections",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/Azure_App_Testing\\.svg;",
+    "type": "service",
+    "name": "Azure App Testing",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/Azure_DevOps\\.svg;",
+    "type": "service",
+    "name": "DevOps",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/Change_Analysis\\.svg;",
+    "type": "service",
+    "name": "Change Analysis",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/CloudTest\\.svg;",
+    "type": "service",
+    "name": "CloudTest",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/Code_Optimization\\.svg;",
+    "type": "service",
+    "name": "Code Optimization",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/DevOps_Starter\\.svg;",
+    "type": "service",
+    "name": "DevOps Starter",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/DevTest_Labs\\.svg;",
+    "type": "service",
+    "name": "DevTest Labs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/Lab_Accounts\\.svg;",
+    "type": "service",
+    "name": "Lab Accounts",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/devops/Lab_Services\\.svg;",
+    "type": "service",
+    "name": "Lab Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/All_Resources\\.svg;",
+    "type": "system",
+    "name": "All Resources",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Backlog\\.svg;",
+    "type": "system",
+    "name": "Backlog",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Biz_Talk\\.svg;",
+    "type": "system",
+    "name": "Biz Talk",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Blob_Block\\.svg;",
+    "type": "system",
+    "name": "Blob Block",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Blob_Page\\.svg;",
+    "type": "system",
+    "name": "Blob Page",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Branch\\.svg;",
+    "type": "system",
+    "name": "Branch",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Browser\\.svg;",
+    "type": "system",
+    "name": "Browser",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Bug\\.svg;",
+    "type": "system",
+    "name": "Bug",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Builds\\.svg;",
+    "type": "system",
+    "name": "Builds",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Cache\\.svg;",
+    "type": "system",
+    "name": "Cache",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Code\\.svg;",
+    "type": "system",
+    "name": "Code",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Commit\\.svg;",
+    "type": "system",
+    "name": "Commit",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Controls\\.svg;",
+    "type": "system",
+    "name": "Controls",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Controls_Horizontal\\.svg;",
+    "type": "system",
+    "name": "Controls Horizontal",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Cost_Alerts\\.svg;",
+    "type": "system",
+    "name": "Cost Alerts",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Cost_Analysis\\.svg;",
+    "type": "system",
+    "name": "Cost Analysis",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Cost_Budgets\\.svg;",
+    "type": "system",
+    "name": "Cost Budgets",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Cost_Management\\.svg;",
+    "type": "system",
+    "name": "Cost Management",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Cost_Management_and_Billing\\.svg;",
+    "type": "system",
+    "name": "Cost Management and Billing",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Counter\\.svg;",
+    "type": "system",
+    "name": "Counter",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Cubes\\.svg;",
+    "type": "system",
+    "name": "Cubes",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Dashboard2\\.svg;",
+    "type": "system",
+    "name": "Dashboard",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Dashboard\\.svg;",
+    "type": "system",
+    "name": "Dashboard",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Dev_Console\\.svg;",
+    "type": "system",
+    "name": "Dev Console",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Download\\.svg;",
+    "type": "system",
+    "name": "Download",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Error\\.svg;",
+    "type": "system",
+    "name": "Error",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Extensions\\.svg;",
+    "type": "system",
+    "name": "Extensions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/FTP\\.svg;",
+    "type": "system",
+    "name": "FTP",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/File\\.svg;",
+    "type": "system",
+    "name": "File",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Files\\.svg;",
+    "type": "system",
+    "name": "Files",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Folder_Blank\\.svg;",
+    "type": "system",
+    "name": "Folder Blank",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Folder_Website\\.svg;",
+    "type": "system",
+    "name": "Folder Website",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Free_Services\\.svg;",
+    "type": "system",
+    "name": "Free Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Gear\\.svg;",
+    "type": "system",
+    "name": "Gear",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Globe\\.svg;",
+    "type": "system",
+    "name": "Globe",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Globe_Error\\.svg;",
+    "type": "system",
+    "name": "Globe Error",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Globe_Success\\.svg;",
+    "type": "system",
+    "name": "Globe Success",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Globe_Warning\\.svg;",
+    "type": "system",
+    "name": "Globe Warning",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Guide\\.svg;",
+    "type": "system",
+    "name": "Guide",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Heart\\.svg;",
+    "type": "system",
+    "name": "Heart",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Help_and_Support\\.svg;",
+    "type": "system",
+    "name": "Help and Support",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Image\\.svg;",
+    "type": "system",
+    "name": "Image",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Information\\.svg;",
+    "type": "system",
+    "name": "Information",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Input_Output\\.svg;",
+    "type": "system",
+    "name": "Input Output",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Journey_Hub\\.svg;",
+    "type": "system",
+    "name": "Journey Hub",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Launch_Portal\\.svg;",
+    "type": "system",
+    "name": "Launch Portal",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Learn\\.svg;",
+    "type": "system",
+    "name": "Learn",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Load_Test\\.svg;",
+    "type": "system",
+    "name": "Load Test",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Location\\.svg;",
+    "type": "system",
+    "name": "Location",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Log_Streaming\\.svg;",
+    "type": "system",
+    "name": "Log Streaming",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Management_Groups\\.svg;",
+    "type": "system",
+    "name": "Management Groups",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Management_Portal\\.svg;",
+    "type": "system",
+    "name": "Management Portal",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Marketplace\\.svg;",
+    "type": "system",
+    "name": "Marketplace",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Media\\.svg;",
+    "type": "system",
+    "name": "Media",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Media_File\\.svg;",
+    "type": "system",
+    "name": "Media File",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Mobile\\.svg;",
+    "type": "system",
+    "name": "Mobile",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Mobile_Engagement\\.svg;",
+    "type": "system",
+    "name": "Mobile Engagement",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Module\\.svg;",
+    "type": "system",
+    "name": "Module",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Power\\.svg;",
+    "type": "system",
+    "name": "Power",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Power_Up\\.svg;",
+    "type": "system",
+    "name": "Power Up",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Powershell\\.svg;",
+    "type": "system",
+    "name": "Powershell",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Preview\\.svg;",
+    "type": "system",
+    "name": "Preview",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Preview_Features\\.svg;",
+    "type": "system",
+    "name": "Preview Features",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Process_Explorer\\.svg;",
+    "type": "system",
+    "name": "Process Explorer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Production_Ready_Database\\.svg;",
+    "type": "system",
+    "name": "Production Ready Database",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Quickstart_Center\\.svg;",
+    "type": "system",
+    "name": "Quickstart Center",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Recent\\.svg;",
+    "type": "system",
+    "name": "Recent",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Region_Management\\.svg;",
+    "type": "system",
+    "name": "Region Management",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Reservations\\.svg;",
+    "type": "system",
+    "name": "Reservations",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Resource_Explorer\\.svg;",
+    "type": "system",
+    "name": "Resource Explorer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Resource_Group_List\\.svg;",
+    "type": "system",
+    "name": "Resource Group List",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Resource_Groups\\.svg;",
+    "type": "system",
+    "name": "Resource Groups",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Resource_Linked\\.svg;",
+    "type": "system",
+    "name": "Resource Linked",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/SSD\\.svg;",
+    "type": "system",
+    "name": "SSD",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Scale\\.svg;",
+    "type": "system",
+    "name": "Scale",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Scheduler\\.svg;",
+    "type": "system",
+    "name": "Scheduler",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Search\\.svg;",
+    "type": "system",
+    "name": "Search",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Search_Grid\\.svg;",
+    "type": "system",
+    "name": "Search Grid",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Server_Farm\\.svg;",
+    "type": "system",
+    "name": "Server Farm",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Service_Bus\\.svg;",
+    "type": "messaging:message-broker",
+    "name": "Service Bus",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Service_Health\\.svg;",
+    "type": "system",
+    "name": "Service Health",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Storage_Azure_Files\\.svg;",
+    "type": "system",
+    "name": "Storage Azure Files",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Storage_Container\\.svg;",
+    "type": "system",
+    "name": "Storage Container",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Storage_Queue\\.svg;",
+    "type": "system",
+    "name": "Storage Queue",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Subscriptions\\.svg;",
+    "type": "system",
+    "name": "Subscriptions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/TFS_VC_Repository\\.svg;",
+    "type": "system",
+    "name": "TFS VC Repository",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Table\\.svg;",
+    "type": "system",
+    "name": "Table",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Tag\\.svg;",
+    "type": "system",
+    "name": "Tag",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Tags\\.svg;",
+    "type": "system",
+    "name": "Tags",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Templates\\.svg;",
+    "type": "system",
+    "name": "Templates",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Toolbox\\.svg;",
+    "type": "system",
+    "name": "Toolbox",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Troubleshoot\\.svg;",
+    "type": "system",
+    "name": "Troubleshoot",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Versions\\.svg;",
+    "type": "system",
+    "name": "Versions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Web_Slots\\.svg;",
+    "type": "system",
+    "name": "Web Slots",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Web_Test\\.svg;",
+    "type": "system",
+    "name": "Web Test",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Website_Power\\.svg;",
+    "type": "system",
+    "name": "Website Power",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Website_Staging\\.svg;",
+    "type": "system",
+    "name": "Website Staging",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Workbooks\\.svg;",
+    "type": "system",
+    "name": "Workbooks",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/general/Workflow\\.svg;",
+    "type": "system",
+    "name": "Workflow",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/AI_at_Edge\\.svg;",
+    "type": "system",
+    "name": "AI at Edge",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Azure_Local\\.svg;",
+    "type": "system",
+    "name": "Azure Local",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Azure_Operator_5G_Core\\.svg;",
+    "type": "system",
+    "name": "Azure Operator 5G Core",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Azure_Operator_Insights\\.svg;",
+    "type": "system",
+    "name": "Azure Operator Insights",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Azure_Operator_Nexus\\.svg;",
+    "type": "system",
+    "name": "Azure Operator Nexus",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Azure_Operator_Service_Manager\\.svg;",
+    "type": "system",
+    "name": "Azure Operator Service Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Azure_Programmable_Connectivity\\.svg;",
+    "type": "system",
+    "name": "Azure Programmable Connectivity",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Edge_Storage_Accelerator\\.svg;",
+    "type": "system",
+    "name": "Edge Storage Accelerator",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/hybrid_multicloud/Workload_Orchestration\\.svg;",
+    "type": "system",
+    "name": "Workload Orchestration",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/AAD_Licenses\\.svg;",
+    "type": "ldap",
+    "name": "AAD Licenses",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Active_Directory_Connect_Health2\\.svg;",
+    "type": "ldap",
+    "name": "Active Directory Connect Health",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Active_Directory_Connect_Health\\.svg;",
+    "type": "ldap",
+    "name": "Active Directory Connect Health",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Administrative_Units\\.svg;",
+    "type": "ldap",
+    "name": "Administrative Units",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/App_Registrations\\.svg;",
+    "type": "ldap",
+    "name": "App Registrations",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Azure_AD_B2C2\\.svg;",
+    "type": "ldap",
+    "name": "Azure AD B2C",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Azure_AD_B2C\\.svg;",
+    "type": "ldap",
+    "name": "AD B2C",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Azure_AD_Domain_Services\\.svg;",
+    "type": "ldap",
+    "name": "AD Domain Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Azure_AD_Identity_Protection\\.svg;",
+    "type": "ldap",
+    "name": "AD Identity Protection",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Azure_AD_Privilege_Identity_Management\\.svg;",
+    "type": "ldap",
+    "name": "AD Privilege Identity Management",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Azure_Active_Directory\\.svg;",
+    "type": "ldap",
+    "name": "Active Directory",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Azure_Information_Protection\\.svg;",
+    "type": "ldap",
+    "name": "Information Protection",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Custom_Azure_AD_Roles\\.svg;",
+    "type": "ldap",
+    "name": "Custom Azure AD Roles",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Enterprise_Applications\\.svg;",
+    "type": "ldap",
+    "name": "Enterprise Applications",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Connect\\.svg;",
+    "type": "ldap",
+    "name": "Entra Connect",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Domain_Services\\.svg;",
+    "type": "ldap",
+    "name": "Entra Domain Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Global_Secure_Access\\.svg;",
+    "type": "ldap",
+    "name": "Entra Global Secure Access",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_ID_Protection\\.svg;",
+    "type": "ldap",
+    "name": "Entra ID Protection",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Internet_Access\\.svg;",
+    "type": "ldap",
+    "name": "Entra Internet Access",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Managed_Identities\\.svg;",
+    "type": "ldap",
+    "name": "Entra Managed Identities",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Private_Access\\.svg;",
+    "type": "ldap",
+    "name": "Entra Private Access",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Privileged_Identity_Management\\.svg;",
+    "type": "ldap",
+    "name": "Entra Privileged Identity Management",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Entra_Verified_ID\\.svg;",
+    "type": "ldap",
+    "name": "Entra Verified ID",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/External_ID\\.svg;",
+    "type": "ldap",
+    "name": "External ID",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/External_Identities\\.svg;",
+    "type": "ldap",
+    "name": "External Identities",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Groups\\.svg;",
+    "type": "ldap",
+    "name": "Groups",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Identity_Governance\\.svg;",
+    "type": "ldap",
+    "name": "Identity Governance",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Managed_Identities\\.svg;",
+    "type": "ldap",
+    "name": "Managed Identities",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Multi_Factor_Authentication\\.svg;",
+    "type": "ldap",
+    "name": "Multi-Factor Authentication",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/PIM\\.svg;",
+    "type": "ldap",
+    "name": "PIM",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Security\\.svg;",
+    "type": "ldap",
+    "name": "Security",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Tenant_Properties\\.svg;",
+    "type": "ldap",
+    "name": "Tenant Properties",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/User_Settings\\.svg;",
+    "type": "ldap",
+    "name": "User Settings",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Users\\.svg;",
+    "type": "actor",
+    "name": "Users",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Verifiable_Credentials\\.svg;",
+    "type": "ldap",
+    "name": "Verifiable Credentials",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/identity/Verification_As_A_Service\\.svg;",
+    "type": "ldap",
+    "name": "Verification As A Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/AI_Gateway\\.svg;",
+    "type": "service",
+    "name": "AI Gateway",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/API_Management_Services\\.svg;",
+    "type": "service",
+    "name": "API Management Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/App_Configuration\\.svg;",
+    "type": "service",
+    "name": "App Configuration",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Azure_API_for_FHIR\\.svg;",
+    "type": "service",
+    "name": "API for FHIR",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Azure_Data_Catalog\\.svg;",
+    "type": "service",
+    "name": "Data Catalog",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Azure_PubSub\\.svg;",
+    "type": "service",
+    "name": "PubSub",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Event_Grid_Domains\\.svg;",
+    "type": "messaging:event-bus",
+    "name": "Event Grid Domains",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Event_Grid_Subscriptions\\.svg;",
+    "type": "messaging:event-bus",
+    "name": "Event Grid Subscriptions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Event_Grid_Topics\\.svg;",
+    "type": "messaging:event-bus",
+    "name": "Event Grid Topics",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Integration_Accounts\\.svg;",
+    "type": "service",
+    "name": "Integration Accounts",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Integration_Environments\\.svg;",
+    "type": "service",
+    "name": "Integration Environments",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Integration_Service_Environments\\.svg;",
+    "type": "service",
+    "name": "Integration Service Environments",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Logic_Apps_Custom_Connector\\.svg;",
+    "type": "service",
+    "name": "Logic Apps Custom Connector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Logic_Apps_Template\\.svg;",
+    "type": "service",
+    "name": "Logic Apps Template",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Partner_Namespace\\.svg;",
+    "type": "service",
+    "name": "Partner Namespace",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Partner_Registration\\.svg;",
+    "type": "service",
+    "name": "Partner Registration",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Partner_Topic\\.svg;",
+    "type": "service",
+    "name": "Partner Topic",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Relays\\.svg;",
+    "type": "service",
+    "name": "Relays",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/SendGrid_Accounts\\.svg;",
+    "type": "service",
+    "name": "SendGrid Accounts",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/Software_as_a_Service\\.svg;",
+    "type": "service",
+    "name": "Software as a Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/integration/System_Topic\\.svg;",
+    "type": "service",
+    "name": "System Topic",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Azure_IoT_Operations\\.svg;",
+    "type": "service",
+    "name": "IoT Operations",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Azure_Maps_Accounts\\.svg;",
+    "type": "service",
+    "name": "Maps Accounts",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Device_Provisioning_Services\\.svg;",
+    "type": "service",
+    "name": "Device Provisioning Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Digital_Twins\\.svg;",
+    "type": "service",
+    "name": "Digital Twins",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Event_Hubs\\.svg;",
+    "type": "messaging:event-stream",
+    "name": "Event Hubs",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Function_Apps\\.svg;",
+    "type": "service",
+    "name": "Function Apps",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Hybrid_Connectivity_Hub\\.svg;",
+    "type": "service",
+    "name": "Hybrid Connectivity Hub",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Industrial_IoT\\.svg;",
+    "type": "service",
+    "name": "Industrial IoT",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/IoT_Central_Applications\\.svg;",
+    "type": "service",
+    "name": "IoT Central Applications",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/IoT_Edge\\.svg;",
+    "type": "service",
+    "name": "IoT Edge",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/IoT_Hub\\.svg;",
+    "type": "service",
+    "name": "IoT Hub",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Logic_Apps\\.svg;",
+    "type": "service",
+    "name": "Logic Apps",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Notification_Hubs\\.svg;",
+    "type": "service",
+    "name": "Notification Hubs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Stream_Analytics_Jobs\\.svg;",
+    "type": "service",
+    "name": "Stream Analytics Jobs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Time_Series_Data_Sets\\.svg;",
+    "type": "service",
+    "name": "Time Series Data Sets",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Time_Series_Insights_Environments\\.svg;",
+    "type": "service",
+    "name": "Time Series Insights Environments",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Time_Series_Insights_Event_Sources\\.svg;",
+    "type": "service",
+    "name": "Time Series Insights Event Sources",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/iot/Windows10_Core_Services\\.svg;",
+    "type": "service",
+    "name": "Windows10 Core Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Activity_Log\\.svg;",
+    "type": "system",
+    "name": "Activity Log",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Advisor\\.svg;",
+    "type": "system",
+    "name": "Advisor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Alerts\\.svg;",
+    "type": "system",
+    "name": "Alerts",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Application_Insights\\.svg;",
+    "type": "system",
+    "name": "Application Insights",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Arc_Machines\\.svg;",
+    "type": "system",
+    "name": "Arc Machines",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Automation_Accounts\\.svg;",
+    "type": "system",
+    "name": "Automation Accounts",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Azure_Arc\\.svg;",
+    "type": "system",
+    "name": "Arc",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Azure_Lighthouse\\.svg;",
+    "type": "system",
+    "name": "Lighthouse",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Blueprints\\.svg;",
+    "type": "system",
+    "name": "Blueprints",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Compliance\\.svg;",
+    "type": "system",
+    "name": "Compliance",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Customer_Lockbox_for_MS_Azure\\.svg;",
+    "type": "system",
+    "name": "Customer Lockbox for MS Azure",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Diagnostics_Settings\\.svg;",
+    "type": "system",
+    "name": "Diagnostics Settings",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Education\\.svg;",
+    "type": "system",
+    "name": "Education",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Landing_Zone\\.svg;",
+    "type": "system",
+    "name": "Landing Zone",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Log_Analytics_Workspaces\\.svg;",
+    "type": "system",
+    "name": "Log Analytics Workspaces",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/MachinesAzureArc\\.svg;",
+    "type": "system",
+    "name": "MachinesAzureArc",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Managed_Applications_Center\\.svg;",
+    "type": "system",
+    "name": "Managed Applications Center",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Managed_Desktop\\.svg;",
+    "type": "system",
+    "name": "Managed Desktop",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Metrics\\.svg;",
+    "type": "system",
+    "name": "Metrics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Monitor\\.svg;",
+    "type": "system",
+    "name": "Monitor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/My_Customers\\.svg;",
+    "type": "system",
+    "name": "My Customers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Operation_Log_Classic\\.svg;",
+    "type": "system",
+    "name": "Operation Log (Classic)",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Policy\\.svg;",
+    "type": "system",
+    "name": "Policy",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Recovery_Services_Vaults\\.svg;",
+    "type": "system",
+    "name": "Recovery Services Vaults",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Resource_Graph_Explorer\\.svg;",
+    "type": "system",
+    "name": "Resource Graph Explorer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Resources_Provider\\.svg;",
+    "type": "system",
+    "name": "Resources Provider",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Scheduler_Job_Collections\\.svg;",
+    "type": "system",
+    "name": "Scheduler Job Collections",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Service_Catalog_MAD\\.svg;",
+    "type": "system",
+    "name": "Service Catalog MAD",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Service_Group_Relationships\\.svg;",
+    "type": "system",
+    "name": "Service Group Relationships",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Service_Providers\\.svg;",
+    "type": "system",
+    "name": "Service Providers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/Universal_Print\\.svg;",
+    "type": "system",
+    "name": "Universal Print",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/User_Privacy\\.svg;",
+    "type": "system",
+    "name": "User Privacy",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/management_governance/solutions\\.svg;",
+    "type": "system",
+    "name": "Solutions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/migrate/Azure_Migrate\\.svg;",
+    "type": "service",
+    "name": "Migrate",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/monitor/SAP_Azure_Monitor\\.svg;",
+    "type": "system",
+    "name": "SAP Azure Monitor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/ATM_Multistack\\.svg;",
+    "type": "network",
+    "name": "ATM Multistack",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Application_Gateway_Containers\\.svg;",
+    "type": "network",
+    "name": "Application Gateway Containers",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Application_Gateways\\.svg;",
+    "type": "network",
+    "name": "Application Gateways",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Azure_Access_Point\\.svg;",
+    "type": "network",
+    "name": "Access Point",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Azure_Communications_Gateway\\.svg;",
+    "type": "network",
+    "name": "Communications Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Azure_Firewall_Manager\\.svg;",
+    "type": "network",
+    "name": "Firewall Manager",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Azure_Firewall_Policy\\.svg;",
+    "type": "network",
+    "name": "Firewall Policy",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Bastions\\.svg;",
+    "type": "network",
+    "name": "Bastions",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/CDN_Profiles\\.svg;",
+    "type": "network",
+    "name": "CDN Profiles",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Connections\\.svg;",
+    "type": "network",
+    "name": "Connections",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/DDoS_Custom_Policy\\.svg;",
+    "type": "network",
+    "name": "DDoS Custom Policy",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/DDoS_Protection_Plans\\.svg;",
+    "type": "network",
+    "name": "DDoS Protection Plans",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/DNS_Multistack\\.svg;",
+    "type": "network",
+    "name": "DNS Multistack",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/DNS_Private_Resolver\\.svg;",
+    "type": "network",
+    "name": "DNS Private Resolver",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/DNS_Security_Policy\\.svg;",
+    "type": "network",
+    "name": "DNS Security Policy",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/DNS_Zones\\.svg;",
+    "type": "network",
+    "name": "DNS Zones",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Edge_Actions\\.svg;",
+    "type": "network",
+    "name": "Edge Actions",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/ExpressRoute_Circuits\\.svg;",
+    "type": "network",
+    "name": "ExpressRoute Circuits",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Firewalls\\.svg;",
+    "type": "network",
+    "name": "Firewalls",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Front_Doors\\.svg;",
+    "type": "network",
+    "name": "Front Doors",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/IP_Address_Manager\\.svg;",
+    "type": "network",
+    "name": "IP Address Manager",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/IP_Groups\\.svg;",
+    "type": "network",
+    "name": "IP Groups",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Load_Balancer_Hub2\\.svg;",
+    "type": "network",
+    "name": "Load Balancer Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Load_Balancer_Hub\\.svg;",
+    "type": "network",
+    "name": "Load Balancer Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Load_Balancers\\.svg;",
+    "type": "network",
+    "name": "Load Balancers",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Local_Network_Gateways\\.svg;",
+    "type": "network",
+    "name": "Local Network Gateways",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/NAT\\.svg;",
+    "type": "network",
+    "name": "NAT",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Network_Foundation_Hub\\.svg;",
+    "type": "network",
+    "name": "Network Foundation Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Network_Interfaces\\.svg;",
+    "type": "network",
+    "name": "Network Interfaces",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Network_Security_Groups\\.svg;",
+    "type": "network",
+    "name": "Network Security Groups",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Network_Security_Hub\\.svg;",
+    "type": "network",
+    "name": "Network Security Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Network_Watcher\\.svg;",
+    "type": "network",
+    "name": "Network Watcher",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/On_Premises_Data_Gateways\\.svg;",
+    "type": "network",
+    "name": "On Premises Data Gateways",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Private_Endpoint\\.svg;",
+    "type": "network",
+    "name": "Private Endpoint",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Private_Link\\.svg;",
+    "type": "network",
+    "name": "Private Link",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Private_Link_Hub\\.svg;",
+    "type": "network",
+    "name": "Private Link Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Private_Link_Service\\.svg;",
+    "type": "network",
+    "name": "Private Link Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Proximity_Placement_Groups\\.svg;",
+    "type": "network",
+    "name": "Proximity Placement Groups",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Public_IP_Addresses\\.svg;",
+    "type": "network",
+    "name": "Public IP Addresses",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Public_IP_Addresses_Classic\\.svg;",
+    "type": "network",
+    "name": "Public IP Addresses (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Public_IP_Prefixes\\.svg;",
+    "type": "network",
+    "name": "Public IP Prefixes",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Reserved_IP_Addresses_Classic\\.svg;",
+    "type": "network",
+    "name": "Reserved IP Addresses (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Resource_Management_Private_Link\\.svg;",
+    "type": "network",
+    "name": "Resource Management Private Link",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Route_Filters\\.svg;",
+    "type": "network",
+    "name": "Route Filters",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Route_Tables\\.svg;",
+    "type": "network",
+    "name": "Route Tables",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Service_Endpoint_Policies\\.svg;",
+    "type": "network",
+    "name": "Service Endpoint Policies",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Spot_VMSS\\.svg;",
+    "type": "network",
+    "name": "Spot VMSS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Spot_VM\\.svg;",
+    "type": "network",
+    "name": "Spot VM",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Subnet\\.svg;",
+    "type": "network",
+    "name": "Subnet",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Traffic_Manager_Profiles\\.svg;",
+    "type": "network",
+    "name": "Traffic Manager Profiles",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/VNet_Appliance\\.svg;",
+    "type": "network",
+    "name": "VNet Appliance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/VPN_Client_Windows\\.svg;",
+    "type": "network",
+    "name": "VPN Client Windows",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Virtual_Network_Gateways\\.svg;",
+    "type": "network",
+    "name": "Virtual Network Gateways",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Virtual_Networks\\.svg;",
+    "type": "network",
+    "name": "Virtual Networks",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Virtual_Networks_Classic\\.svg;",
+    "type": "network",
+    "name": "Virtual Networks (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Virtual_Router\\.svg;",
+    "type": "network",
+    "name": "Virtual Router",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Virtual_WAN_Hub\\.svg;",
+    "type": "network",
+    "name": "Virtual WAN Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Virtual_WANs\\.svg;",
+    "type": "network",
+    "name": "Virtual WANs",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/networking/Web_Application_Firewall_Policies_WAF\\.svg;",
+    "type": "network",
+    "name": "Web Application Firewall Policies (WAF)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Application_Security_Groups\\.svg;",
+    "type": "network",
+    "name": "Application Security Groups",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Azure_AD_Risky_Signins\\.svg;",
+    "type": "network",
+    "name": "AD Risky Signins",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Azure_AD_Risky_Users\\.svg;",
+    "type": "network",
+    "name": "AD Risky Users",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Azure_Defender\\.svg;",
+    "type": "network",
+    "name": "Defender",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Azure_Sentinel\\.svg;",
+    "type": "network",
+    "name": "Sentinel",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Conditional_Access\\.svg;",
+    "type": "network",
+    "name": "Conditional Access",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Detonation\\.svg;",
+    "type": "network",
+    "name": "Detonation",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/ExtendedSecurityUpdates\\.svg;",
+    "type": "network",
+    "name": "Extended Security Updates",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Identity_Secure_Score\\.svg;",
+    "type": "network",
+    "name": "Identity Secure Score",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Key_Vaults\\.svg;",
+    "type": "service",
+    "name": "Key Vaults",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Keys\\.svg;",
+    "type": "network",
+    "name": "Keys",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/MS_Defender_EASM\\.svg;",
+    "type": "network",
+    "name": "MS Defender EASM",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Multifactor_Authentication\\.svg;",
+    "type": "network",
+    "name": "Multifactor Authentication",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/security/Security_Center\\.svg;",
+    "type": "network",
+    "name": "Security Center",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Azure_Fileshare\\.svg;",
+    "type": "database",
+    "name": "Fileshare",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Azure_HCP_Cache\\.svg;",
+    "type": "database",
+    "name": "HCP Cache",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Azure_NetApp_Files\\.svg;",
+    "type": "database",
+    "name": "NetApp Files",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Azure_Stack_Edge\\.svg;",
+    "type": "database",
+    "name": "Stack Edge",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Data_Box\\.svg;",
+    "type": "database",
+    "name": "Data Box",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Data_Box_Edge\\.svg;",
+    "type": "database",
+    "name": "Data Box Edge",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Data_Lake_Storage_Gen1\\.svg;",
+    "type": "database",
+    "name": "Data Lake Storage Gen1",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Data_Share_Invitations\\.svg;",
+    "type": "database",
+    "name": "Data Share Invitations",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Data_Shares\\.svg;",
+    "type": "database",
+    "name": "Data Shares",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Data_Virtualization\\.svg;",
+    "type": "database",
+    "name": "Data Virtualization",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Import_Export_Jobs\\.svg;",
+    "type": "database",
+    "name": "Import Export Jobs",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/StorSimple_Data_Managers\\.svg;",
+    "type": "database",
+    "name": "StorSimple Data Managers",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/StorSimple_Device_Managers\\.svg;",
+    "type": "database",
+    "name": "StorSimple Device Managers",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Storage_Accounts\\.svg;",
+    "type": "database",
+    "name": "Storage Accounts",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Storage_Accounts_Classic\\.svg;",
+    "type": "database",
+    "name": "Storage Accounts (Classic)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Storage_Explorer\\.svg;",
+    "type": "database",
+    "name": "Storage Explorer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Storage_Hubs\\.svg;",
+    "type": "database",
+    "name": "Storage Hubs",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/storage/Storage_Sync_Services\\.svg;",
+    "type": "database",
+    "name": "Storage Sync Services",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/web/API_Center\\.svg;",
+    "type": "webclient",
+    "name": "API Center",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/web/Agentic_Web_Apps\\.svg;",
+    "type": "webclient",
+    "name": "Agentic Web Apps",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/web/App_Space\\.svg;",
+    "type": "webclient",
+    "name": "App Space",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/web/Azure_Media_Service\\.svg;",
+    "type": "webclient",
+    "name": "Media Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/web/Notification_Hub_Namespaces\\.svg;",
+    "type": "webclient",
+    "name": "Notification Hub Namespaces",
+    "confidence": "high"
+  },
+  {
+    "pattern": "img/lib/azure2/web/SignalR\\.svg;",
+    "type": "webclient",
+    "name": "SignalR",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.active_directory;",
+    "type": "ldap",
+    "name": "Active Directory",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.api_management;",
+    "type": "network",
+    "name": "API Management",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.app_service;",
+    "type": "service",
+    "name": "App Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.application_gateway;",
+    "type": "network",
+    "name": "Application Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.blob_storage;",
+    "type": "database",
+    "name": "Blob Storage",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.cdn;",
+    "type": "network",
+    "name": "CDN",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.container_instances;",
+    "type": "service",
+    "name": "Container Instances",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.cosmos_db;",
+    "type": "database",
+    "name": "Cosmos DB",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.dns;",
+    "type": "network",
+    "name": "Azure DNS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.event_grid;",
+    "type": "messaging:event-bus",
+    "name": "Event Grid",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.event_hub;",
+    "type": "messaging:event-stream",
+    "name": "Event Hub",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.firewall;",
+    "type": "network",
+    "name": "Azure Firewall",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.front_door;",
+    "type": "network",
+    "name": "Front Door",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.function_app;",
+    "type": "service",
+    "name": "Function App",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.key_vault;",
+    "type": "service",
+    "name": "Key Vault",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.kubernetes_service;",
+    "type": "service",
+    "name": "AKS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.load_balancer;",
+    "type": "network",
+    "name": "Load Balancer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.logic_apps;",
+    "type": "service",
+    "name": "Logic Apps",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.redis_cache;",
+    "type": "database",
+    "name": "Redis Cache",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.service_bus;",
+    "type": "messaging:message-broker",
+    "name": "Service Bus",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.sql_database;",
+    "type": "database",
+    "name": "Azure SQL",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.storage_queue;",
+    "type": "messaging:message-queue",
+    "name": "Storage Queue",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.synapse_analytics;",
+    "type": "database",
+    "name": "Synapse Analytics",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.table_storage;",
+    "type": "database",
+    "name": "Table Storage",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.user;",
+    "type": "actor",
+    "name": "User",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.virtual_machine;",
+    "type": "service",
+    "name": "Virtual Machine",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.azure\\.virtual_network;",
+    "type": "network",
+    "name": "Virtual Network",
+    "confidence": "high"
+  }
+]
