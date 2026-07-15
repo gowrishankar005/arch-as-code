@@ -27,13 +27,22 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 /**
  * Schedule a debounced save of the current model JSON to localStorage.
  * Resets the timer on every call so rapid edits don't thrash storage.
+ *
+ * Takes a `getJson` thunk rather than a pre-built string: the caller (a
+ * reactive $effect) must not build the JSON eagerly on every call, or
+ * reading whatever reactive state that build touches (e.g. live node
+ * positions, for a JSON string that also captures layout) makes the
+ * effect itself re-run on every one of those changes — once for every
+ * pixel of a drag, not just when the file actually becomes dirty. Calling
+ * the thunk only when the debounce timer fires keeps both the effect's
+ * dependencies and the stringify work to a minimum.
  */
-export function scheduleAutosave(json: string, filename: string | null): void {
+export function scheduleAutosave(getJson: () => string, filename: string | null): void {
 	if (debounceTimer) clearTimeout(debounceTimer);
 	debounceTimer = setTimeout(() => {
 		try {
 			const draft: AutosaveDraft = {
-				json,
+				json: getJson(),
 				filename,
 				timestamp: Date.now(),
 			};

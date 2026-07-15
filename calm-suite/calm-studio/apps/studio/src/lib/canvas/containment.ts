@@ -7,8 +7,10 @@
  *
  * In CALM, 'deployed-in' and 'composed-of' edges represent containment —
  * a child node that lives inside a parent boundary. Svelte Flow models this
- * via parentId and extent:'parent' on the child node, plus a 'container' type
- * on the parent.
+ * via parentId on the child node plus a 'container' type on the parent.
+ * Deliberately no extent:'parent' — that would hard-clamp dragging to stay
+ * inside the parent's bounds, which blocks the "drag a node back out of its
+ * container" gesture CalmCanvas.svelte's handleNodeDragStop relies on.
  *
  * All functions are pure (no mutations, no side-effects) and return new arrays.
  */
@@ -29,10 +31,36 @@ export function isContainmentType(edgeType: string): boolean {
 }
 
 /**
+ * Resolves a node's absolute canvas position by walking up its parentId
+ * chain and summing each ancestor's position. Svelte Flow stores a nested
+ * node's `position` relative to its immediate parent, not the canvas
+ * origin (confirmed live: a node inside a container rendered at absolute
+ * screen coordinates (589,236) had a `position` of (42,60)) — so any code
+ * that adds or removes a parentId must convert through this, or the node
+ * visually jumps the instant its containment changes.
+ *
+ * @param nodeId - ID of the node to resolve.
+ * @param nodes  - Current nodes array.
+ */
+export function absolutePositionOf(nodeId: string, nodes: Node[]): { x: number; y: number } {
+	let x = 0;
+	let y = 0;
+	let current = nodes.find((n) => n.id === nodeId);
+	while (current) {
+		x += current.position.x;
+		y += current.position.y;
+		current = current.parentId ? nodes.find((n) => n.id === current!.parentId) : undefined;
+	}
+	return { x, y };
+}
+
+/**
  * Establishes a containment relationship between parent and child nodes.
  *
  * - Sets parentId on the child node (Svelte Flow nesting)
- * - Sets extent:'parent' on the child so it stays inside the parent
+ * - Converts the child's position to be relative to its new parent, so it
+ *   stays exactly where it was dropped instead of jumping (see
+ *   absolutePositionOf)
  * - Converts the parent to type:'container' if it isn't already
  *
  * Returns a new nodes array. Does not mutate the input.
@@ -56,6 +84,13 @@ export function makeContainment(parentId: string, childId: string, nodes: Node[]
 		}
 	}
 
+	const childAbsolute = absolutePositionOf(childId, nodes);
+	const parentAbsolute = absolutePositionOf(parentId, nodes);
+	const relativePosition = {
+		x: childAbsolute.x - parentAbsolute.x,
+		y: childAbsolute.y - parentAbsolute.y,
+	};
+
 	return nodes.map((node) => {
 		if (node.id === parentId) {
 			// Promote to container type if not already
@@ -63,7 +98,7 @@ export function makeContainment(parentId: string, childId: string, nodes: Node[]
 			return { ...node, type: 'container' };
 		}
 		if (node.id === childId) {
-			return { ...node, parentId, extent: 'parent' as const, zIndex: depth };
+			return { ...node, parentId, position: relativePosition, zIndex: depth };
 		}
 		return node;
 	});
@@ -72,7 +107,9 @@ export function makeContainment(parentId: string, childId: string, nodes: Node[]
 /**
  * Removes a containment relationship from a child node.
  *
- * Clears parentId and extent so the child is no longer nested.
+ * Clears parentId and converts the child's position back to absolute (see
+ * absolutePositionOf) so it stays exactly where it was, instead of jumping
+ * toward the canvas origin now that it's no longer relative to a parent.
  * Does not change the parent node's type (the parent may still contain
  * other children so it stays as 'container').
  *
@@ -82,11 +119,15 @@ export function makeContainment(parentId: string, childId: string, nodes: Node[]
  * @param nodes   - Current nodes array.
  */
 export function removeContainment(childId: string, nodes: Node[]): Node[] {
+	const absolute = absolutePositionOf(childId, nodes);
 	return nodes.map((node) => {
 		if (node.id !== childId) return node;
-		// Spread into a new object, then delete the containment fields
+		// Spread into a new object, then delete the containment fields. extent
+		// is never set going forward (see the file header), but stripped
+		// defensively in case a node still carries one from before this fix
+		// (e.g. state restored from an old autosave draft).
 		const { parentId: _pid, extent: _ext, ...rest } = node;
-		return rest as Node;
+		return { ...rest, position: absolute } as Node;
 	});
 }
 

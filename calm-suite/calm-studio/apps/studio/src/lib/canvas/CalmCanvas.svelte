@@ -41,7 +41,7 @@
 
 	import { nodeTypes, resolveNodeType } from './nodeTypes';
 	import { edgeTypes, DEFAULT_EDGE_TYPE } from './edgeTypes';
-	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType } from './containment';
+	import { makeContainment, removeContainment, autoResizeAncestors, isContainmentType, absolutePositionOf } from './containment';
 	import { computeAlignmentGuides, type AlignmentGuide } from './alignmentGuides';
 	import AlignmentGuides from './AlignmentGuides.svelte';
 	import { layoutSubtree } from '$lib/layout/elkLayout';
@@ -106,7 +106,6 @@
 					y: padY + row * (cellH + gapY),
 				},
 				parentId: parentNode.id,
-				extent: 'parent',
 				data: {
 					label: `New ${calmType}`,
 					calmId: childId,
@@ -657,7 +656,7 @@
 		pushSnapshot(nodes, edges);
 		const edge = edges.find((e) => e.id === edgeId);
 		if (edge && isContainmentType(edge.type ?? '')) {
-			nodes = removeContainment(edge.source, edge.target, nodes);
+			nodes = removeContainment(edge.target, nodes);
 		}
 		edges = edges.filter((e) => e.id !== edgeId);
 		applyFromCanvas(nodes, edges);
@@ -740,6 +739,57 @@
 		);
 	}
 
+	/**
+	 * True when a contained node's current (absolute) position still falls
+	 * within its parent's bounds. False for a top-level node (no parent to
+	 * check against). Shared by handleNodeDragStop and nudgeSelected — both
+	 * can move a contained node outside its container now that
+	 * extent:'parent' no longer clamps movement, and both need to detect it
+	 * and remove containment so the model doesn't silently diverge from
+	 * what's rendered.
+	 */
+	function isStillInsideParent(nodeId: string): boolean {
+		const node = nodes.find((n) => n.id === nodeId);
+		const parent = node?.parentId ? nodes.find((n) => n.id === node.parentId) : undefined;
+		if (!parent) return false;
+		return isInsideBounds(absolutePositionOf(nodeId, nodes), {
+			...absolutePositionOf(parent.id, nodes),
+			width: parent.measured?.width ?? parent.width,
+			height: parent.measured?.height ?? parent.height,
+		});
+	}
+
+	/**
+	 * Finds the most specific (smallest-area) node whose bounds contain
+	 * `point`, among nodes that could plausibly act as a container. Any node
+	 * type can become a container when something is dropped into it. When
+	 * candidates are nested (a subnet inside a VPC), the point sits inside
+	 * BOTH bounding boxes by definition — pick the smallest-area match (the
+	 * deepest container), not just the first one in iteration order, or a
+	 * drop onto a small nested container would always land in its outermost
+	 * ancestor instead.
+	 */
+	function findBestContainer(excludeId: string, point: { x: number; y: number }): Node | null {
+		let best: { candidate: Node; area: number } | null = null;
+		for (const candidate of nodes) {
+			if (candidate.id === excludeId) continue;
+			if (candidate.type === 'container' || (candidate.measured?.width && candidate.measured.width > 100)) {
+				// absolutePositionOf, not candidate.position directly — a
+				// candidate that's itself nested (e.g. a subnet inside a VPC)
+				// stores position relative to ITS parent, not the canvas, so
+				// using it bare would test the wrong rectangle.
+				const width = candidate.measured?.width ?? candidate.width ?? 200;
+				const height = candidate.measured?.height ?? candidate.height ?? 150;
+				const bounds = { ...absolutePositionOf(candidate.id, nodes), width, height };
+				if (isInsideBounds(point, bounds)) {
+					const area = width * height;
+					if (!best || area < best.area) best = { candidate, area };
+				}
+			}
+		}
+		return best?.candidate ?? null;
+	}
+
 	function handleNodeDragStop(event: NodeDragPayload) {
 		if (readonly) return;
 
@@ -747,31 +797,44 @@
 
 		const draggedNode = event.targetNode;
 		if (!draggedNode) return;
-		// Don't reparent nodes that are already parented or are containers
-		if (draggedNode.type === 'container' || draggedNode.parentId) return;
 
-		// Find any large node whose bounds contain the dragged node's position.
-		// Any node type can become a container when something is dropped into it.
-		for (const candidate of nodes) {
-			if (candidate.id === draggedNode.id) continue;
-			if (candidate.type === 'container' || (candidate.measured?.width && candidate.measured.width > 100)) {
-				const bounds = {
-					x: candidate.position.x,
-					y: candidate.position.y,
-					width: candidate.measured?.width ?? candidate.width ?? 200,
-					height: candidate.measured?.height ?? candidate.height ?? 150,
-				};
-				if (isInsideBounds(draggedNode.position, bounds)) {
-					pushSnapshot(nodes, edges);
-					nodes = makeContainment(candidate.id, draggedNode.id, nodes);
-					nodes = autoResizeAncestors(draggedNode.id, nodes);
-					applyFromCanvas(nodes, edges);
-					notifyChange();
-					return;
-				}
+		let containmentChanged = false;
+
+		// Dragging OUT: any node that moved in this drag — not just the
+		// grabbed one, since a multi-selected sibling moves along with it and
+		// can cross its own parent's bounds too — that's no longer inside its
+		// current parent becomes a free top-level node exactly where it was
+		// dropped. removeContainment converts its position from
+		// parent-relative to absolute, so it doesn't jump (see
+		// containment.ts's absolutePositionOf).
+		for (const n of event.nodes) {
+			if (n.parentId && !isStillInsideParent(n.id)) {
+				if (!containmentChanged) pushSnapshot(nodes, edges);
+				containmentChanged = true;
+				nodes = removeContainment(n.id, nodes);
 			}
 		}
-		// Regular drag stop (position change only)
+
+		// Dragging IN: re-check the grabbed node's own drop point against
+		// candidate containers if it's currently free (either it was already
+		// unparented, or the drag-out step above just cleared its parentId).
+		// Re-checking right after the drag-out step — rather than only when
+		// draggedNode started the gesture unparented — is what lets a
+		// straight drag from container A into container B reparent in one
+		// motion instead of requiring a drag-out followed by a second drag-in.
+		const current = nodes.find((n) => n.id === draggedNode.id);
+		if (current && !current.parentId && current.type !== 'container') {
+			const target = findBestContainer(current.id, current.position);
+			if (target) {
+				if (!containmentChanged) pushSnapshot(nodes, edges);
+				containmentChanged = true;
+				nodes = makeContainment(target.id, current.id, nodes);
+				nodes = autoResizeAncestors(current.id, nodes);
+			}
+		}
+
+		// Regular drag stop sync — also covers containers being repositioned
+		// and contained nodes that moved but stayed inside their container.
 		applyFromCanvas(nodes, edges);
 		notifyChange();
 	}
@@ -838,6 +901,16 @@
 		nodes = nodes.map((n) =>
 			n.selected ? { ...n, position: { x: n.position.x + dx, y: n.position.y + dy } } : n
 		);
+		// A nudge can push a contained node outside its parent's bounds, same
+		// as a drag can (see handleNodeDragStop / isStillInsideParent) — check
+		// every selected, currently-contained node and un-nest any that
+		// landed outside, so the model doesn't silently diverge from what's
+		// rendered.
+		for (const n of nodes) {
+			if (n.selected && n.parentId && !isStillInsideParent(n.id)) {
+				nodes = removeContainment(n.id, nodes);
+			}
+		}
 		applyFromCanvas(nodes, edges);
 		notifyChange();
 	}

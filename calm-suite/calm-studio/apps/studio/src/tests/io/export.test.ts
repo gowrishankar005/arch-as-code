@@ -186,6 +186,46 @@ describe('exportAsCalm — AIGF decorator injection', () => {
 		const result = JSON.parse(getFirstBlobContent()!);
 		expect(result.decorators[0].data.framework).toBe('FINOS AI Governance Framework');
 	});
+
+	it('preserves a pre-existing decorator instead of clobbering it', () => {
+		const archWithDecorator = {
+			...createAIGovernanceArch(),
+			decorators: [
+				{
+					'unique-id': 'calmstudio-layout',
+					type: 'calmstudio-layout',
+					target: [],
+					'applies-to': ['ai-llm'],
+					data: { positions: { 'ai-llm': { x: 1, y: 2 } } },
+				},
+			],
+		};
+		exportAsCalm(JSON.stringify(archWithDecorator, null, 2));
+		const result = JSON.parse(getFirstBlobContent()!);
+		expect(result.decorators).toHaveLength(2);
+		expect(result.decorators.map((d: { 'unique-id': string }) => d['unique-id']).sort()).toEqual([
+			'aigf-governance-overlay',
+			'calmstudio-layout',
+		]);
+	});
+
+	it('replaces a stale aigf-governance-overlay decorator rather than duplicating it', () => {
+		const archWithStaleDecorator = {
+			...createAIGovernanceArch(),
+			decorators: [
+				{
+					'unique-id': 'aigf-governance-overlay',
+					type: 'aigf-governance',
+					target: [],
+					'applies-to': [],
+					data: { 'governance-score': 0 },
+				},
+			],
+		};
+		exportAsCalm(JSON.stringify(archWithStaleDecorator, null, 2));
+		const result = JSON.parse(getFirstBlobContent()!);
+		expect(result.decorators).toHaveLength(1);
+	});
 });
 
 // ─── exportAsCalm — content preservation ─────────────────────────────────────

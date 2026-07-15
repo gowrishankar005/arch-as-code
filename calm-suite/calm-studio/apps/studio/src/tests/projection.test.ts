@@ -4,7 +4,7 @@
 
 import { describe, test, expect, beforeAll } from 'vitest';
 import type { CalmArchitecture } from '@calmstudio/calm-core';
-import { calmToFlow, flowToCalm } from '$lib/stores/projection';
+import { calmToFlow, flowToCalm, buildLayoutDecorator, extractLayoutPositions, toRawPosition, LAYOUT_DECORATOR_ID } from '$lib/stores/projection';
 import { initAllPacks } from '@calmstudio/extensions';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -330,5 +330,113 @@ describe('extension pack projection', () => {
 		// Pack type resolves to 'extension' with full calmType preserved
 		expect(podNode.type).toBe('extension');
 		expect(podNode.data.calmType).toBe('k8s:pod');
+	});
+});
+
+// ─── Layout persistence ─────────────────────────────────────────────────────
+
+describe('buildLayoutDecorator / extractLayoutPositions', () => {
+	test('buildLayoutDecorator captures each node\'s position keyed by calmId, undoing the center-alignment shift', () => {
+		const { nodes } = calmToFlow(connectsArch, new Map([['svc-1', { x: 240, y: 300 }]]));
+		const decorator = buildLayoutDecorator(nodes);
+
+		expect(decorator['unique-id']).toBe(LAYOUT_DECORATOR_ID);
+		expect(decorator.type).toBe(LAYOUT_DECORATOR_ID);
+		expect(decorator['applies-to']).toEqual(expect.arrayContaining(['svc-1', 'db-1']));
+		const positions = decorator.data.positions as Record<string, { x: number; y: number }>;
+		// calmToFlow rendered svc-1 at x=280 (240 + 40 center-alignment shift,
+		// see toRawPosition) — the decorator must store the raw x=240 it was
+		// given, not the shifted rendered value, or every future calmToFlow
+		// call on this data would reapply +40 (see the drift regression test
+		// below for why this specifically matters).
+		expect(positions['svc-1']).toEqual({ x: 240, y: 300 });
+	});
+
+	test('extractLayoutPositions returns null when no layout decorator is present', () => {
+		expect(extractLayoutPositions(connectsArch)).toBeNull();
+	});
+
+	test('extractLayoutPositions returns null when decorators exist but none is the layout one', () => {
+		const arch: CalmArchitecture = {
+			...connectsArch,
+			decorators: [
+				{ 'unique-id': 'other', type: 'other', target: [], 'applies-to': [], data: {} },
+			],
+		};
+		expect(extractLayoutPositions(arch)).toBeNull();
+	});
+
+	test('buildLayoutDecorator output round-trips through extractLayoutPositions unchanged', () => {
+		const { nodes } = calmToFlow(connectsArch, new Map([['svc-1', { x: 240, y: 300 }], ['db-1', { x: 400, y: 500 }]]));
+		const decorator = buildLayoutDecorator(nodes);
+		const arch: CalmArchitecture = { ...connectsArch, decorators: [decorator] };
+
+		const extracted = extractLayoutPositions(arch);
+		expect(extracted).not.toBeNull();
+		expect(extracted!.get('svc-1')).toEqual({ x: 240, y: 300 });
+		expect(extracted!.get('db-1')).toEqual({ x: 400, y: 500 });
+	});
+
+	test('calmToFlow places nodes at extracted positions instead of staggered defaults', () => {
+		const { nodes: original } = calmToFlow(connectsArch, new Map([['svc-1', { x: 240, y: 300 }], ['db-1', { x: 400, y: 500 }]]));
+		const decorator = buildLayoutDecorator(original);
+		const positions = extractLayoutPositions({ ...connectsArch, decorators: [decorator] })!;
+
+		const { nodes: reopened } = calmToFlow(connectsArch, positions);
+		const svc = reopened.find((n) => n.id === 'svc-1')!;
+		const db = reopened.find((n) => n.id === 'db-1')!;
+		// Same rendered positions as the original session — not shifted again.
+		expect(svc.position).toEqual({ x: 280, y: 300 });
+		expect(db.position).toEqual({ x: 440, y: 500 });
+	});
+
+	test('regression: repeated save/reopen cycles do not drift node positions', () => {
+		// This is the exact bug: calmToFlow's +40 center-alignment shift was
+		// being reapplied on every round trip because buildLayoutDecorator
+		// used to store the already-shifted rendered position instead of
+		// undoing it first. Simulates 3 consecutive save->reopen cycles and
+		// asserts the rendered position is identical every time.
+		let currentNodes = calmToFlow(connectsArch, new Map([['svc-1', { x: 240, y: 300 }]])).nodes;
+		const firstRenderedX = currentNodes.find((n) => n.id === 'svc-1')!.position.x;
+
+		for (let cycle = 0; cycle < 3; cycle++) {
+			const decorator = buildLayoutDecorator(currentNodes);
+			const positions = extractLayoutPositions({ ...connectsArch, decorators: [decorator] })!;
+			currentNodes = calmToFlow(connectsArch, positions).nodes;
+			const renderedX = currentNodes.find((n) => n.id === 'svc-1')!.position.x;
+			expect(renderedX).toBe(firstRenderedX);
+		}
+	});
+
+	test('regression: a freshly palette-placed node (no origin set yet) does not jump on its first re-projection', () => {
+		// Palette-created nodes (CalmCanvas.svelte's ondrop/placeNodeAtCenter)
+		// have no `origin` at all — plain top-left semantics — unlike nodes
+		// that have already been through a positionMap-driven calmToFlow call
+		// (origin:[0.5,0]). toRawPosition must not assume the input is
+		// already shifted just because a node happens to carry origin:[0.5,0]
+		// — it must always predict what calmToFlow's *next* call will do.
+		const freshNode = {
+			id: 'svc-1',
+			type: 'service',
+			position: { x: 500, y: 200 },
+			data: { calmId: 'svc-1' },
+			// deliberately no `origin` field
+		} as unknown as Parameters<typeof toRawPosition>[0];
+
+		const raw = toRawPosition(freshNode);
+		const positions = new Map([['svc-1', raw]]);
+		const { nodes } = calmToFlow(connectsArch, positions);
+		const reprojected = nodes.find((n) => n.id === 'svc-1')!;
+
+		// Must land back at the exact same spot it was already rendered at.
+		expect(reprojected.position).toEqual({ x: 500, y: 200 });
+	});
+
+	test('coverage can be partial — nodes missing from the map fall back to the staggered default', () => {
+		const positions = new Map([['svc-1', { x: 240, y: 300 }]]); // db-1 missing
+		const { nodes } = calmToFlow(connectsArch, positions);
+		const db = nodes.find((n) => n.id === 'db-1')!;
+		// Matches calmToFlow's existing no-positionMap-entry fallback (idx 1 -> x=260)
+		expect(db.position).toEqual({ x: 260, y: 100 });
 	});
 });
