@@ -24,6 +24,7 @@ import { detectPacksFromArch, buildSidecarData, sidecarNameFor } from '$lib/io/s
 import type { CalmArchitecture, CalmDecorator, CalmControls } from '@calmstudio/calm-core';
 import { isAINode, getAIGFForNodeType } from '@calmstudio/calm-core';
 import { buildScalerToml } from '$lib/io/scalerToml';
+import { getDrawioStyles } from '$lib/drawio/drawioStyles.svelte';
 
 const IMAGE_WIDTH = 1920;
 const IMAGE_HEIGHT = 1080;
@@ -137,12 +138,21 @@ export function exportAsCalm(json: string, filename = 'architecture.calm.json'):
 	// We use a blob: URL here so we revoke after the click microtask.
 	setTimeout(() => URL.revokeObjectURL(url), 0);
 
-	// Check if the architecture uses extension pack types — if so, export sidecar too.
+	// Check if the architecture uses extension pack types, or has draw.io styles
+	// to preserve — if either, export a sidecar too.
 	try {
 		const arch = JSON.parse(cleanJson) as CalmArchitecture;
 		const packIds = detectPacksFromArch(arch);
-		if (packIds.length > 0) {
-			const sidecarData = buildSidecarData(packIds);
+
+		// Only carry over styles for nodes still present in the architecture —
+		// drop entries for anything the user deleted since import.
+		const liveIds = new Set(arch.nodes.map((n) => n['unique-id']));
+		const drawioStyles = Object.fromEntries(
+			Object.entries(getDrawioStyles()).filter(([id]) => liveIds.has(id))
+		);
+
+		if (packIds.length > 0 || Object.keys(drawioStyles).length > 0) {
+			const sidecarData = buildSidecarData(packIds, drawioStyles);
 			const sidecarJson = JSON.stringify(sidecarData, null, 2);
 			const sidecarFilename = sidecarNameFor(filename);
 			const sidecarBlob = new Blob([sidecarJson], { type: 'application/json' });

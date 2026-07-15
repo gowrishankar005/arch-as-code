@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import ValidationBadge from './ValidationBadge.svelte';
+	import DrawioReviewBadge from './DrawioReviewBadge.svelte';
 	import NodeBadges from './NodeBadges.svelte';
 	import EditableLabel from './EditableLabel.svelte';
 	import { resolvePackNode } from '@calmstudio/extensions';
@@ -38,6 +39,7 @@
 
 <div class="node" class:selected title={(data as Record<string, unknown>).description as string ?? ""}>
 	<ValidationBadge {errorCount} {warnCount} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
+		<DrawioReviewBadge needsReview={(data as Record<string, unknown>).drawioNeedsReview as boolean ?? false} nodeId={(data as Record<string, unknown>).calmId as string ?? id} />
 	<NodeBadges
 		controls={(data as Record<string, unknown>).controls as Record<string, unknown> | undefined}
 		dataClassification={(data as Record<string, unknown>)['data-classification'] as string | undefined}
