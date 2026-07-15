@@ -84,12 +84,20 @@ function parseDiagramElement(
  * draw.io compresses with raw DEFLATE then base64-encodes the result; the
  * final value is also URL-encoded.
  */
-function decompressDiagram(encoded: string): string {
-	const base64 = atob(encoded);
-	const bytes = new Uint8Array(base64.length);
-	for (let i = 0; i < base64.length; i++) {
-		bytes[i] = base64.charCodeAt(i);
+function base64ToBytes(encoded: string): Uint8Array {
+	// Node.js environments have Buffer; browsers have atob
+	if (typeof Buffer !== 'undefined') {
+		const buf = Buffer.from(encoded, 'base64');
+		return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
 	}
+	const binary = atob(encoded);
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+	return bytes;
+}
+
+function decompressDiagram(encoded: string): string {
+	const bytes = base64ToBytes(encoded);
 	const xml = inflateRaw(bytes, { to: 'string' });
 	return decodeURIComponent(xml);
 }

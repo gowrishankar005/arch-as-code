@@ -1,38 +1,5126 @@
 [
-  { "pattern": "shape=mxgraph\\.aws4\\.s3", "type": "database", "name": "S3", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.rds", "type": "database", "name": "RDS", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.dynamo_db", "type": "database", "name": "DynamoDB", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.elasticache", "type": "database", "name": "ElastiCache", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.redshift", "type": "database", "name": "Redshift", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.aurora", "type": "database", "name": "Aurora", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.documentdb", "type": "database", "name": "DocumentDB", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.lambda", "type": "service", "name": "Lambda", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.ec2", "type": "service", "name": "EC2", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.ecs", "type": "service", "name": "ECS", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.eks", "type": "service", "name": "EKS", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.elastic_beanstalk", "type": "service", "name": "Elastic Beanstalk", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.app_runner", "type": "service", "name": "App Runner", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.fargate", "type": "service", "name": "Fargate", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.step_functions", "type": "service", "name": "Step Functions", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.elb", "type": "network", "name": "ELB", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.application_load_balancer", "type": "network", "name": "ALB", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.network_load_balancer", "type": "network", "name": "NLB", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.api_gateway", "type": "network", "name": "API Gateway", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.cloudfront", "type": "network", "name": "CloudFront", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.vpc", "type": "network", "name": "VPC", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.internet_gateway", "type": "network", "name": "Internet Gateway", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.nat_gateway", "type": "network", "name": "NAT Gateway", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.route_53", "type": "network", "name": "Route 53", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.waf", "type": "network", "name": "WAF", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.shield", "type": "network", "name": "Shield", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.sqs", "type": "messaging:message-queue", "name": "SQS", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.sns", "type": "messaging:pub-sub", "name": "SNS", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.kinesis", "type": "messaging:event-stream", "name": "Kinesis", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.eventbridge", "type": "messaging:event-bus", "name": "EventBridge", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.msk", "type": "messaging:message-broker", "name": "MSK", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.cognito", "type": "ldap", "name": "Cognito", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.iam", "type": "ldap", "name": "IAM", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.user", "type": "actor", "name": "User", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.client", "type": "webclient", "name": "Client", "confidence": "high" },
-  { "pattern": "shape=mxgraph\\.aws4\\.mobile_client", "type": "webclient", "name": "Mobile Client", "confidence": "high" }
+  {
+    "pattern": "mxgraph\\.aws4\\.a1_instance;",
+    "type": "service",
+    "name": "A1 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.access_analyzer;",
+    "type": "ldap",
+    "name": "IAM Access Analyzer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.action;",
+    "type": "service",
+    "name": "Action",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.actuator;",
+    "type": "service",
+    "name": "Actuator",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ad_connector;",
+    "type": "ldap",
+    "name": "AD Connector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.addon;",
+    "type": "ldap",
+    "name": "Add-on",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.agent2;",
+    "type": "service",
+    "name": "Agent",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.agent;",
+    "type": "ldap",
+    "name": "Agent",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.alarm;",
+    "type": "system",
+    "name": "Alarm",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.alert;",
+    "type": "system",
+    "name": "Alert",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.alexa_enabled_device;",
+    "type": "service",
+    "name": "Alexa Voice Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.alexa_skill;",
+    "type": "service",
+    "name": "Alexa Skill",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.all_products;",
+    "type": "system",
+    "name": "All Products",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ami;",
+    "type": "service",
+    "name": "AMI Resource",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.amplify;",
+    "type": "webclient",
+    "name": "Amplify",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.amplify_aws_amplify_studio;",
+    "type": "webclient",
+    "name": "Amplify Studio",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.analytics;",
+    "type": "database",
+    "name": "Analytics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.apache_mxnet_on_aws;",
+    "type": "service",
+    "name": "Apache MXNet on AWS",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.api_gateway;",
+    "type": "network",
+    "name": "API Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.app_config;",
+    "type": "system",
+    "name": "App Config",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.app_mesh;",
+    "type": "network",
+    "name": "App Mesh",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.app_runner;",
+    "type": "service",
+    "name": "App Runner",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.app_studio;",
+    "type": "service",
+    "name": "App Studio",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.app_wizard;",
+    "type": "system",
+    "name": "Launch Wizard",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.appflow;",
+    "type": "service",
+    "name": "AppFlow",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application;",
+    "type": "service",
+    "name": "Elastic Beanstalk Application",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_auto_scaling;",
+    "type": "system",
+    "name": "Application Auto Scaling",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_composer;",
+    "type": "service",
+    "name": "Infrastructure Composer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_discovery_service;",
+    "type": "service",
+    "name": "Application Discovery Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_discovery_service_aws_agentless_collector;",
+    "type": "service",
+    "name": "Agentless Collector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_discovery_service_aws_discovery_agent;",
+    "type": "service",
+    "name": "Discovery Agent",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_discovery_service_migration_evaluator_collector;",
+    "type": "service",
+    "name": "Migration Evaluator Collector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_integration;",
+    "type": "service",
+    "name": "Application Integration",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_load_balancer;",
+    "type": "network",
+    "name": "Application Load Balancer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.application_recovery_controller;",
+    "type": "network",
+    "name": "Application Recovery Controller",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.appsync;",
+    "type": "service",
+    "name": "AppSync",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.archive;",
+    "type": "database",
+    "name": "Vault",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.artifact;",
+    "type": "ldap",
+    "name": "Artifact",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.athena;",
+    "type": "database",
+    "name": "Athena",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.athena_data_source_connectors;",
+    "type": "database",
+    "name": "Athena Data Source Connectors",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.attribute;",
+    "type": "database",
+    "name": "Attribute",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.attributes;",
+    "type": "database",
+    "name": "Attributes",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.audit_manager;",
+    "type": "ldap",
+    "name": "Audit Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.augmented_ai;",
+    "type": "service",
+    "name": "Augmented AI",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aurora;",
+    "type": "database",
+    "name": "Aurora",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aurora_instance;",
+    "type": "database",
+    "name": "Aurora Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aurora_instance_alt;",
+    "type": "database",
+    "name": "Aurora Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.authenticated_user;",
+    "type": "actor",
+    "name": "Authenticated User",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.auto_scaling2;",
+    "type": "service",
+    "name": "EC2 Auto Scaling",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.auto_scaling3;",
+    "type": "service",
+    "name": "Auto Scaling",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.automation;",
+    "type": "system",
+    "name": "Automation",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.autoscaling;",
+    "type": "system",
+    "name": "Auto Scaling",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aws_backup_for_aws_cloudformation;",
+    "type": "database",
+    "name": "Backup for AWS CloudFormation",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aws_backup_legal_hold;",
+    "type": "database",
+    "name": "Backup Legal Hold",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aws_backup_support_for_amazon_fsx_for_netapp_ontap;",
+    "type": "database",
+    "name": "Backup Support for Amazon FSX for NetApp ONTAP",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aws_backup_vault_lock;",
+    "type": "database",
+    "name": "Backup Vault Lock",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aws_glue_data_quality;",
+    "type": "database",
+    "name": "Glue Data Quality",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.aws_glue_for_ray;",
+    "type": "database",
+    "name": "Glue for Ray",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.b2b_data_interchange;",
+    "type": "service",
+    "name": "B2B Data Interchange",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backint_agent;",
+    "type": "system",
+    "name": "Backint Agent",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup;",
+    "type": "database",
+    "name": "Backup",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_audit_manager;",
+    "type": "database",
+    "name": "Backup Audit Manager",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_aws_backup_support_for_amazon_s3;",
+    "type": "database",
+    "name": "Backup AWS Backup Support for Amazon S3",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_aws_backup_support_for_vmware_workloads;",
+    "type": "database",
+    "name": "Backup AWS Backup Support for VMware Workloads",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_compliance_reporting;",
+    "type": "database",
+    "name": "Backup Compliance Reporting",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_compute;",
+    "type": "database",
+    "name": "Backup Compute",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_database;",
+    "type": "database",
+    "name": "Backup Database",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_gateway;",
+    "type": "database",
+    "name": "Backup Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_plan;",
+    "type": "database",
+    "name": "Backup Plan",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_recovery_point_objective;",
+    "type": "database",
+    "name": "Backup Recovery Point Objective",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_recovery_time_objective;",
+    "type": "database",
+    "name": "Backup Recovery Time Objective",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_restore;",
+    "type": "database",
+    "name": "Backup Restore",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_storage;",
+    "type": "database",
+    "name": "Backup Storage",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_vault;",
+    "type": "database",
+    "name": "Backup Vault",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_virtual_machine;",
+    "type": "database",
+    "name": "Backup Virtual Machine",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.backup_virtual_machine_monitor;",
+    "type": "database",
+    "name": "Backup Virtual Machine Monitor",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.bank;",
+    "type": "service",
+    "name": "Bank",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.batch;",
+    "type": "service",
+    "name": "Batch",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.bedrock;",
+    "type": "service",
+    "name": "Bedrock",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.bedrock_agentcore;",
+    "type": "service",
+    "name": "Bedrock AgentCore",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.bottlerocket;",
+    "type": "service",
+    "name": "Bottlerocket",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.bucket;",
+    "type": "database",
+    "name": "Bucket",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.bucket_with_objects;",
+    "type": "database",
+    "name": "Bucket with Objects",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.bycicle;",
+    "type": "service",
+    "name": "Bycicle",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c4_instance;",
+    "type": "service",
+    "name": "C4 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c5_instance;",
+    "type": "service",
+    "name": "C5 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c5a;",
+    "type": "service",
+    "name": "C5a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c5ad;",
+    "type": "service",
+    "name": "C5ad Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c5d;",
+    "type": "service",
+    "name": "C5d Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c5n_instance;",
+    "type": "service",
+    "name": "C5n Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c6g_instance;",
+    "type": "service",
+    "name": "C6g Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.c6gd;",
+    "type": "service",
+    "name": "C6gd Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cache_node;",
+    "type": "database",
+    "name": "Cache Node",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cached_volume;",
+    "type": "database",
+    "name": "Cached Volume",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.camera2;",
+    "type": "system",
+    "name": "Camera",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.camera;",
+    "type": "service",
+    "name": "Camera",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.car;",
+    "type": "service",
+    "name": "Car",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cart;",
+    "type": "service",
+    "name": "Cart",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.certificate_manager;",
+    "type": "service",
+    "name": "Certificate",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.certificate_manager_2;",
+    "type": "ldap",
+    "name": "Certificate Authority",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.certificate_manager_3;",
+    "type": "ldap",
+    "name": "Certificate Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.change_set;",
+    "type": "system",
+    "name": "Change Set",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.chat;",
+    "type": "system",
+    "name": "Chat",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.chatbot;",
+    "type": "system",
+    "name": "Chatbot",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.checklist;",
+    "type": "system",
+    "name": "Checklist",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.checklist_cost;",
+    "type": "system",
+    "name": "Checklist Cost",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.checklist_fault_tolerant;",
+    "type": "system",
+    "name": "Checklist Fault Tolerant",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.checklist_performance;",
+    "type": "system",
+    "name": "Checklist Performance",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.checklist_security;",
+    "type": "system",
+    "name": "Checklist Security",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.classic_load_balancer;",
+    "type": "network",
+    "name": "Classic Load Balancer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.clean_rooms;",
+    "type": "database",
+    "name": "Clean Rooms",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.client;",
+    "type": "webclient",
+    "name": "Client",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.client_vpn;",
+    "type": "network",
+    "name": "Client VPN",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud9;",
+    "type": "service",
+    "name": "Cloud9",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_control_api;",
+    "type": "service",
+    "name": "Cloud Control API",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_development_kit;",
+    "type": "service",
+    "name": "Cloud Development Kit",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_directory;",
+    "type": "ldap",
+    "name": "Cloud Directory",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_map;",
+    "type": "network",
+    "name": "Cloud Map",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_wan;",
+    "type": "network",
+    "name": "Cloud WAN",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_wan_segment_network;",
+    "type": "network",
+    "name": "Cloud WAN Segment Network",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_wan_transit_gateway_route_table_attachment;",
+    "type": "network",
+    "name": "Cloud WAN Transit Gateway Route Table Attachment",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloud_wan_virtual_pop;",
+    "type": "network",
+    "name": "Cloud WAN Core Network Edge",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudendure_disaster_recovery;",
+    "type": "database",
+    "name": "Elastic Disaster Recovery",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudendure_migration;",
+    "type": "service",
+    "name": "Application Migration Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudformation;",
+    "type": "system",
+    "name": "CloudFormation",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudfront;",
+    "type": "network",
+    "name": "CloudFront",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudfront_functions;",
+    "type": "network",
+    "name": "CloudFront Functions",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudhsm;",
+    "type": "ldap",
+    "name": "CloudHSM",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudsearch2;",
+    "type": "database",
+    "name": "CloudSearch",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudshell;",
+    "type": "service",
+    "name": "CloudShell",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudtrail;",
+    "type": "system",
+    "name": "CloudTrail",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudtrail_cloudtrail_lake;",
+    "type": "system",
+    "name": "CloudTrail Lake",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_2;",
+    "type": "system",
+    "name": "CloudWatch",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_cross_account_observability;",
+    "type": "system",
+    "name": "CloudWatch Cross Account Observability",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_data_protection;",
+    "type": "system",
+    "name": "CloudWatch Data Protection",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_evidently;",
+    "type": "system",
+    "name": "CloudWatch Evidently",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_logs;",
+    "type": "system",
+    "name": "CloudWatch Logs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_metrics_insights;",
+    "type": "system",
+    "name": "CloudWatch Metrics Insights",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_rum;",
+    "type": "system",
+    "name": "CloudWatch RUM",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cloudwatch_synthetics;",
+    "type": "system",
+    "name": "CloudWatch Synthetics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cluster;",
+    "type": "database",
+    "name": "HDFS Cluster",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codeartifact;",
+    "type": "service",
+    "name": "CodeArtifact",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codebuild;",
+    "type": "service",
+    "name": "CodeBuild",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codecatalyst;",
+    "type": "service",
+    "name": "CodeCatalyst",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codecommit;",
+    "type": "service",
+    "name": "CodeCommit",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codedeploy;",
+    "type": "service",
+    "name": "CodeDeploy",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codeguru;",
+    "type": "system",
+    "name": "CodeGuru",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codeguru_2;",
+    "type": "service",
+    "name": "CodeGuru",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codepipeline;",
+    "type": "service",
+    "name": "CodePipeline",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codestar;",
+    "type": "service",
+    "name": "CodeStar",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.codewhisperer;",
+    "type": "service",
+    "name": "CodeWhisperer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.coffee_pot;",
+    "type": "service",
+    "name": "Coffee Pot",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cognito;",
+    "type": "ldap",
+    "name": "Cognito",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.cold_storage;",
+    "type": "system",
+    "name": "Cold Storage",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.command_line_interface;",
+    "type": "system",
+    "name": "Command Line Interface",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.comprehend;",
+    "type": "service",
+    "name": "Comprehend",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.comprehend_medical;",
+    "type": "service",
+    "name": "Comprehend Medical",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.compute;",
+    "type": "service",
+    "name": "Compute",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.compute_optimizer;",
+    "type": "system",
+    "name": "Compute Optimizer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.config;",
+    "type": "system",
+    "name": "Config",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.connector;",
+    "type": "service",
+    "name": "Connector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.container_1;",
+    "type": "service",
+    "name": "Container",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.container_2;",
+    "type": "service",
+    "name": "Container",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.container_3;",
+    "type": "service",
+    "name": "Container",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.container_registry_image;",
+    "type": "service",
+    "name": "Image",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.containers;",
+    "type": "service",
+    "name": "Containers",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.control_tower;",
+    "type": "system",
+    "name": "Control Tower",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.corporate_data_center;",
+    "type": "system",
+    "name": "Corporate Data Center",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.corretto;",
+    "type": "service",
+    "name": "Corretto",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.credentials;",
+    "type": "system",
+    "name": "Credentials",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.customer_gateway;",
+    "type": "network",
+    "name": "VPC Customer Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.d2_instance;",
+    "type": "service",
+    "name": "D2 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.d3_instance;",
+    "type": "service",
+    "name": "D3 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.d3en_instance;",
+    "type": "service",
+    "name": "D3en Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_encryption_key;",
+    "type": "ldap",
+    "name": "Data Encryption Key",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_exchange;",
+    "type": "database",
+    "name": "Data Exchange",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_exchange_for_apis;",
+    "type": "database",
+    "name": "Data Exchange for APIs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_lake_resource_icon;",
+    "type": "database",
+    "name": "Data Lake",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_pipeline;",
+    "type": "database",
+    "name": "Data Pipeline",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_set;",
+    "type": "service",
+    "name": "Data Set",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_stream;",
+    "type": "system",
+    "name": "Data Stream",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_table;",
+    "type": "system",
+    "name": "Data Table",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.data_transfer_terminal;",
+    "type": "service",
+    "name": "Data Transfer Terminal",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.database;",
+    "type": "database",
+    "name": "Database",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.database_migration_service;",
+    "type": "database",
+    "name": "Database Migration Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.database_migration_workflow_job;",
+    "type": "database",
+    "name": "Database Migration Workflow / Job",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.datasync;",
+    "type": "service",
+    "name": "DataSync",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.datasync_discovery;",
+    "type": "service",
+    "name": "Datasync Discovery",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.datazone;",
+    "type": "database",
+    "name": "DataZone",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.datazone_business_data_catalog;",
+    "type": "database",
+    "name": "DataZone Business Data Catalog",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.datazone_data_portal;",
+    "type": "database",
+    "name": "DataZone Data Portal",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.datazone_data_projects;",
+    "type": "database",
+    "name": "DataZone Data Projects",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.db_on_instance2;",
+    "type": "service",
+    "name": "DB Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.deep_learning_amis;",
+    "type": "service",
+    "name": "Deep Learning AMIs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.deep_learning_containers;",
+    "type": "service",
+    "name": "Deep Learning Containers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.deepcomposer;",
+    "type": "service",
+    "name": "DeepComposer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.deeplens;",
+    "type": "service",
+    "name": "DeepLens",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.deepracer;",
+    "type": "service",
+    "name": "DeepRacer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.dense_compute_node;",
+    "type": "database",
+    "name": "Dense Compute Node",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.dense_storage_node;",
+    "type": "database",
+    "name": "Dense Storage Node",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.deployment;",
+    "type": "service",
+    "name": "Deployment",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.deployments;",
+    "type": "system",
+    "name": "Deployments",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.desired_state;",
+    "type": "service",
+    "name": "Desired State",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.detective;",
+    "type": "ldap",
+    "name": "Detective",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.developer_tools;",
+    "type": "service",
+    "name": "Developer Tools",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.device_farm;",
+    "type": "webclient",
+    "name": "Device Farm",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.devops_agent;",
+    "type": "system",
+    "name": "DevOps Agent",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.devops_guru;",
+    "type": "service",
+    "name": "DevOps Guru",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.devops_guru_insights;",
+    "type": "service",
+    "name": "DevOps Guru Insights",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.direct_connect;",
+    "type": "network",
+    "name": "Direct Connect",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.directory_service;",
+    "type": "ldap",
+    "name": "Directory Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.disk;",
+    "type": "system",
+    "name": "Disk",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.distro_for_opentelemetry;",
+    "type": "system",
+    "name": "Distro for OpenTelemetry",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.document;",
+    "type": "system",
+    "name": "Document",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.documentdb_elastic_clusters;",
+    "type": "database",
+    "name": "DocumentDB Elastic Clusters",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.documentdb_with_mongodb_compatibility;",
+    "type": "database",
+    "name": "DocumentDB",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.documents2;",
+    "type": "system",
+    "name": "Documents",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.documents3;",
+    "type": "system",
+    "name": "Documents",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.documents;",
+    "type": "system",
+    "name": "Documents",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.door_lock;",
+    "type": "service",
+    "name": "Door Lock",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.download_distribution;",
+    "type": "network",
+    "name": "Download Distribution",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.dynamodb;",
+    "type": "database",
+    "name": "DynamoDB",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.dynamodb_dax;",
+    "type": "database",
+    "name": "DynamoDB Accelerator",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.dynamodb_standard_access_table_class;",
+    "type": "database",
+    "name": "DynamoDB Standard Access Table Class",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.dynamodb_standard_infrequent_access_table_class;",
+    "type": "database",
+    "name": "DynamoDB Standard Infrequent Access Table Class",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.dynamodb_stream;",
+    "type": "database",
+    "name": "DynamoDB Stream",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2;",
+    "type": "service",
+    "name": "EC2",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_aws_microservice_extractor_for_net;",
+    "type": "service",
+    "name": "EC2 AWS Microservice Extractor for .NET",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_c6a_instance;",
+    "type": "service",
+    "name": "C6a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_c6gn_instance;",
+    "type": "service",
+    "name": "C6gn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_c6i_instance;",
+    "type": "service",
+    "name": "C6i Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_c6in_instance;",
+    "type": "service",
+    "name": "C6in Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_c7g_instance;",
+    "type": "service",
+    "name": "C7g Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_c7gn_instance;",
+    "type": "service",
+    "name": "C7gn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_dl1_instance;",
+    "type": "service",
+    "name": "DL1 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_g5_instance;",
+    "type": "service",
+    "name": "G5 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_g5g_instance;",
+    "type": "service",
+    "name": "G5g Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_hpc6a_instance;",
+    "type": "service",
+    "name": "Hpc6a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_hpc6id_instance;",
+    "type": "service",
+    "name": "Hpc6id Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_i4i_instance;",
+    "type": "service",
+    "name": "I4i Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_im4gn_instance;",
+    "type": "service",
+    "name": "Im4gn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_image_builder;",
+    "type": "service",
+    "name": "EC2 Image Builder",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_inf2_instance;",
+    "type": "service",
+    "name": "Inf2",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_is4gen_instance;",
+    "type": "service",
+    "name": "Is4gen Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_m1_mac_instance;",
+    "type": "service",
+    "name": "EC2 M1 Mac Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_m6a_instance;",
+    "type": "service",
+    "name": "M6a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_m6i_instance;",
+    "type": "service",
+    "name": "M6i Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_m6idn_instance;",
+    "type": "service",
+    "name": "M6idn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_m6in_instance;",
+    "type": "service",
+    "name": "M6in Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_p4de_instance;",
+    "type": "service",
+    "name": "P4de Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_r6a_instance;",
+    "type": "service",
+    "name": "R6a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_r6i_instance;",
+    "type": "service",
+    "name": "R6i Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_r6idn_instance;",
+    "type": "service",
+    "name": "R6idn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_r6in_instance;",
+    "type": "service",
+    "name": "R6in Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_r7iz_instance;",
+    "type": "service",
+    "name": "R7iz Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_trn1_instance;",
+    "type": "service",
+    "name": "Trn1 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_vt1_instance;",
+    "type": "service",
+    "name": "Vt1 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_x2gd_instance;",
+    "type": "service",
+    "name": "X2gd Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_x2idn_instance;",
+    "type": "service",
+    "name": "X2idn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_x2iedn_instance;",
+    "type": "service",
+    "name": "X2iedn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ec2_x2iezn_instance;",
+    "type": "service",
+    "name": "X2iezn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.echo;",
+    "type": "service",
+    "name": "Echo",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ecr;",
+    "type": "service",
+    "name": "Elastic Container Registry",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ecs;",
+    "type": "service",
+    "name": "Elastic Container Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ecs_anywhere;",
+    "type": "service",
+    "name": "ECS Anywhere",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ecs_copilot_cli;",
+    "type": "service",
+    "name": "ECS copilot CLI",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ecs_service;",
+    "type": "service",
+    "name": "Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ecs_service_connect;",
+    "type": "service",
+    "name": "ECS Service Connect",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ecs_task;",
+    "type": "service",
+    "name": "Task",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.edge_location;",
+    "type": "network",
+    "name": "Edge Location",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.efs_infrequentaccess;",
+    "type": "database",
+    "name": "EFS InfrequentAccess",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.efs_standard;",
+    "type": "database",
+    "name": "EFS Standard",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eks;",
+    "type": "service",
+    "name": "Elastic Kubernetes Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eks_anywhere;",
+    "type": "service",
+    "name": "EKS Anywhere",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eks_cloud;",
+    "type": "service",
+    "name": "EKS Cloud",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eks_distro;",
+    "type": "service",
+    "name": "EKS Distro",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eks_on_outposts;",
+    "type": "service",
+    "name": "EKS On Outposts",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_beanstalk;",
+    "type": "service",
+    "name": "Elastic Beanstalk",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_block_store;",
+    "type": "database",
+    "name": "Elastic Block Store",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_block_store_amazon_data_lifecycle_manager;",
+    "type": "database",
+    "name": "Elastic Block Store Amazon Data Lifecycle Manager",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_block_store_volume_gp3;",
+    "type": "database",
+    "name": "Elastic Block Store Volume gp3",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_fabric_adapter;",
+    "type": "service",
+    "name": "Elastic Fabric Adapter",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_file_system;",
+    "type": "database",
+    "name": "Elastic File System",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_file_system_elastic_throughput;",
+    "type": "database",
+    "name": "Elastic File System Elastic Throughput",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_file_system_infrequent_access;",
+    "type": "database",
+    "name": "Elastic File System Standard Infrequent Access",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_file_system_intelligent_tiering;",
+    "type": "database",
+    "name": "Elastic File System Intelligent Tiering",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_file_system_one_zone;",
+    "type": "database",
+    "name": "Elastic File System One Zone",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_file_system_one_zone_infrequent_access;",
+    "type": "database",
+    "name": "Elastic File System One Zone Infrequent Access",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_file_system_standard;",
+    "type": "database",
+    "name": "Elastic File System Standard",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_inference_2;",
+    "type": "service",
+    "name": "Elastic Inference",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_ip_address;",
+    "type": "service",
+    "name": "Elastic IP Address",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_load_balancing;",
+    "type": "network",
+    "name": "Elastic Load Balancing",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_network_adapter;",
+    "type": "network",
+    "name": "Elastic Network Adapter",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_network_interface;",
+    "type": "network",
+    "name": "Elastic Network Interface",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elastic_vmware_service;",
+    "type": "service",
+    "name": "Elastic VMware Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elasticache;",
+    "type": "database",
+    "name": "ElastiCache",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elasticache_for_memcached;",
+    "type": "database",
+    "name": "ElastiCache for Memcached",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elasticache_for_redis;",
+    "type": "database",
+    "name": "ElastiCache for Redis",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elasticache_for_valkey;",
+    "type": "database",
+    "name": "ElastiCache for Valkey",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.elasticsearch_service;",
+    "type": "database",
+    "name": "OpenSearch Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.email_2;",
+    "type": "system",
+    "name": "Email",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.email_notification;",
+    "type": "service",
+    "name": "Email Notification",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.emr;",
+    "type": "database",
+    "name": "EMR",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.emr_engine;",
+    "type": "database",
+    "name": "EMR Engine",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.emr_engine_mapr_m3;",
+    "type": "database",
+    "name": "EMR Engine MapR M3",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.emr_engine_mapr_m5;",
+    "type": "database",
+    "name": "EMR Engine MapR M5",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.emr_engine_mapr_m7;",
+    "type": "database",
+    "name": "EMR Engine MapR M7",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.encrypted_data;",
+    "type": "ldap",
+    "name": "Encrypted Data",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.endpoint;",
+    "type": "service",
+    "name": "API Gateway Endpoint",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.endpoints;",
+    "type": "network",
+    "name": "Endpoints",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.entity_resolution;",
+    "type": "database",
+    "name": "Entity Resolution",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.event;",
+    "type": "service",
+    "name": "Event",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.event_event_based;",
+    "type": "system",
+    "name": "Event (Event-Based)",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.event_resource;",
+    "type": "service",
+    "name": "Event Resource",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.event_time_based;",
+    "type": "system",
+    "name": "Event (Time-Based)",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge;",
+    "type": "messaging:event-bus",
+    "name": "EventBridge",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge_custom_event_bus_resource;",
+    "type": "service",
+    "name": "Custom Event Bus",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge_default_event_bus_resource;",
+    "type": "service",
+    "name": "Default Event Bus",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge_pipes;",
+    "type": "service",
+    "name": "EventBridge Pipes",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge_saas_partner_event_bus_resource;",
+    "type": "service",
+    "name": "SaaS Partner Event",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge_scheduler;",
+    "type": "service",
+    "name": "EventBridge Scheduler",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge_schema;",
+    "type": "service",
+    "name": "EventBridge Schema",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.eventbridge_schema_registry;",
+    "type": "service",
+    "name": "EventBridge Schema Registry",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.express_workflow;",
+    "type": "service",
+    "name": "Express Workflows",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.external_sdk;",
+    "type": "system",
+    "name": "SDK",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.external_toolkit;",
+    "type": "system",
+    "name": "Toolkit",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.f1_instance;",
+    "type": "service",
+    "name": "F1 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.factory;",
+    "type": "service",
+    "name": "Factory",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fargate;",
+    "type": "service",
+    "name": "Fargate",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fault_injection_simulator;",
+    "type": "system",
+    "name": "Fault Injection Simulator",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.file_cache;",
+    "type": "database",
+    "name": "File Cache",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.file_cache_hybrid_nfs_linked_datasets;",
+    "type": "database",
+    "name": "File Cache Hybrid NFS Linked Datasets",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.file_cache_on_premises_nfs_linked_datasets;",
+    "type": "database",
+    "name": "File Cache On Premises NFS Linked Datasets",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.file_cache_s3_linked_datasets;",
+    "type": "database",
+    "name": "File Cache S3 Linked Datasets",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.file_gateway;",
+    "type": "database",
+    "name": "File Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.file_system;",
+    "type": "database",
+    "name": "File System",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.filtering_rule;",
+    "type": "ldap",
+    "name": "Filtering Rule",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.finding;",
+    "type": "ldap",
+    "name": "Finding",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.finspace;",
+    "type": "database",
+    "name": "FinSpace",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.firetv;",
+    "type": "service",
+    "name": "Fire TV",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.firetv_stick;",
+    "type": "service",
+    "name": "Fire TV Stick",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.firewall_manager;",
+    "type": "network",
+    "name": "Firewall Manager",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.flow_logs;",
+    "type": "network",
+    "name": "Flow Logs",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.folder;",
+    "type": "system",
+    "name": "Folder",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.folders;",
+    "type": "system",
+    "name": "Folders",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.forecast;",
+    "type": "service",
+    "name": "Forecast",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.forums;",
+    "type": "system",
+    "name": "Forums",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fraud_detector;",
+    "type": "service",
+    "name": "Fraud Detector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.freertos;",
+    "type": "service",
+    "name": "FreeRTOS",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fsx;",
+    "type": "database",
+    "name": "FSx",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fsx_file_gateway;",
+    "type": "database",
+    "name": "FSx File Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fsx_for_lustre;",
+    "type": "database",
+    "name": "FSx for Lustre",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fsx_for_netapp_ontap;",
+    "type": "database",
+    "name": "FSx for NetApp ONTAP",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fsx_for_openzfs;",
+    "type": "database",
+    "name": "FSx for OpenZFS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.fsx_for_windows_file_server;",
+    "type": "database",
+    "name": "FSx for Windows File Server",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.g3_instance;",
+    "type": "service",
+    "name": "G3 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.g4ad_instance;",
+    "type": "service",
+    "name": "G4ad Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.g4dn;",
+    "type": "service",
+    "name": "G4dn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.gateway;",
+    "type": "network",
+    "name": "Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.gateway_load_balancer;",
+    "type": "network",
+    "name": "Gateway Load Balancer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.gear;",
+    "type": "system",
+    "name": "Gear",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.general;",
+    "type": "system",
+    "name": "General",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.general_access_points;",
+    "type": "database",
+    "name": "Access Points",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.generic;",
+    "type": "service",
+    "name": "Generic",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.generic_application;",
+    "type": "system",
+    "name": "Generic Application",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.generic_database;",
+    "type": "system",
+    "name": "Generic Database",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.generic_firewall;",
+    "type": "system",
+    "name": "Generic Firewall",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.genomics_cli;",
+    "type": "service",
+    "name": "Genomics CLI",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.git_repository;",
+    "type": "system",
+    "name": "Git Repository",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.glacier;",
+    "type": "database",
+    "name": "S3 Glacier",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.glacier_deep_archive;",
+    "type": "database",
+    "name": "Glacier Deep Archive",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.global_accelerator;",
+    "type": "network",
+    "name": "Global Accelerator",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.global_secondary_index;",
+    "type": "database",
+    "name": "Global Secondary Index",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.globe;",
+    "type": "system",
+    "name": "Globe",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.glue;",
+    "type": "database",
+    "name": "Glue",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.glue_crawlers;",
+    "type": "database",
+    "name": "Crawler",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.glue_data_catalog;",
+    "type": "database",
+    "name": "Glue Data Catalog",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.glue_databrew;",
+    "type": "database",
+    "name": "Glue DataBrew",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.glue_elastic_views;",
+    "type": "database",
+    "name": "Glue Elastic Views",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.greengrass;",
+    "type": "service",
+    "name": "Greengrass",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.guardduty;",
+    "type": "ldap",
+    "name": "GuardDuty",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.h1_instance;",
+    "type": "service",
+    "name": "H1 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.habana_gaudi;",
+    "type": "service",
+    "name": "Habana Gaudi Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.hardware_board;",
+    "type": "service",
+    "name": "Hardware Board",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.hdfs_cluster;",
+    "type": "database",
+    "name": "HDFS Cluster",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.healthimaging;",
+    "type": "service",
+    "name": "HealthImaging",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.healthlake;",
+    "type": "service",
+    "name": "HealthLake",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.healthscribe;",
+    "type": "service",
+    "name": "HealthScribe",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.high_memory_instance;",
+    "type": "service",
+    "name": "High Memory Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.hosted_zone;",
+    "type": "network",
+    "name": "Hosted Zone",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.house;",
+    "type": "service",
+    "name": "House",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.http2_protocol;",
+    "type": "service",
+    "name": "HTTP2 protocol",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.http_notification;",
+    "type": "service",
+    "name": "HTTP Notification",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.http_protocol;",
+    "type": "service",
+    "name": "HTTP protocol",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.i2;",
+    "type": "service",
+    "name": "I2 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.i3_instance;",
+    "type": "service",
+    "name": "I3 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.i3en;",
+    "type": "service",
+    "name": "I3en Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.identity_access_management_iam_roles_anywhere;",
+    "type": "ldap",
+    "name": "IAM Roles Anywhere",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.identity_and_access_management;",
+    "type": "ldap",
+    "name": "Identity & Access Management",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.import_export;",
+    "type": "database",
+    "name": "Snowball Import Export",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.inf1;",
+    "type": "service",
+    "name": "Inf1",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.inferentia;",
+    "type": "service",
+    "name": "Inferentia",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.infrequent_access_storage_class;",
+    "type": "database",
+    "name": "Infrequent Access Storage Class",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.inspector;",
+    "type": "ldap",
+    "name": "Inspector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.instance2;",
+    "type": "service",
+    "name": "Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.instance_with_cloudwatch2;",
+    "type": "service",
+    "name": "Instance with CloudWatch",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.instances;",
+    "type": "service",
+    "name": "Instances",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.instances_2;",
+    "type": "system",
+    "name": "Instances",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.intelligent_tiering;",
+    "type": "database",
+    "name": "Intelligent Tiering",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.internet;",
+    "type": "system",
+    "name": "Internet",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.internet_alt1;",
+    "type": "system",
+    "name": "Internet",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.internet_alt22;",
+    "type": "system",
+    "name": "Internet",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.internet_alt2;",
+    "type": "system",
+    "name": "Internet",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.internet_gateway;",
+    "type": "network",
+    "name": "Internet Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.internet_of_things;",
+    "type": "service",
+    "name": "Internet of Things",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.inventory;",
+    "type": "system",
+    "name": "Inventory",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_1click;",
+    "type": "service",
+    "name": "1Click",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_analytics;",
+    "type": "service",
+    "name": "Analytics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_analytics_channel;",
+    "type": "service",
+    "name": "Channel",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_analytics_data_store;",
+    "type": "service",
+    "name": "Data Store",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_analytics_pipeline;",
+    "type": "service",
+    "name": "Pipeline",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_button;",
+    "type": "service",
+    "name": "Button",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_core;",
+    "type": "service",
+    "name": "Core",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_core_device_advisor;",
+    "type": "service",
+    "name": "IoT Core Device Advisor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_core_device_location;",
+    "type": "service",
+    "name": "IoT Core Device Location",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_device_defender;",
+    "type": "service",
+    "name": "Device Defender",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_device_gateway;",
+    "type": "service",
+    "name": "Device Gateway",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_device_jobs_resource;",
+    "type": "service",
+    "name": "Device Jobs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_device_management;",
+    "type": "service",
+    "name": "Device Management",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_device_management_fleet;",
+    "type": "service",
+    "name": "Device Management Fleet",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_device_tester;",
+    "type": "service",
+    "name": "Device Tester",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_edukit;",
+    "type": "service",
+    "name": "EduKit",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_events;",
+    "type": "service",
+    "name": "Events",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_expresslink;",
+    "type": "service",
+    "name": "ExpressLink",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_fleetwise;",
+    "type": "service",
+    "name": "FleetWise",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_artifact;",
+    "type": "service",
+    "name": "Greengrass Artifact",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_component;",
+    "type": "service",
+    "name": "Greengrass Component",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_component_machine_learning;",
+    "type": "service",
+    "name": "Greengrass Component Machine Learning",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_component_nucleus;",
+    "type": "service",
+    "name": "Greengrass Component Nucleus",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_component_private;",
+    "type": "service",
+    "name": "Greengrass Component Private",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_component_public;",
+    "type": "service",
+    "name": "Greengrass Component Public",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_interprocess_communication;",
+    "type": "service",
+    "name": "Greengrass Interprocess Communication",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_protocol;",
+    "type": "service",
+    "name": "Greengrass Protocol",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_recipe;",
+    "type": "service",
+    "name": "Greengrass Recipe",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_greengrass_stream_manager;",
+    "type": "service",
+    "name": "Greengrass Stream Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_lorawan_protocol;",
+    "type": "service",
+    "name": "LoRaWAN Protocol",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_over_the_air_update;",
+    "type": "service",
+    "name": "Over-The-Air Update",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_roborunner;",
+    "type": "service",
+    "name": "RoboRunner",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_sailboat;",
+    "type": "service",
+    "name": "Sailboat",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_sitewise;",
+    "type": "service",
+    "name": "SiteWise",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_sitewise_asset;",
+    "type": "service",
+    "name": "SiteWise Asset",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_sitewise_asset_hierarchy;",
+    "type": "service",
+    "name": "SiteWise Asset Hierarchy",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_sitewise_asset_model;",
+    "type": "service",
+    "name": "SiteWise Asset Model",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_sitewise_asset_properties;",
+    "type": "service",
+    "name": "SiteWise Asset Properties",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_sitewise_data_streams;",
+    "type": "service",
+    "name": "SiteWise Data Streams",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_freertos_device;",
+    "type": "service",
+    "name": "FreeRTOS Device",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_humidity_sensor;",
+    "type": "service",
+    "name": "Humidity Sensor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_industrial_pc;",
+    "type": "service",
+    "name": "Industrial PC",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_plc;",
+    "type": "service",
+    "name": "PLC",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_relay;",
+    "type": "service",
+    "name": "Relay",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_stacklight;",
+    "type": "service",
+    "name": "Stacklight",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_temperature_humidity_sensor;",
+    "type": "service",
+    "name": "Temperature Humidity Sensor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_temperature_sensor;",
+    "type": "service",
+    "name": "Temperature Sensor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_temperature_vibration_sensor;",
+    "type": "service",
+    "name": "Temperature Vibration Sensor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_thing_vibration_sensor;",
+    "type": "service",
+    "name": "Vibration Sensor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_things_graph;",
+    "type": "service",
+    "name": "Graph",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.iot_twinmaker;",
+    "type": "service",
+    "name": "TwinMaker",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.item;",
+    "type": "database",
+    "name": "Item",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.items;",
+    "type": "database",
+    "name": "Items",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.json_script;",
+    "type": "system",
+    "name": "JSON Script",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.kendra;",
+    "type": "service",
+    "name": "Kendra",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.key_management_service;",
+    "type": "ldap",
+    "name": "Key Management Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.key_management_service_external_key_store;",
+    "type": "ldap",
+    "name": "Key Management Service External Key Store",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.keyspaces;",
+    "type": "database",
+    "name": "Keyspaces",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.kinesis;",
+    "type": "messaging:event-stream",
+    "name": "Kinesis",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.kinesis_data_analytics;",
+    "type": "database",
+    "name": "Kinesis Data Analytics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.kinesis_data_firehose;",
+    "type": "database",
+    "name": "Data Firehose",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.kinesis_data_streams;",
+    "type": "messaging:event-stream",
+    "name": "Kinesis Data Streams",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.kinesis_video_streams;",
+    "type": "messaging:event-stream",
+    "name": "Kinesis Video Streams",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lake_formation;",
+    "type": "database",
+    "name": "Lake Formation",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lambda;",
+    "type": "service",
+    "name": "Lambda",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lambda_function;",
+    "type": "service",
+    "name": "Lambda Function",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.layers;",
+    "type": "system",
+    "name": "Layers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lex;",
+    "type": "service",
+    "name": "Lex",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.license_manager;",
+    "type": "system",
+    "name": "License Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.license_manager_application_discovery;",
+    "type": "system",
+    "name": "License Manager Application Discovery",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.license_manager_license_blending;",
+    "type": "system",
+    "name": "License Manager License Blending",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lightbulb;",
+    "type": "service",
+    "name": "Lightbulb",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lightsail;",
+    "type": "service",
+    "name": "Lightsail",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lightsail_for_research;",
+    "type": "service",
+    "name": "Lightsail for Research",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.local_zones;",
+    "type": "service",
+    "name": "Local Zones",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.location_service;",
+    "type": "webclient",
+    "name": "Location Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.location_service_geofence;",
+    "type": "webclient",
+    "name": "Location Service Geofence",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.location_service_map;",
+    "type": "webclient",
+    "name": "Location Service Map",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.location_service_place;",
+    "type": "webclient",
+    "name": "Location Service Place",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.location_service_routes;",
+    "type": "webclient",
+    "name": "Location Service Routes",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.location_service_track;",
+    "type": "webclient",
+    "name": "Location Service Track",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.logs;",
+    "type": "system",
+    "name": "Logs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.long_term_security_credential;",
+    "type": "ldap",
+    "name": "Long Term Security Credential",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lookout_for_equipment;",
+    "type": "service",
+    "name": "Lookout for Equipment",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lookout_for_metrics;",
+    "type": "service",
+    "name": "Lookout for Metrics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.lookout_for_vision;",
+    "type": "service",
+    "name": "Lookout for Vision",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m4_instance;",
+    "type": "service",
+    "name": "M4 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m5_instance;",
+    "type": "service",
+    "name": "M5 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m5a_instance;",
+    "type": "service",
+    "name": "M5a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m5d_instance;",
+    "type": "service",
+    "name": "M5d Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m5dn_instance;",
+    "type": "service",
+    "name": "M5dn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m5n_instance;",
+    "type": "service",
+    "name": "M5n Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m5zn_instance;",
+    "type": "service",
+    "name": "M5zn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m6g_instance;",
+    "type": "service",
+    "name": "M6g Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.m6gd_instance;",
+    "type": "service",
+    "name": "M6gd Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mac_instance;",
+    "type": "service",
+    "name": "Mac Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.machine_learning;",
+    "type": "service",
+    "name": "Machine Learning",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.macie;",
+    "type": "ldap",
+    "name": "Macie",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.magnifying_glass_2;",
+    "type": "system",
+    "name": "Magnifying Glass",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mainframe_modernization;",
+    "type": "service",
+    "name": "Mainframe Modernization",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mainframe_modernization_analyzer;",
+    "type": "service",
+    "name": "Mainframe Modernization Analyzer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mainframe_modernization_compiler;",
+    "type": "service",
+    "name": "Mainframe Modernization Compiler",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mainframe_modernization_converter;",
+    "type": "service",
+    "name": "Mainframe Modernization Converter",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mainframe_modernization_developer;",
+    "type": "service",
+    "name": "Mainframe Modernization Developer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mainframe_modernization_runtime;",
+    "type": "service",
+    "name": "Mainframe Modernization Runtime",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.maintenance_windows;",
+    "type": "system",
+    "name": "Maintenance Windows",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_apache_cassandra_service;",
+    "type": "database",
+    "name": "Managed Apache Cassandra Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_ms_ad;",
+    "type": "ldap",
+    "name": "Managed MS AD",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_service_for_apache_flink;",
+    "type": "database",
+    "name": "Managed Service for Apache Flink",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_service_for_grafana;",
+    "type": "system",
+    "name": "Managed Grafana",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_service_for_prometheus;",
+    "type": "system",
+    "name": "Managed Service for Prometheus",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_services;",
+    "type": "system",
+    "name": "Managed Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_streaming_for_kafka;",
+    "type": "messaging:message-broker",
+    "name": "Managed Streaming for Apache Kafka",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.managed_workflows_for_apache_airflow;",
+    "type": "service",
+    "name": "Managed Workflows for Apache Airflow",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.management_and_governance;",
+    "type": "system",
+    "name": "Management & Governance",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.management_console2;",
+    "type": "system",
+    "name": "Management Console",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.management_console;",
+    "type": "system",
+    "name": "Management Console",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.marketplace;",
+    "type": "system",
+    "name": "Marketplace",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.medical_emergency;",
+    "type": "service",
+    "name": "Medical Emergency",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.memorydb_for_redis;",
+    "type": "database",
+    "name": "MemoryDB",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mesh;",
+    "type": "network",
+    "name": "Mesh",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.message;",
+    "type": "service",
+    "name": "Message",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.metrics;",
+    "type": "system",
+    "name": "Metrics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mfa_token;",
+    "type": "ldap",
+    "name": "MFA Token",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.migration_and_transfer;",
+    "type": "service",
+    "name": "Migration & Transfer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.migration_evaluator;",
+    "type": "service",
+    "name": "Migration Evaluator",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.migration_hub;",
+    "type": "service",
+    "name": "Migration Hub",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.migration_hub_refactor_spaces_applications;",
+    "type": "service",
+    "name": "Migration Hub Refactor Spaces Applications",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.migration_hub_refactor_spaces_environments;",
+    "type": "service",
+    "name": "Migration Hub Refactor Spaces Environments",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.migration_hub_refactor_spaces_services;",
+    "type": "service",
+    "name": "Migration Hub Refactor Spaces Services",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mobile;",
+    "type": "webclient",
+    "name": "Mobile",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mobile_application;",
+    "type": "webclient",
+    "name": "Console Mobile Application",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mobile_client;",
+    "type": "webclient",
+    "name": "Mobile Client",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.monitoring;",
+    "type": "system",
+    "name": "Monitoring",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.monitron;",
+    "type": "service",
+    "name": "Monitron",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mq;",
+    "type": "messaging:message-broker",
+    "name": "MQ",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mq_broker;",
+    "type": "service",
+    "name": "MQ Broker",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.mqtt_protocol;",
+    "type": "service",
+    "name": "MQTT Protocol",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.msk_amazon_msk_connect;",
+    "type": "database",
+    "name": "MSK Connect",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.multimedia;",
+    "type": "system",
+    "name": "Multimedia",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.multiple_volumes_resource;",
+    "type": "database",
+    "name": "Multiple Volumes",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.namespace;",
+    "type": "network",
+    "name": "Namespace",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.nat_gateway;",
+    "type": "network",
+    "name": "NAT Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.neptune;",
+    "type": "database",
+    "name": "Neptune",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.network_access_control_list;",
+    "type": "network",
+    "name": "Network Access Control List",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.network_firewall;",
+    "type": "network",
+    "name": "Network Firewall",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.network_firewall_endpoints;",
+    "type": "ldap",
+    "name": "Network Firewall Endpoints",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.network_load_balancer;",
+    "type": "network",
+    "name": "Network Load Balancer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.networking_and_content_delivery;",
+    "type": "network",
+    "name": "Networking and Content Delivery",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.neuron_ml_sdk;",
+    "type": "service",
+    "name": "Neuron",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.nice_dcv;",
+    "type": "service",
+    "name": "DCV",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.nice_enginframe;",
+    "type": "service",
+    "name": "Nice EnginFrame",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.nitro_enclaves;",
+    "type": "service",
+    "name": "Nitro Enclaves",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.non_cached_volume;",
+    "type": "database",
+    "name": "Non-Cached Volume",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.notebook;",
+    "type": "service",
+    "name": "Notebook",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.nova2;",
+    "type": "service",
+    "name": "Nova",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.object;",
+    "type": "database",
+    "name": "Object",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.office_building;",
+    "type": "system",
+    "name": "Office Building",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.omics;",
+    "type": "service",
+    "name": "HealthOmics",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.one_zone_ia;",
+    "type": "database",
+    "name": "One Zone IA",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_dashboards;",
+    "type": "database",
+    "name": "OpenSearch Service Dashboards",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_ingestion;",
+    "type": "database",
+    "name": "OpenSearch Service Ingestion",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_observability;",
+    "type": "database",
+    "name": "OpenSearch Service Observability",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_service_cluster_administrator_node;",
+    "type": "database",
+    "name": "OpenSearch Service Cluster Administrator Node",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_service_data_node;",
+    "type": "database",
+    "name": "OpenSearch Service Data Node",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_service_index;",
+    "type": "database",
+    "name": "OpenSearch Service Index",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_service_traces;",
+    "type": "database",
+    "name": "OpenSearch Service Traces",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opensearch_service_ultrawarm_node;",
+    "type": "database",
+    "name": "OpenSearch Service UltraWarm Node",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opsworks;",
+    "type": "system",
+    "name": "OpsWorks",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opsworks_apps;",
+    "type": "system",
+    "name": "Apps",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.opsworks_permissions;",
+    "type": "system",
+    "name": "Permissions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.optimized_instance;",
+    "type": "service",
+    "name": "Optimized Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.oracle_database_at_aws;",
+    "type": "database",
+    "name": "Oracle Database at AWS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.organizations;",
+    "type": "system",
+    "name": "Organizations",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.organizations_account2;",
+    "type": "system",
+    "name": "Organizations Account",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.organizations_account;",
+    "type": "ldap",
+    "name": "Organizations Account",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.organizations_management_account2;",
+    "type": "system",
+    "name": "Organizations Management Account",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.organizations_management_account;",
+    "type": "system",
+    "name": "Organizations Management Account",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.organizations_organizational_unit2;",
+    "type": "system",
+    "name": "Organizational Unit",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.organizations_organizational_unit;",
+    "type": "ldap",
+    "name": "Organizations Organizational Unit",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.outposts;",
+    "type": "service",
+    "name": "Outposts rack",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.outposts_1u_and_2u_servers;",
+    "type": "service",
+    "name": "Outposts Servers",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.outposts_family;",
+    "type": "service",
+    "name": "Outposts Family",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.p2_instance;",
+    "type": "service",
+    "name": "P2 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.p3_instance;",
+    "type": "service",
+    "name": "P3 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.p3dn_instance;",
+    "type": "service",
+    "name": "P3dn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.p4_instance;",
+    "type": "service",
+    "name": "P4 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.p4d_instance;",
+    "type": "service",
+    "name": "P4d Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.panorama;",
+    "type": "service",
+    "name": "Panorama",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.parallel_cluster;",
+    "type": "service",
+    "name": "Parallel Cluster",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.parallel_computing_service;",
+    "type": "service",
+    "name": "Parallel Computing Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.parameter_store;",
+    "type": "system",
+    "name": "Parameter Store",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.partner_central;",
+    "type": "system",
+    "name": "Partner Central",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.patch_manager;",
+    "type": "system",
+    "name": "Patch Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.payment_cryptography;",
+    "type": "ldap",
+    "name": "Payment Cryptography",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.peering;",
+    "type": "network",
+    "name": "Peering Connection",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.permissions;",
+    "type": "ldap",
+    "name": "Permissions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.personal_health_dashboard;",
+    "type": "system",
+    "name": "Health Dashboard",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.personalize;",
+    "type": "service",
+    "name": "Personalize",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.police_emergency;",
+    "type": "service",
+    "name": "Police Emergency",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.policy;",
+    "type": "service",
+    "name": "Policy",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.polly;",
+    "type": "service",
+    "name": "Polly",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.private_5g;",
+    "type": "network",
+    "name": "Private 5G",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.private_certificate_authority;",
+    "type": "ldap",
+    "name": "Private Certificate Authority",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.programming_language;",
+    "type": "system",
+    "name": "Programming Language",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.proton;",
+    "type": "system",
+    "name": "Proton",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.q;",
+    "type": "service",
+    "name": "Q",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.quantum_ledger_database;",
+    "type": "database",
+    "name": "Quantum Ledger Database",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.question;",
+    "type": "system",
+    "name": "Question",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.queue;",
+    "type": "service",
+    "name": "Queue",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.quicksight;",
+    "type": "database",
+    "name": "QuickSight",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.quicksight_paginated_reports;",
+    "type": "database",
+    "name": "Quicksight Paginated Reports",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r4_instance;",
+    "type": "service",
+    "name": "R4 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r5_instance;",
+    "type": "service",
+    "name": "R5 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r5a_instance;",
+    "type": "service",
+    "name": "R5a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r5ad_instance;",
+    "type": "service",
+    "name": "R5ad Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r5b_instance;",
+    "type": "service",
+    "name": "R5b Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r5d_instance;",
+    "type": "service",
+    "name": "R5d Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r5gd_instance;",
+    "type": "service",
+    "name": "R5gd Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r5n_instance;",
+    "type": "service",
+    "name": "R5n Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.r6g_instance;",
+    "type": "service",
+    "name": "R6g Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rdn_instance;",
+    "type": "service",
+    "name": "Rdn Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds;",
+    "type": "database",
+    "name": "RDS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_blue_green_deployments;",
+    "type": "database",
+    "name": "RDS Blue Green Deployments",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_instance;",
+    "type": "database",
+    "name": "RDS Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_instance_alt;",
+    "type": "database",
+    "name": "RDS Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_mariadb_instance;",
+    "type": "database",
+    "name": "MariaDB Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_mariadb_instance_alt;",
+    "type": "database",
+    "name": "MariaDB Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_multi_az;",
+    "type": "database",
+    "name": "RDS Multi-AZ",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_multi_az_db_cluster;",
+    "type": "database",
+    "name": "RDS Multi-AZ DB Cluster",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_mysql_instance;",
+    "type": "database",
+    "name": "MySQL Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_mysql_instance_alt;",
+    "type": "database",
+    "name": "MySQL Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_on_vmware;",
+    "type": "database",
+    "name": "RDS on VMware",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_optimized_writes;",
+    "type": "database",
+    "name": "RDS Optimized Writes",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_oracle_instance;",
+    "type": "database",
+    "name": "Oracle Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_oracle_instance_alt;",
+    "type": "database",
+    "name": "Oracle Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_piops;",
+    "type": "database",
+    "name": "PIOPS Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_postgresql_instance;",
+    "type": "database",
+    "name": "Postgre SQL Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_postgresql_instance_alt;",
+    "type": "database",
+    "name": "Postgre SQL Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_proxy;",
+    "type": "database",
+    "name": "RDS Proxy Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_proxy_alt;",
+    "type": "database",
+    "name": "RDS Proxy Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_sql_server_instance;",
+    "type": "database",
+    "name": "SQL Server Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_sql_server_instance_alt;",
+    "type": "database",
+    "name": "SQL Server Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rds_trusted_language_extensions_for_postgresql;",
+    "type": "database",
+    "name": "Trusted Language Extensions for PostgreSQL",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.recover;",
+    "type": "system",
+    "name": "Recover",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.red_hat_openshift;",
+    "type": "service",
+    "name": "Red Hat OpenShift Service on AWS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.redshift;",
+    "type": "database",
+    "name": "Redshift",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.redshift_auto_copy;",
+    "type": "database",
+    "name": "Redshift Auto Copy",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.redshift_data_sharing_governance;",
+    "type": "database",
+    "name": "Redshift Data Sharing Governance",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.redshift_ml;",
+    "type": "database",
+    "name": "Redshift ML",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.redshift_query_editor_v20_light;",
+    "type": "database",
+    "name": "Redshift Query Editor v2.0",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.redshift_ra3;",
+    "type": "database",
+    "name": "Redshift RA3",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.redshift_streaming_ingestion;",
+    "type": "database",
+    "name": "Redshift Streaming Ingestion",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.registry;",
+    "type": "service",
+    "name": "Registry",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rekognition_2;",
+    "type": "service",
+    "name": "Rekognition",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rekognition_image;",
+    "type": "service",
+    "name": "Rekognition image",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rekognition_video;",
+    "type": "service",
+    "name": "Rekognition video",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.replication;",
+    "type": "database",
+    "name": "Replication",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.replication_time_control;",
+    "type": "database",
+    "name": "Replication Time Control",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.reported_state;",
+    "type": "service",
+    "name": "Reported State",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rescue;",
+    "type": "service",
+    "name": "Rescue",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.resilience_hub;",
+    "type": "system",
+    "name": "Resilience Hub",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.resource;",
+    "type": "network",
+    "name": "Resource",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.resource_access_manager;",
+    "type": "ldap",
+    "name": "Resource Access Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.resource_explorer;",
+    "type": "system",
+    "name": "Resource Explorer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.resources;",
+    "type": "system",
+    "name": "Resources",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.role;",
+    "type": "ldap",
+    "name": "Role",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_53;",
+    "type": "network",
+    "name": "Route 53",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_53_application_recovery_controller;",
+    "type": "network",
+    "name": "Route 53 Application Recovery Controller",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_53_readiness_checks;",
+    "type": "network",
+    "name": "Route 53 Readiness Checks",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_53_resolver;",
+    "type": "network",
+    "name": "Route 53 Resolver",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_53_resolver_dns_firewall;",
+    "type": "network",
+    "name": "Route 53 Resolver DNS Firewall",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_53_resolver_query_logging;",
+    "type": "network",
+    "name": "Route 53 Resolver Query Logging",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_53_routing_controls;",
+    "type": "network",
+    "name": "Route 53 Routing Controls",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.route_table;",
+    "type": "network",
+    "name": "Route Table",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.router;",
+    "type": "network",
+    "name": "Router",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rtb_fabric;",
+    "type": "network",
+    "name": "RTB Fabric",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rule;",
+    "type": "service",
+    "name": "Rule",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rule_2;",
+    "type": "system",
+    "name": "Rule",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.rule_3;",
+    "type": "service",
+    "name": "Rule",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.run_command;",
+    "type": "system",
+    "name": "Run Command",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3;",
+    "type": "database",
+    "name": "Simple Storage Service (S3)",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_batch_operations;",
+    "type": "database",
+    "name": "S3 Batch Operations",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_express_one_zone;",
+    "type": "database",
+    "name": "S3 Express One-Zone",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_file_gateway;",
+    "type": "database",
+    "name": "S3 File Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_multi_region_access_points;",
+    "type": "database",
+    "name": "S3 Multi-Region Access Points",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_object_lambda;",
+    "type": "database",
+    "name": "S3 Object Lambda",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_object_lambda_access_points;",
+    "type": "database",
+    "name": "S3 Object Lambda Access Points",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_object_lock;",
+    "type": "database",
+    "name": "S3 Object Lock",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_on_outposts;",
+    "type": "database",
+    "name": "S3 On Outposts",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_on_outposts_storage;",
+    "type": "database",
+    "name": "S3 on Outposts",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_select;",
+    "type": "database",
+    "name": "S3 Select",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_storage_lens;",
+    "type": "database",
+    "name": "S3 Storage Lens",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_tables;",
+    "type": "database",
+    "name": "S3 Tables",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.s3_vectors;",
+    "type": "database",
+    "name": "S3 Vectors",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker;",
+    "type": "service",
+    "name": "SageMaker AI",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_2;",
+    "type": "database",
+    "name": "Sagemaker",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_canvas;",
+    "type": "service",
+    "name": "SageMaker Canvas",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_geospatial_ml;",
+    "type": "service",
+    "name": "SageMaker Geospatial ML",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_ground_truth;",
+    "type": "service",
+    "name": "SageMaker Ground Truth",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_model;",
+    "type": "service",
+    "name": "Model",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_notebook;",
+    "type": "service",
+    "name": "Notebook",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_shadow_testing;",
+    "type": "service",
+    "name": "Shadow Testing",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_studio_lab;",
+    "type": "service",
+    "name": "SageMaker Studio Lab",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sagemaker_train;",
+    "type": "service",
+    "name": "Train",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.saml_token;",
+    "type": "system",
+    "name": "SAML Token",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.search_documents;",
+    "type": "database",
+    "name": "CloudSearch Search Documents",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.secrets_manager;",
+    "type": "ldap",
+    "name": "Secrets Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.security_agent;",
+    "type": "ldap",
+    "name": "Security Agent",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.security_hub;",
+    "type": "ldap",
+    "name": "Security Hub",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.security_identity_and_compliance;",
+    "type": "ldap",
+    "name": "Security Identity and Compliance",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.security_incident_response;",
+    "type": "ldap",
+    "name": "Security Incident Response",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.security_lake;",
+    "type": "ldap",
+    "name": "Security Lake",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sensor;",
+    "type": "service",
+    "name": "Sensor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.server_migration_service;",
+    "type": "service",
+    "name": "Server Migration Service",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.serverless;",
+    "type": "service",
+    "name": "Serverless",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.serverless_application_repository;",
+    "type": "service",
+    "name": "Serverless Application Repository",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.servers;",
+    "type": "system",
+    "name": "Servers",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.service;",
+    "type": "network",
+    "name": "Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.service_catalog;",
+    "type": "system",
+    "name": "Service Catalog",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.service_management_connector;",
+    "type": "system",
+    "name": "Service Management Connector",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.servo;",
+    "type": "service",
+    "name": "Servo",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.shadow;",
+    "type": "service",
+    "name": "Shadow",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.shield2;",
+    "type": "system",
+    "name": "Shield",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.shield;",
+    "type": "network",
+    "name": "Shield",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.shield_shield_advanced;",
+    "type": "ldap",
+    "name": "Shield Advanced",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.signer;",
+    "type": "ldap",
+    "name": "Signer",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.simple_ad;",
+    "type": "ldap",
+    "name": "Simple AD",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.simple_storage_service_directory_bucket;",
+    "type": "database",
+    "name": "S3 Directory Bucket",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.simple_storage_service_s3_glacier_instant_retrieval;",
+    "type": "database",
+    "name": "Glacier Instant Retrieval",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.simspace_weaver;",
+    "type": "service",
+    "name": "SimSpace Weaver",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.simulator;",
+    "type": "service",
+    "name": "Simulator",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.single_sign_on;",
+    "type": "ldap",
+    "name": "Identity Center",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.site_to_site_vpn;",
+    "type": "network",
+    "name": "Site-to-Site VPN",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.snapshot;",
+    "type": "database",
+    "name": "Snapshot",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.snowball;",
+    "type": "database",
+    "name": "Snowball",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.snowball_edge;",
+    "type": "database",
+    "name": "Snowball Edge",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.snowcone;",
+    "type": "database",
+    "name": "Snowcone",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.snowmobile;",
+    "type": "database",
+    "name": "Snowmobile",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sns;",
+    "type": "messaging:pub-sub",
+    "name": "Simple Notification Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.source_code;",
+    "type": "system",
+    "name": "Source Code",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.spot_instance;",
+    "type": "service",
+    "name": "Spot Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sql_workbench;",
+    "type": "database",
+    "name": "SQL Workbench",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sqs;",
+    "type": "messaging:message-queue",
+    "name": "Simple Queue Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.ssl_padlock;",
+    "type": "system",
+    "name": "SSL Padlock",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.stack2;",
+    "type": "system",
+    "name": "Stack",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.stack;",
+    "type": "system",
+    "name": "Stack",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.standard_ia;",
+    "type": "database",
+    "name": "Standard IA",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.state_manager;",
+    "type": "system",
+    "name": "State Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.step_functions;",
+    "type": "service",
+    "name": "Step Functions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.storage;",
+    "type": "database",
+    "name": "Storage",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.storage_gateway;",
+    "type": "database",
+    "name": "Storage Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.streaming_distribution;",
+    "type": "network",
+    "name": "Streaming Distribution",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sts;",
+    "type": "ldap",
+    "name": "STS",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.sts_alternate;",
+    "type": "ldap",
+    "name": "STS",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager;",
+    "type": "system",
+    "name": "Systems Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_application_manager;",
+    "type": "system",
+    "name": "Application Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_change_calendar;",
+    "type": "system",
+    "name": "Change Calendar",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_change_manager;",
+    "type": "system",
+    "name": "Change Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_compliance;",
+    "type": "system",
+    "name": "Compliance",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_distributor;",
+    "type": "system",
+    "name": "Distributor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_incident_manager;",
+    "type": "system",
+    "name": "Systems Manager - Incident Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_opscenter;",
+    "type": "system",
+    "name": "OpsCenter",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.systems_manager_session_manager;",
+    "type": "system",
+    "name": "Session Manager",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.t2_instance;",
+    "type": "service",
+    "name": "T2 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.t3_instance;",
+    "type": "service",
+    "name": "T3 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.t3a_instance;",
+    "type": "service",
+    "name": "T3a Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.t4g_instance;",
+    "type": "service",
+    "name": "T4g Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.table;",
+    "type": "database",
+    "name": "Table",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.tape_gateway;",
+    "type": "database",
+    "name": "Tape Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.tape_storage;",
+    "type": "system",
+    "name": "Tape Storage",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.telco_network_builder;",
+    "type": "system",
+    "name": "Telco Network Builder",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.template;",
+    "type": "system",
+    "name": "Template",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.temporary_security_credential;",
+    "type": "ldap",
+    "name": "Temporary Security Credential",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.tensorflow_on_aws;",
+    "type": "service",
+    "name": "TensorFlow on AWS",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.textract;",
+    "type": "service",
+    "name": "Textract",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.textract_analyze_lending;",
+    "type": "service",
+    "name": "Textract Analyze Lending",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.thermostat;",
+    "type": "service",
+    "name": "Thermostat",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.timestream;",
+    "type": "database",
+    "name": "Timestream",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.tools_and_sdks;",
+    "type": "service",
+    "name": "Tools and SDKs",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.topic;",
+    "type": "service",
+    "name": "Topic",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.topic_2;",
+    "type": "service",
+    "name": "Topic",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.torchserve;",
+    "type": "service",
+    "name": "PyTorch on AWS",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.traditional_server;",
+    "type": "system",
+    "name": "Traditional Server",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.trainium_instance;",
+    "type": "service",
+    "name": "Trainium Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transcribe;",
+    "type": "service",
+    "name": "Transcribe",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transfer_family;",
+    "type": "service",
+    "name": "Transfer Family",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transfer_family_aws_as2;",
+    "type": "service",
+    "name": "AS2",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transfer_for_ftp_resource;",
+    "type": "service",
+    "name": "FTP",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transfer_for_ftps_resource;",
+    "type": "service",
+    "name": "FTPS",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transfer_for_sftp;",
+    "type": "service",
+    "name": "Transfer for SFTP",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transfer_for_sftp_resource;",
+    "type": "service",
+    "name": "SFTP",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transform;",
+    "type": "service",
+    "name": "Transform",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transit_gateway;",
+    "type": "network",
+    "name": "Transit Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.transit_gateway_attachment;",
+    "type": "network",
+    "name": "Transit Gateway Attachment",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.translate;",
+    "type": "service",
+    "name": "Translate",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.travel;",
+    "type": "service",
+    "name": "Travel",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.trusted_advisor;",
+    "type": "system",
+    "name": "Trusted Advisor",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.user;",
+    "type": "actor",
+    "name": "User",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.user_notifications;",
+    "type": "system",
+    "name": "User Notifications",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.users;",
+    "type": "actor",
+    "name": "Users",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.utility;",
+    "type": "service",
+    "name": "Utility",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vault;",
+    "type": "database",
+    "name": "Archive",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.verified_access;",
+    "type": "network",
+    "name": "Verified Access",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.verified_permissions;",
+    "type": "ldap",
+    "name": "Verified Permissions",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.virtual_gateway;",
+    "type": "network",
+    "name": "Virtual Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.virtual_node;",
+    "type": "network",
+    "name": "Virtual Node",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.virtual_router;",
+    "type": "network",
+    "name": "Virtual Router",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.virtual_service;",
+    "type": "network",
+    "name": "Virtual Service",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.virtual_tape_library;",
+    "type": "database",
+    "name": "Virtual Tape Library",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vmware_cloud_on_aws;",
+    "type": "service",
+    "name": "VMware Cloud on AWS",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.volume;",
+    "type": "database",
+    "name": "Volume",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.volume_gateway;",
+    "type": "database",
+    "name": "Volume Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc;",
+    "type": "network",
+    "name": "VPC",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_access_points;",
+    "type": "database",
+    "name": "VPC Access Points",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_carrier_gateway;",
+    "type": "network",
+    "name": "VPC Carrier Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_lattice;",
+    "type": "network",
+    "name": "VPC Lattice",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_network_access_analyzer;",
+    "type": "network",
+    "name": "VPC Network Access Analyzer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_privatelink;",
+    "type": "network",
+    "name": "PrivateLink",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_reachability_analyzer;",
+    "type": "network",
+    "name": "VPC Reachability Analyzer",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_traffic_mirroring;",
+    "type": "network",
+    "name": "Traffic Mirroring",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpc_virtual_private_cloud_vpc;",
+    "type": "network",
+    "name": "VPC",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpn_connection;",
+    "type": "network",
+    "name": "VPN Connection",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.vpn_gateway;",
+    "type": "network",
+    "name": "VPN Gateway",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.waf;",
+    "type": "network",
+    "name": "WAF",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.waf_bad_bot;",
+    "type": "ldap",
+    "name": "WAF Bad Bot",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.waf_bot;",
+    "type": "ldap",
+    "name": "WAF Bot",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.waf_bot_control;",
+    "type": "ldap",
+    "name": "WAF Bot Control",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.waf_labels;",
+    "type": "ldap",
+    "name": "WAF Labels",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.waf_managed_rule;",
+    "type": "ldap",
+    "name": "WAF Managed Rule",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.waf_rule;",
+    "type": "ldap",
+    "name": "WAF Rule",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.wavelength;",
+    "type": "service",
+    "name": "Wavelength",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.well_architect_tool;",
+    "type": "system",
+    "name": "Well-Architected Tool",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.windfarm;",
+    "type": "service",
+    "name": "Windfarm",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.x1_instance2;",
+    "type": "service",
+    "name": "X1 Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.x1e_instance;",
+    "type": "service",
+    "name": "X1e Instance",
+    "confidence": "high"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.xray;",
+    "type": "service",
+    "name": "X-Ray",
+    "confidence": "medium"
+  },
+  {
+    "pattern": "mxgraph\\.aws4\\.z1d_instance;",
+    "type": "service",
+    "name": "z1d Instance",
+    "confidence": "high"
+  }
 ]

@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DOMParser } from '@xmldom/xmldom';
+import { deflateRaw } from 'pako';
 import { parseDrawio } from '../parser.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -111,5 +112,28 @@ describe('parseDrawio', () => {
 		</root></mxGraphModel></diagram></mxfile>`;
 		const pages = parseDrawio(xml, parser);
 		expect(pages[0]!.cells[0]!.value).toBe('Bold Label');
+	});
+
+	test('parses base64+deflate compressed diagram', () => {
+		// Build a compressed diagram inline using pako (same codec draw.io uses)
+		const innerXml = `<mxGraphModel><root>
+			<mxCell id="0"/><mxCell id="1" parent="0"/>
+			<mxCell id="2" value="Compressed Node" style="" vertex="1" parent="1">
+				<mxGeometry x="50" y="50" width="100" height="50" as="geometry"/>
+			</mxCell>
+		</root></mxGraphModel>`;
+
+		// draw.io compresses: encodeURIComponent → deflateRaw → base64
+		const encoded = encodeURIComponent(innerXml);
+		const compressed = deflateRaw(encoded);
+		const base64 = Buffer.from(compressed).toString('base64');
+
+		const xml = `<mxfile><diagram id="d1" name="Compressed">${base64}</diagram></mxfile>`;
+		const pages = parseDrawio(xml, parser);
+		expect(pages).toHaveLength(1);
+		expect(pages[0]!.name).toBe('Compressed');
+		const vertex = pages[0]!.cells.find((c) => c.vertex)!;
+		expect(vertex.value).toBe('Compressed Node');
+		expect(vertex.geometry).toEqual({ x: 50, y: 50, width: 100, height: 50 });
 	});
 });

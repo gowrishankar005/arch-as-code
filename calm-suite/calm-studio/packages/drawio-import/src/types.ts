@@ -85,11 +85,39 @@ export interface ConfidenceReportEntry {
 	needsReview: boolean;
 }
 
+/** Preserved mxGeometry by CALM unique-id. The caller decides how to persist
+ *  this (layout decorator, sidecar, DB column). Never written into the CALM
+ *  architecture document itself so the output stays schema-valid. */
+export type GeometryMap = Record<string, { x: number; y: number; width: number; height: number }>;
+
+/** Raw mxCell style string by CALM unique-id — visual properties (fill color,
+ *  shape family, etc.) that the CALM node-type system can't represent. Never
+ *  written into the CALM document; callers persist it out-of-band (e.g. a
+ *  CalmStudio sidecar file) so nothing about the original diagram is silently
+ *  discarded, per the importer's "nothing dropped silently" invariant. */
+export type StyleMap = Record<string, string>;
+
+export interface DanglingEdgeEntry {
+	/** draw.io cell id of the edge. */
+	cellId: string;
+	label: string;
+	/** CALM unique-id of the resolvable endpoint, if any. */
+	resolvedEndpoint: string | null;
+	/** Which endpoint is missing. */
+	missingEnd: 'source' | 'target' | 'both';
+}
+
 export interface PageImportResult {
 	name: string;
 	architecture: CalmArchitectureSchema;
 	/** One entry per node that was type-inferred. */
 	confidenceReport: ConfidenceReportEntry[];
+	/** Original mxGeometry values keyed by CALM unique-id. */
+	geometry: GeometryMap;
+	/** Original mxCell style strings keyed by CALM unique-id. */
+	styles: StyleMap;
+	/** Edges whose source and/or target cell could not be resolved to a CALM node. */
+	danglingEdges: DanglingEdgeEntry[];
 }
 
 export interface ImportResult {

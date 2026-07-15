@@ -34,6 +34,9 @@ export type {
 
 	// Import result types
 	ConfidenceReportEntry,
+	GeometryMap,
+	StyleMap,
+	DanglingEdgeEntry,
 	PageImportResult,
 	ImportResult,
 

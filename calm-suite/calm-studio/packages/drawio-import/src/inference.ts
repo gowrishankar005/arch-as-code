@@ -74,20 +74,28 @@ function inferT2(
 	const normalized = label.toLowerCase().trim();
 	const glossary = [...(extraGlossary ?? []), ...BUILT_IN_GLOSSARY];
 
-	// Exact match first, then substring
-	for (const pass of ['exact', 'substring'] as const) {
-		for (const entry of glossary) {
-			const term = entry.term.toLowerCase();
-			const matched =
-				pass === 'exact' ? normalized === term : normalized.includes(term);
-			if (matched) {
-				return {
-					nodeType: entry['node-type'],
-					confidence: entry.confidence as InferenceConfidence,
-					tier: 2,
-					reason: `label ${pass} match: "${entry.term}"${entry.note ? ` — note: ${entry.note}` : ''}`,
-				};
-			}
+	// Exact match first — insertion order is fine here (exact can't shadow)
+	for (const entry of glossary) {
+		if (entry.term.toLowerCase() === normalized) {
+			return {
+				nodeType: entry['node-type'],
+				confidence: entry.confidence as InferenceConfidence,
+				tier: 2,
+				reason: `label exact match: "${entry.term}"${entry.note ? ` — note: ${entry.note}` : ''}`,
+			};
+		}
+	}
+
+	// Substring pass — sort longest term first so "admin" wins over "ad"
+	const byLength = [...glossary].sort((a, b) => b.term.length - a.term.length);
+	for (const entry of byLength) {
+		if (normalized.includes(entry.term.toLowerCase())) {
+			return {
+				nodeType: entry['node-type'],
+				confidence: entry.confidence as InferenceConfidence,
+				tier: 2,
+				reason: `label substring match: "${entry.term}"${entry.note ? ` — note: ${entry.note}` : ''}`,
+			};
 		}
 	}
 

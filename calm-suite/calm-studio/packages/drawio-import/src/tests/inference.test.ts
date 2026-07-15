@@ -130,6 +130,13 @@ describe('T2 — label glossary matching', () => {
 		expect(result.confidence).toBe('none');
 	});
 
+	test('"Administration Panel" matches "admin" → actor, not "ad" → ldap', async () => {
+		// Regression: without longest-first sort, the 2-char "ad" term shadows "admin"
+		const result = await inferNodeType(cell('1', 'Administration Panel', ''), []);
+		expect(result.nodeType).toBe('actor');
+		expect(result.tier).toBe(2);
+	});
+
 	test('extra glossary entries are checked before built-in ones', async () => {
 		const extraGlossary = [
 			{ term: 'xyzzy', 'node-type': 'webclient', confidence: 'high' as const },

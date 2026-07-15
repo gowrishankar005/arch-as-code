@@ -15,6 +15,9 @@ import type {
 	TypeInferenceResult,
 	ConfidenceReportEntry,
 	PageImportResult,
+	GeometryMap,
+	StyleMap,
+	DanglingEdgeEntry,
 } from './types.js';
 
 /** Valid CALM protocol values per the 1.2 schema. */
@@ -43,19 +46,18 @@ export function buildPageResult(
 	// Build a set of vertex ids for quick lookup
 	const vertexIds = new Set(vertices.map((v) => v.id));
 
-	// Assign stable CALM unique-ids
+	// Assign stable CALM unique-ids — anchored to the mxCell id so reimports
+	// of the same file always produce the same CALM ids regardless of order.
 	const idMap = new Map<string, string>(); // mxCell id → CALM unique-id
-	const usedSlugs = new Map<string, number>(); // base slug → counter
 	for (const v of vertices) {
-		const slug = labelToSlug(v.value);
-		const count = usedSlugs.get(slug) ?? 0;
-		usedSlugs.set(slug, count + 1);
-		idMap.set(v.id, count === 0 ? slug : `${slug}-${count}`);
+		idMap.set(v.id, `${labelToSlug(v.value)}-mx${v.id}`);
 	}
 
 	const nodes: CalmNodeSchema[] = [];
 	const relationships: CalmRelationshipSchema[] = [];
 	const confidenceReport: ConfidenceReportEntry[] = [];
+	const geometry: GeometryMap = {};
+	const styles: StyleMap = {};
 
 	// ── Nodes ────────────────────────────────────────────────────────────────
 	for (const v of vertices) {
@@ -72,15 +74,24 @@ export function buildPageResult(
 			'node-type': inference.nodeType,
 			name: v.value || calmId,
 			description: `[Imported from draw.io — review description]`,
-			...(v.geometry
-				? {
-					'x-position': v.geometry.x,
-					'y-position': v.geometry.y,
-					'x-size': v.geometry.width,
-					'y-size': v.geometry.height,
-				  }
-				: {}),
-		} as unknown as CalmNodeSchema);
+		});
+
+		// Geometry is kept out of the CALM document (no CALM 1.2 position fields).
+		// Callers persist it via layout decorator, sidecar, or DB column.
+		if (v.geometry) {
+			geometry[calmId] = {
+				x: v.geometry.x,
+				y: v.geometry.y,
+				width: v.geometry.width,
+				height: v.geometry.height,
+			};
+		}
+
+		// Raw visual style (fill color, shape family, etc.) has no CALM
+		// representation — preserved out-of-band so nothing is silently lost.
+		if (v.style) {
+			styles[calmId] = v.style;
+		}
 
 		confidenceReport.push({
 			cellId: v.id,
@@ -126,18 +137,32 @@ export function buildPageResult(
 			.map((n) => n['unique-id'])
 	);
 
-	const processedEdges = new Set<string>();
+	const danglingEdges: DanglingEdgeEntry[] = [];
 
 	for (const e of edges) {
-		if (!e.source || !e.target) continue; // dangling edge — skip
-		if (!vertexIds.has(e.source) || !vertexIds.has(e.target)) continue;
+		const sourceOk = !!e.source && vertexIds.has(e.source);
+		const targetOk = !!e.target && vertexIds.has(e.target);
 
-		const sourceCalmId = idMap.get(e.source);
-		const targetCalmId = idMap.get(e.target);
-		if (!sourceCalmId || !targetCalmId) continue;
+		if (!sourceOk || !targetOk) {
+			const missingEnd: DanglingEdgeEntry['missingEnd'] =
+				!sourceOk && !targetOk ? 'both' : !sourceOk ? 'source' : 'target';
+			danglingEdges.push({
+				cellId: e.id,
+				label: e.value,
+				resolvedEndpoint: sourceOk
+					? idMap.get(e.source!)!
+					: targetOk
+						? idMap.get(e.target!)!
+						: null,
+				missingEnd,
+			});
+			continue;
+		}
+
+		const sourceCalmId = idMap.get(e.source!)!;
+		const targetCalmId = idMap.get(e.target!)!;
 
 		const edgeUid = `rel-${++relCounter}`;
-		processedEdges.add(e.id);
 
 		if (actorIds.has(sourceCalmId)) {
 			// actor → nodes: use interacts
@@ -165,9 +190,15 @@ export function buildPageResult(
 		}
 	}
 
-	const architecture: CalmArchitectureSchema = { nodes, relationships };
+	// CalmCoreSchema type has no $schema field but the output JSON needs it so
+	// consumers (calm-validate, Hub) can identify the schema version independently.
+	const architecture = {
+		$schema: 'https://calm.finos.org/release/1.2/meta/core.json',
+		nodes,
+		relationships,
+	} as unknown as CalmArchitectureSchema;
 
-	return { name: page.name, architecture, confidenceReport };
+	return { name: page.name, architecture, confidenceReport, geometry, styles, danglingEdges };
 }
 
 /** Convert a draw.io edge label to a CALM protocol if it matches the enum. */
