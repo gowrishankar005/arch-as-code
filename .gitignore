@@ -68,6 +68,9 @@ next-env.d.ts
 **/src-tauri/target/
 **/src-tauri/gen/
 
+# Claude Code local settings (machine-specific permissions/paths — never shared)
+.claude/settings.local.json
+
 # Playwright
 playwright-report/
 test-results/
